@@ -15,7 +15,7 @@ class RPCResponse {
     if(result) {
       this.response.result = result
     } else if(error){
-      this.response.error = this._createErr()
+      this.response.error = this._createErr(error)
     } else {
       throw new Err("INVALID_RPC_PARAMS")
     }
@@ -47,15 +47,15 @@ class RPCResponse {
   }
 
   static fromResult(result, id){
-    return new RPCResponse({ result,id })
+    return new RPCResponse({ result,id }).toString()
   }
 
-  static fromError(msg, code, id){
-    return new RPCResponse({ error : { code, message },id })
+  static fromError({code, message}, id){
+    return new RPCResponse({ error : { code, message },id }).toString()
   }
 
-  static genericErr(){
-    return RPCResponse.fromError(RPCResponse.error.rpcErr).toString()
+  static genericErr(id){
+    return RPCResponse.fromError(RPCResponse.error.rpcErr, id).toString()
   }
 }
 

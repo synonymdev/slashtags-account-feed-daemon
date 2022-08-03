@@ -13,9 +13,13 @@ const _err ={
   dbFailedStart: "FAILED_TO_START_DB",
   userIdMissing:"USER_ID_NOT_PASSED",
   failedCreateDrive:"FAILED_TO_CREATE_USER_FEED",
+  failedCreateDriveArgs:"FAILED_TO_CREATE_FEED_INVALID_RESPONSE",
   failedBalanceCheck:"FAILED_BALANCE_CHECK",
+  feedItemsMissing: "FEED_ITEMS_NOT_SET",
   badConfig: "BAD_CONSTRUCTOR_CONFIG",
-  initFailed: "FEED_INIT_FAILED"
+  initFailed: "FEED_INIT_FAILED",
+  initDataMissing:"FEED_INIT_DATA_MISSING",
+  badUserDataType:"BAD_USER_DATA_TYPE"
 }
 
 
@@ -33,6 +37,8 @@ class SlashtagsFeeds {
   constructor(config) {
     this.config = config
     this.db = new UserDb(config.db)
+    this.feed_items = config.feed_items
+    if(!this.feed_items || !Array.isArray(this.feed_items)) throw new Err(_err.feedItemsMissing)
     if(!config?.slashtags?.path) throw new Err(_err.badConfig)
     if(!config?.slashtags?.key) throw new Err(_err.badConfig)
     this.ready = false
@@ -74,9 +80,11 @@ class SlashtagsFeeds {
    * @desc Setup user's slashdrive with init values
    * @param {String} userId 
    */
-   async _initFeed(userId){
-    const currencies = [ 'BTC', 'LNX', 'USDT']
-    return this.slashtags.update(userId, 'balance', currencies.map((c)=> [c, null]))
+   async _initFeed(userId, userData){
+    return Promise.all(this.feed_items.map((key)=>{
+      if(typeof userData[key] !== "string") throw new Err(_err.badUserDataType)
+      return this.slashtags.update(userId, key, userData[key])
+    }))
   }
 
   /**
@@ -85,9 +93,9 @@ class SlashtagsFeeds {
    * @returns {Object} feed_key
    */
    async createDrive(args){
-    if(!args.user_id) throw new Err(_err.userIdMissing)
+    if(!args?.user_id) throw new Err(_err.userIdMissing)
     if(!this.ready) throw new Err(_err.notReady)
-
+    if(!args.init_data) throw new Error(_err.initDataMissing)
     log.info(`Creating Slashdrive for ${args.user_id}`)
     const { slashtags } = this
     
@@ -97,15 +105,16 @@ class SlashtagsFeeds {
     // Find or create the Slashdrive
     try{
       userFeed = await slashtags.feed(userId)
-      if(!userFeed.key) throw new Err(_err.failedCreateDrive)
+      if(!userFeed.key) throw new Err(_err.failedCreateDriveArgs)
     } catch(err){
       log.err(err)
+      if(err instanceof Err) throw err
       throw new Err(_err.failedCreateDrive)
     }
 
     // Init the feed with values
     try{
-      await this._initFeed(userId)
+      await this._initFeed(userId, args.init_data)
     } catch(err){
       console.log("FAILED_INIT_FEED",userId)
       console.log(err)

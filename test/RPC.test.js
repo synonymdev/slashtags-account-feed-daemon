@@ -49,24 +49,33 @@ describe('RPC ', () => {
         cb()
       })
     })
-    it('should start listening to port and call endpoint', function (cb) {
+    it('should start listening to port and call endpoint. Verify response', function (cb) {
       this.timeout(5000)
+      const respData = ['world']
       server = rpc({
         port:9199,
-        handler: (endpoint, rpcReq) =>{
-          console.log(rpcReq,111)
+        handler:(ctx) =>{
+          ctx.respond(respData)
+          return 
         }
       })
       server.start(async (err)=>{
         assert(!err)
         const ep = server.endpoints.getbyName("createFeed")
+        let res
+        const reqid = 111
         try{
-          const res = await axios.post(ep.full_route,{
-            data:1
+          res = await axios.post(ep.full_route,{
+            id:reqid
           })
         } catch(err){
-          console.log(err.response.data)
+          console.log(err)
         }
+        assert(res.data.jsonrpc === "2.0")
+        assert(JSON.stringify(res.data.result) === JSON.stringify(respData))
+        assert(res.data.id === reqid)
+        assert(Object.keys(res.data).length === 3)
+        cb()
       })
     })
   })
