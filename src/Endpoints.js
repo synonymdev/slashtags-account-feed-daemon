@@ -3,14 +3,11 @@
 class Endpoints {
   constructor(endpoints, version, hostport){
     this.data = endpoints.map((ep)=>{
-      if( !ep.method ||
-          !ep.route || 
-          !ep.name || 
-          !ep.method
-        ) throw new Error("INVALID_RPC_ENDPOINT")
+      if( !ep.name || 
+          !ep.svc
+        ) throw new Error("INVALID_RPC_ENDPOINT_"+JSON.stringify(ep))
       ep.route = `/${version}/${ep.route}`
       ep.full_route = `${hostport}${ep.route}`
-      ep.method = ep.method.toLowerCase()
       return ep
     })
   }

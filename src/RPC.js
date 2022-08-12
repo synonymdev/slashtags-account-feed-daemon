@@ -50,8 +50,11 @@ function server (config){
       name:"createFeed",
       description:"Create a user drive",
       svc: "feeds.createDrive",
-      method:"POST",
-      route: "user/feed"
+    },
+    {
+      name:"updateFeedBalance",
+      description:"Update user's feed balance",
+      svc: "feeds.updateFeedBalance",
     }
   ]
 

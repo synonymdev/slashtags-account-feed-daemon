@@ -24,8 +24,6 @@ describe('RPC ', () => {
       })
       assert(server.endpoints.length >= 0 )
       assert(server.endpoints.getbyName("createFeed"))
-      assert(server.endpoints.getbyName("createFeed").route)
-      assert(server.endpoints.getbyName("createFeed").full_route)
   })
 
   it('should start listening to port and close', function (cb) {

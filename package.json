@@ -1,5 +1,5 @@
 {
-  "name": "slashtags-feeds-integration",
+  "name": "slashtags-Exchange-Feed",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -24,7 +24,7 @@
     "url": "git+https://github.com/rbndg/slashtags-feeds-integration.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/rbndg/slashtags-feeds-integration/issues"
   },
