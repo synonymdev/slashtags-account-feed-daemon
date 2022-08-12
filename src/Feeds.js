@@ -1,7 +1,9 @@
 
 const UserDb = require("./UserDb")
-const Slashtags = require("@synonymdev/feeds")
+const SlashtagsFeedsLib = require("@synonymdev/feeds")
+const jtd = require("jtd")
 const log = require("./Log")("core")
+const predefined = require("../schemas/Predefined.json")
 
 const Err = require("./CustomError")({
   errName: "Slashtags",
@@ -15,11 +17,12 @@ const _err ={
   failedCreateDrive:"FAILED_TO_CREATE_USER_FEED",
   failedCreateDriveArgs:"FAILED_TO_CREATE_FEED_INVALID_RESPONSE",
   failedBalanceCheck:"FAILED_BALANCE_CHECK",
-  feedItemsMissing: "FEED_ITEMS_NOT_SET",
   badConfig: "BAD_CONSTRUCTOR_CONFIG",
-  initFailed: "FEED_INIT_FAILED",
-  initDataMissing:"FEED_INIT_DATA_MISSING",
-  badUserDataType:"BAD_USER_DATA_TYPE"
+  badSchemaSetup: "FEED_SCHEMA_FAILED",
+  badUserDataType:"BAD_USER_DATA_TYPE",
+  invalidSchema: "INVALID_FEED_SCHEMA",
+  badUpdateParam: "BAD_UPDATE_PARAM",
+  updateFeedFailed:"FAILED_TO_UPDATE_FEED"
 }
 
 
@@ -37,12 +40,21 @@ class SlashtagsFeeds {
   constructor(config) {
     this.config = config
     this.db = new UserDb(config.db)
-    this.feed_items = config.feed_items
-    if(!this.feed_items || !Array.isArray(this.feed_items)) throw new Err(_err.feedItemsMissing)
-    if(!config?.slashtags?.path) throw new Err(_err.badConfig)
-    if(!config?.slashtags?.key) throw new Err(_err.badConfig)
+    this.feed_schema = config.feed_schema
+    if(!config.slashtags) throw new Err(_err.badConfig)
+    this._validateSchema(this.feed_schema)
     this.ready = false
     this.slashtags = null
+  }
+
+  _validateSchema(schema){
+    try{
+      const valid = jtd.isValidSchema(schema)
+      if(!valid) throw new Error("INVALID_SCHEMA")
+    } catch(err){
+      throw new Err(_err.invalidSchema)
+    }
+    return true
   }
 
   async start(){
@@ -53,7 +65,7 @@ class SlashtagsFeeds {
       log.err(err)
       throw new Err(_err.dbFailedStart)
     }
-    this.slashtags = await Slashtags.init(this.config.slashtags)
+    this.slashtags = new SlashtagsFeedsLib(this.config.slashtags, this.feed_schema)
     this.ready = true
   }
 
@@ -72,18 +84,42 @@ class SlashtagsFeeds {
       log.error("FAILED_CHECKING_INIT_STATUS",err)
       throw new Error(_err.failedBalanceCheck)
     }
-
     return false
+  }
+
+  /**
+   * @desc Update feed balance
+   * @param {Array} updates Array of updates
+   * @param {String} updates[].user_id user id to update
+   * @param {Object} updates[].wallet_name user id to update
+   * @param {Object} updates[].amount amount
+   */
+  async updateFeedBalance(updates) {
+    let res 
+    try{
+      res = await Promise.all(updates.map(async (update)=>{
+        if(typeof update.wallet_name !== "string" || typeof update.user_id !== "string")  throw new Err(_err.badUpdateParam)
+        if(Number.isNaN(+update.amount)) throw new Err(_err.badUpdateParam)
+        await this.slashtags.update(update.user_id, `feeds/balances/${update.wallet_name}/amount`, update.amount)
+        return true
+      }))
+    } catch(err){
+      console.log(err)
+      if(err instanceof Err) throw err
+      throw new Err(_err.updateFeedFailed)
+    }
+    return  res
   }
 
   /**
    * @desc Setup user's slashdrive with init values
    * @param {String} userId 
    */
-   async _initFeed(userId, userData){
-    return Promise.all(this.feed_items.map((key)=>{
-      if(typeof userData[key] !== "string") throw new Err(_err.badUserDataType)
-      return this.slashtags.update(userId, key, userData[key])
+   async _initFeed(userId){
+    await this.slashtags.update(userId,"feeds/feed_producer.json",predefined.feed_producer)
+    Promise.all(predefined.balances.map(async (w)=>{
+      await this.slashtags.update(userId, `feeds/balances/${w.wallet_name}/amount`, null)
+      await this.slashtags.update(userId, `feeds/balances/${w.wallet_name}/currency`, w.currency)
     }))
   }
 
@@ -95,7 +131,6 @@ class SlashtagsFeeds {
    async createDrive(args){
     if(!args?.user_id) throw new Err(_err.userIdMissing)
     if(!this.ready) throw new Err(_err.notReady)
-    if(!args.init_data) throw new Error(_err.initDataMissing)
     log.info(`Creating Slashdrive for ${args.user_id}`)
     const { slashtags } = this
     
@@ -118,7 +153,7 @@ class SlashtagsFeeds {
     } catch(err){
       console.log("FAILED_INIT_FEED",userId)
       console.log(err)
-      throw new Err(err.initFailed)
+      throw new Err(_err.badSchemaSetup)
     }
 
     // Insert into database
