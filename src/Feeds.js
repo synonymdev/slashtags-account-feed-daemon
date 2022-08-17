@@ -3,7 +3,6 @@ const UserDb = require("./UserDb")
 const SlashtagsFeedsLib = require("@synonymdev/feeds")
 const jtd = require("jtd")
 const log = require("./Log")("core")
-const predefined = require("../schemas/Predefined.json")
 
 const Err = require("./CustomError")({
   errName: "Slashtags",
@@ -22,7 +21,8 @@ const _err ={
   badUserDataType:"BAD_USER_DATA_TYPE",
   invalidSchema: "INVALID_FEED_SCHEMA",
   badUpdateParam: "BAD_UPDATE_PARAM",
-  updateFeedFailed:"FAILED_TO_UPDATE_FEED"
+  updateFeedFailed:"FAILED_TO_UPDATE_FEED",
+  userNoFeed : "USER_ID_HAS_NO_FEED"
 }
 
 
@@ -76,7 +76,8 @@ class SlashtagsFeeds {
    */
   async _isInited(uid){
     try{
-      balance = await slashtags.get(uid,"balance")
+      balance = await slashtags.get(uid,SlashtagsFeedsLib.HEADER_PATH)
+      console.log(balance)
       if(balance && balance !== 0){
         return true
       }
@@ -100,7 +101,7 @@ class SlashtagsFeeds {
       res = await Promise.all(updates.map(async (update)=>{
         if(typeof update.wallet_name !== "string" || typeof update.user_id !== "string")  throw new Err(_err.badUpdateParam)
         if(Number.isNaN(+update.amount)) throw new Err(_err.badUpdateParam)
-        await this.slashtags.update(update.user_id, `feeds/balances/${update.wallet_name}/amount`, update.amount)
+        await this.slashtags.update(update.user_id, this._getWalletFeedKey(update.wallet_name), update.amount)
         return true
       }))
     } catch(err){
@@ -110,17 +111,53 @@ class SlashtagsFeeds {
     }
     return  res
   }
+  
+  /**
+   * @desc get user feed by key
+   * @param {String} userId userId
+   * @returns UserFeed object
+   */
+  async getFeedKey(userId){
+    let userFeed
+    try{
+      userFeed = await this.slashtags.feed(userId)
+      if(!userFeed.key) throw new Err(_err.userNoFeed)
+    } catch(err){
+      log.err(err)
+      if(err instanceof Err) throw err
+      throw new Err(_err.userNoFeed)
+    }
+    return {
+      key: userFeed.key.toString("hex"),
+      encryption_key: userFeed.encryptionKey.toString("hex")
+    }
+  }
+
+  async getFeedFromDb(userId){
+
+    const res = await this.db.findByUser(userId)
+    if(!res) {
+      return null
+    }
+
+    return {
+      feed_key : res.feed_key,
+      encrypt_key: res.encrypt_key
+    }
+  }
 
   /**
    * @desc Setup user's slashdrive with init values
    * @param {String} userId 
    */
    async _initFeed(userId){
-    await this.slashtags.update(userId,"feeds/feed_producer.json",predefined.feed_producer)
-    Promise.all(predefined.balances.map(async (w)=>{
-      await this.slashtags.update(userId, `feeds/balances/${w.wallet_name}/amount`, null)
-      await this.slashtags.update(userId, `feeds/balances/${w.wallet_name}/currency`, w.currency)
+    Promise.all(this.feed_schema.wallets.map(async (w)=>{
+      await this.slashtags.update(userId, this._getWalletFeedKey(w.wallet_name), null)
     }))
+  }
+
+  _getWalletFeedKey(wname){
+    return `wallet/${wname}/amount`
   }
 
   /**
@@ -139,12 +176,9 @@ class SlashtagsFeeds {
 
     // Find or create the Slashdrive
     try{
-      userFeed = await slashtags.feed(userId)
-      if(!userFeed.key) throw new Err(_err.failedCreateDriveArgs)
+      userFeed = await this.getFeedKey(userId)
     } catch(err){
-      log.err(err)
-      if(err instanceof Err) throw err
-      throw new Err(_err.failedCreateDrive)
+      throw err
     }
 
     // Init the feed with values
@@ -160,8 +194,8 @@ class SlashtagsFeeds {
     try{
       await this.db.insert({
         user_id: userId,
-        feed_key:userFeed.key.toString("hex"),
-        encrypt_key:userFeed.encryptionKey.toString("hex"),
+        feed_key:userFeed.key,
+        encrypt_key:userFeed.encryption_key,
         meta: {},
       })
     } catch(err){
@@ -170,7 +204,7 @@ class SlashtagsFeeds {
       throw new Err(_err.failedCreateDrive)
     }
     log.info(`Finished creating new drive for ${userId}`)
-    return {slashdrive: userFeed.key.toString("hex") }
+    return {slashdrive: userFeed}
   }
 }
 

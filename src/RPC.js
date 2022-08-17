@@ -5,7 +5,6 @@ const {
 } = require("./BaseUtil")("RPC", __filename)
 const Endpoints = require("./Endpoints")
 
-
 function loadFastify(){
   const fastify = require('fastify')({ })
   fastify.register(require('@fastify/formbody'))
@@ -13,13 +12,13 @@ function loadFastify(){
 }
 
 class RequestContext {
-  constructor({req, endpoint, serverConfig, handler, reply}){
-    this.endpoint = endpoint
+  constructor({req, endpoints, serverConfig, handler, reply}){
     this.data = req.body
     this.meta = req.headers
     this.req = req
     this.reply = reply
     this.handler = handler
+    this.rpcsvc = endpoints.getByName(this.data.method)
   }
 
   genericErr(){
@@ -31,6 +30,12 @@ class RequestContext {
   }
 
   runRequest(){
+
+    if(!this.rpcsvc){
+      log.error(`Invalid RPC method: ${this.data.method}`)
+      return this.reply.send(RPCResponse.fromError({code:RPCResponse.error.badMethod, message:"Invalid method"},this.data.id))
+    }
+
     try {
       this.handler(this)
     } catch(err){
@@ -41,6 +46,9 @@ class RequestContext {
 }
 
 function server (config){
+  if(!config) {
+    config = require("../schemas/config.json")
+  }
   if(!config?.port) throw new Err("RPC_PORT_NOT_PASSED")
   if(!config?.handler) throw new Err("RPC_HANDLER_NOT_PASSED")
   config.host = config.host || "localhost"
@@ -55,25 +63,36 @@ function server (config){
       name:"updateFeedBalance",
       description:"Update user's feed balance",
       svc: "feeds.updateFeedBalance",
+    },
+    {
+      name:"getFeedFromDb",
+      description:"Get a user feed key",
+      svc: "feeds.getFeedFromDb",
     }
   ]
 
-  const endpoints = new Endpoints(endpointList, "v0.1",`http://${config.host}:${config.port}`)
+  const endpoints = new Endpoints({
+    endpointList, version: "v0.1",host : `http://${config.host}:${config.port}`
+  })
 
   const fastify = loadFastify()
 
-  endpoints.forEach((ep)=>{
-    log.info(`Route: ${ep.method} => ${ep.route}`)
-    fastify[ep.method](ep.route, async (req,reply)=>{
+  log.info(`Route: ${endpoints.method} => ${endpoints.route}`)
+  fastify.post(endpoints.route, async (req,reply)=>{
+    try{
       const ctx = new RequestContext({
         req, 
         reply,
-        endpoint:ep,
         serverConfig: config,
-        handler: config.handler
+        handler: config.handler,
+        endpoints
       })
       return ctx.runRequest()
-    })
+    } catch(err){
+      console.log(err)
+      req.send(500)
+    }
+
   })
 
   function start(cb){

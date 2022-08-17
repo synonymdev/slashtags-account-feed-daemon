@@ -5,8 +5,8 @@ const Feeds = require("../src/Feeds")
 const util = require("./util")
 const path = require('path');
 const SlashtagsFeeds = require('../src/Feeds');
-const Schema = require("../schemas/FeedSchema.json")
-const Predefined = require("../schemas/Predefined.json")
+const Schema = require("../schemas/slashfeed.json")
+const SlashtagsFeedsLib = require("@synonymdev/feeds")
 
 const getSchema = ()=> JSON.parse(JSON.stringify(Schema))
 
@@ -82,18 +82,18 @@ describe('Feeds ', () => {
       "[]",
       ()=>{
         const s = getSchema()
-        s.definitions = null
-        return { val : s, name : "broken definition" }
+        s.image = null
+        return { val : s, name : "broken image" }
       },
       ()=>{
         const s = getSchema()
-        s.properties.version = null
-        return { val : s, name : "broken properties" }
+        s.version = null
+        return { val : s, name : "broken version" }
       },
       ()=>{
         const s = getSchema()
-        s.properties.balances = "asda"
-        return { val : s, name : "broken balances" }
+        s.name = "asda"
+        return { val : s, name : "broken name" }
       }
     ]
     const fn = []
@@ -269,21 +269,50 @@ describe('Feeds ', () => {
       assert(drive.slashdrive)
     })
 
-    it("Should create a drive and update it", async function () {
+    it("Should create a drive and update it and read it", async function () {
       this.timeout(50000)
       await stFeed.start()
       const userId = "satoshi123"
       const drive = await stFeed.createDrive({ user_id: userId })
-      
+      const wName = Schema.wallets[0].wallet_name
+      const bal = 1.5
       const res  = await stFeed.updateFeedBalance([
         {
           user_id: userId,
-          wallet_name : Predefined.balances[0].wallet_name,
-          amount : 1.5,
+          wallet_name : wName,
+          amount : bal,
         }
       ])
       assert(res.includes(false) === false)
+      await stFeed.slashtags.close()
+
+      const feedReader = new SlashtagsFeedsLib(stConfig,Schema)
+      const header = await feedReader.getDriveHeader(userId)
+      assert(JSON.stringify(header) === JSON.stringify(Schema))
+      const balance = await feedReader.get(userId, `wallet/${wName}/amount`)
+      assert(balance === bal)
+      await feedReader.close()
+
     })
   })
 
+  describe("User Feed Database",()=>{
+    it("Should return data if user has feed in the db", async function () {
+      this.timeout(50000)
+      await stFeed.start()
+      const userId = "satoshi123xxx"
+      const drive = await stFeed.createDrive({ user_id: userId })
+      const res  = await stFeed.getFeedFromDb(userId)
+      assert(typeof res.feed_key == "string") 
+      assert(typeof res.encrypt_key == "string")
+    })
+
+    it("Should return null if user has no feed in the db", async function () {
+      this.timeout(50000)
+      await stFeed.start()
+      const userId = "asdasd"
+      let res  = await stFeed.getFeedFromDb(userId)
+      assert(!res)
+    })
+  })
 })

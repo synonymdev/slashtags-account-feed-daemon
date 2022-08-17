@@ -1,15 +1,17 @@
 'use strict'
 
 class Endpoints {
-  constructor(endpoints, version, hostport){
-    this.data = endpoints.map((ep)=>{
+  constructor({endpointList, version, host, route, method}){
+    this.data = endpointList.map((ep)=>{
       if( !ep.name || 
           !ep.svc
         ) throw new Error("INVALID_RPC_ENDPOINT_"+JSON.stringify(ep))
-      ep.route = `/${version}/${ep.route}`
-      ep.full_route = `${hostport}${ep.route}`
+
       return ep
     })
+    this.route = `/${version}/${route || "rpc"}`
+    this.full_route = `${host}${this.route}`
+    this.method = method || "post"
   }
 
   get length(){
@@ -20,7 +22,7 @@ class Endpoints {
     this.data.forEach(cb)
   }
 
-  getbyName(k){
+  getByName(k){
     return this.data.filter(({name}) => name === k).pop()
   }
 }

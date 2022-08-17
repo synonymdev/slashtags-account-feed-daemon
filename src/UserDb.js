@@ -34,6 +34,9 @@ class FeedManager {
         if(err){
           return reject(err)
         }
+        if(!data) {
+          return resolve(null) 
+        }
         data.meta = JSON.parse(data.meta)
         resolve(data)
       })
