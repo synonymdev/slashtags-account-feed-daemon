@@ -6,8 +6,8 @@ const Feeds = require('@synonymdev/feeds')
 const path = require('path')
 
 const remote = {
-  "key": Buffer.from("9a3b244861b98f2b0cc04c354f53793fd6bb309e92e3a8be4a9e2c72b7c76441","hex"),
-  "encryption_key": Buffer.from("8c6b35e753bd1cabc4d9fc752f85c6862bcdf350cb680580839174e48cd0c116","hex")
+  "key": Buffer.from("","hex"),
+  "encryption_key": Buffer.from("","hex")
 }
 
 const stConfig =  path.resolve("./fake-data/remote-data")
@@ -31,11 +31,11 @@ async function main(){
   const result = (await drive.get(Feeds.HEADER_PATH)).toString()
   console.log("Header")
   console.log(JSON.stringify(JSON.parse(result),null,2))
-  const balance = (await drive.get("/feeds/wallet/Bitcoin/amount")).toString()
-  console.log("Balance", balance)
-  await swarm.destroy()
-
-  process.exit(0)
+  console.log("Starting to poll feed: ")
+  setInterval(async ()=>{
+    const balance = (await drive.get("/feed/wallet/Bitcoin/amount"))
+    console.log("\n\n Bitcoin Balance", balance.toString())
+  },2000)
 }
 
 main()
