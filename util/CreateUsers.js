@@ -32,7 +32,7 @@ async function main(config){
       uid, feed
     ]
   }))
-  console.log(res)
+  console.log(JSON.stringify(res,null,2))
   console.log("Finished")
   process.exit(0)
 }

@@ -42,12 +42,14 @@ async function main(config){
   console.log("Starting feeds")
   await stFeed.start()
 
-  await Promise.all(config.user_id.map((uid)=>{
+  const uf = await Promise.all(config.user_id.map((uid)=>{
     console.log("Starting user feed: ", uid)
     return stFeed.slashtags.feed(uid, {
       announce: true
     })
   }))
+
+  console.log("User Feeds Running")
 
   const timer = setInterval(()=>{
     console.log("Starting to update...")
