@@ -14,7 +14,11 @@
     "sqlite3": "^5.0.9"
   },
   "devDependencies": {
-    "mocha": "^10.0.0"
+    "corestore": "^6.0.0",
+    "hyperdrive": "github:Nazeh/hyperdrive-next#pass-options",
+    "hyperswarm": "^4.2.0",
+    "mocha": "^10.0.0",
+    "random-access-memory": "^5.0.0"
   },
   "scripts": {
     "test": "mocha -w ./src/ "

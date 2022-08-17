@@ -42,19 +42,8 @@ class SlashtagsFeeds {
     this.db = new UserDb(config.db)
     this.feed_schema = config.feed_schema
     if(!config.slashtags) throw new Err(_err.badConfig)
-    this._validateSchema(this.feed_schema)
     this.ready = false
     this.slashtags = null
-  }
-
-  _validateSchema(schema){
-    try{
-      const valid = jtd.isValidSchema(schema)
-      if(!valid) throw new Error("INVALID_SCHEMA")
-    } catch(err){
-      throw new Err(_err.invalidSchema)
-    }
-    return true
   }
 
   async start(){
