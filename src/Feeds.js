@@ -77,7 +77,6 @@ class SlashtagsFeeds {
   async _isInited(uid){
     try{
       balance = await slashtags.get(uid,SlashtagsFeedsLib.HEADER_PATH)
-      console.log(balance)
       if(balance && balance !== 0){
         return true
       }

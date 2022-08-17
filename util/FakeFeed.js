@@ -16,6 +16,7 @@ function randomBal(){
 
 async function main(config){
   console.log(`Feeds will be updated every ${config.timer} milisec`)
+
   async function updateFeeds(){
     const users = config.user_id
      await Promise.all(users.map(async (userId)=>{
@@ -32,13 +33,21 @@ async function main(config){
       return res
     }))
   }
+
   const stFeed = new Feeds({
     db: dbconfig,
     slashtags: stConfig,
     feed_schema: Schema
   })
-  console.log("Starting drive")
+  console.log("Starting feeds")
   await stFeed.start()
+
+  await Promise.all(config.user_id.map((uid)=>{
+    console.log("Starting user feed: ", uid)
+    return stFeed.slashtags.feed(uid, {
+      announce: true
+    })
+  }))
 
   const timer = setInterval(()=>{
     console.log("Starting to update...")
