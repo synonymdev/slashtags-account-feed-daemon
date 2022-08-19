@@ -1,26 +1,23 @@
 /* eslint-env mocha */
 'use strict'
 const assert = require('assert')
-const UserDb = require("../src/UserDb")
-const util = require("../src/util")
-
+const UserDb = require('../src/UserDb')
+const util = require('../src/util')
 
 let udb = null
-async function getUdb(){
+async function getUdb () {
   udb = new UserDb({
-    path:"./db",
-    name:`test-${util.rnd()}db`
+    path: './db',
+    name: `test-${util.rnd()}db`
   })
   await udb.init()
   return udb
 }
 
 describe('UserDb', () => {
-
   it('Should create instance User Db', async () => {
     udb = await getUdb()
   })
-
 
   it('Should insert new user feed info and fetch from db ', async () => {
     udb = await getUdb()
@@ -31,10 +28,10 @@ describe('UserDb', () => {
       user_id: uid,
       feed_key: fk,
       encrypt_key: ek,
-      meta: {test: 123},
+      meta: { test: 123 }
     })
     const data = await udb.findByUser(uid)
-    assert(typeof data === "object")
+    assert(typeof data === 'object')
     assert(data.user_id === uid)
     assert(data.feed_key === fk)
     assert(data.encrypt_key === ek)
@@ -51,7 +48,7 @@ describe('UserDb', () => {
       user_id: uid,
       feed_key: fk,
       encrypt_key: ek,
-      meta: {test: 123},
+      meta: { test: 123 }
     })
     let data = await udb.findByUser(uid)
     assert(data.state === 1)
@@ -60,7 +57,7 @@ describe('UserDb', () => {
     assert(!data)
   })
 
-  afterEach(async ()=>{
+  afterEach(async () => {
     await udb.db.deleteSqlite()
   })
 })

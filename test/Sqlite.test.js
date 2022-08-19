@@ -1,16 +1,17 @@
 /* eslint-env mocha */
 'use strict'
 const assert = require('assert')
-const Sqlite = require("../src/Sqlite")
-const util = require("../src/util")
-
+const path = require('path')
+const Sqlite = require('../src/Sqlite')
+const util = require('../src/util')
 
 describe('Sqlite', () => {
-
-  it('Should create instance sqlite db and delete it', async() => {
+  it('Should create instance sqlite db and delete it', async () => {
+    const dbpath = path.resolve("./test-db")
+    await util.mkdir(dbpath)
     const sqlite = new Sqlite({
-      path:"./db",
-      name:`test-${util.rnd()}-db`
+      path: dbpath,
+      name: `test-${util.rnd()}-db`
     })
     assert(sqlite.ready === false)
     await sqlite.start()
@@ -18,20 +19,20 @@ describe('Sqlite', () => {
     await sqlite.deleteSqlite()
   })
 
-  it('Should fail to init db when name is missing', async() => {
-    try{
-    const sqlite = new Sqlite({})
-    } catch(err){
+  it('Should fail to init db when name is missing', async () => {
+    try {
+      const sqlite = new Sqlite({})
+    } catch (err) {
       assert(err instanceof Sqlite.Error)
       assert(Sqlite.err.dbNameMissing)
     }
   })
 
-  it('Should fail to delete db if not ready', async() => {
-    try{
+  it('Should fail to delete db if not ready', async () => {
+    try {
       const sqlite = new Sqlite({})
       sqlite.deleteSqlite()
-    } catch(err){
+    } catch (err) {
       assert(err instanceof Sqlite.Error)
       assert(Sqlite.err.notReady)
     }
