@@ -2,7 +2,7 @@
 'use strict'
 const assert = require('assert')
 const Sqlite = require("../src/Sqlite")
-const util = require("./util")
+const util = require("../src/util")
 
 
 describe('Sqlite', () => {

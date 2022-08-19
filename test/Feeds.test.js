@@ -2,7 +2,7 @@
 'use strict'
 const assert = require('assert')
 const Feeds = require("../src/Feeds")
-const util = require("./util")
+const util = require("../src/util")
 const path = require('path');
 const SlashtagsFeeds = require('../src/Feeds');
 const Schema = require("../schemas/slashfeed.json")
@@ -30,22 +30,6 @@ function newFeed() {
   })
 }
 
-function feedConfig (){
-  return {
-    db: dbconfig,
-    slashtags: stConfig,
-    feed_schema:  feedItems
-  }
-}
-
-function createValidDrive(stFeed, userId){
-  return stFeed.createDrive({
-    user_id: userId,
-    init_data: {
-      "balance" : []
-    }
-  })
-}
 
 describe('Feeds ', () => {
 
@@ -92,7 +76,7 @@ describe('Feeds ', () => {
       },
       ()=>{
         const s = getSchema()
-        s.name = "asda"
+        s.name = null
         return { val : s, name : "broken name" }
       }
     ]
@@ -173,7 +157,7 @@ describe('Feeds ', () => {
       this.timeout(5000)
       await stFeed.start()
       assert(stFeed.ready)
-      const drive = await stFeed.createDrive({ user_id: "11111", init_data: []})
+      const drive = await stFeed.createDrive({ user_id: "11111",})
       assert(drive.slashdrive)
     })
 
@@ -207,7 +191,7 @@ describe('Feeds ', () => {
         }
         const drive = await stFeed.createDrive({ user_id: userId })
       } catch(err){
-        assert(err.message === Feeds.err.failedCreateDrive)
+        assert(err.message === Feeds.err.userNoFeed)
         return
       }
       fail()
@@ -222,15 +206,14 @@ describe('Feeds ', () => {
         }
         const drive = await stFeed.createDrive({ user_id: userId })
       } catch(err){
-        console.log(err.message)
-        assert(err.message === Feeds.err.failedCreateDriveArgs)
+        assert(err.message === Feeds.err.userNoFeed)
         return
       }
       fail()
 
     })
     it("Should throw error if the new feed fails to get initialized", async function () {
-      this.timeout(5000)
+      this.timeout(10000)
       await stFeed.start()
       const userId = "111"
       try{
@@ -239,6 +222,7 @@ describe('Feeds ', () => {
         }
         const drive = await stFeed.createDrive({ user_id: userId })
       } catch(err){
+        console.log(err)
         assert(err.message === Feeds.err.badSchemaSetup)
         return
       }
@@ -292,7 +276,19 @@ describe('Feeds ', () => {
       const balance = await feedReader.get(userId, `wallet/${wName}/amount`)
       assert(balance === bal)
       await feedReader.close()
+    })
 
+    it("Should create a drive and broadcast it", async function () {
+      this.timeout(50000)
+      await stFeed.start()
+      const userId = "satoshi123"
+      const userId2 = "satoshixyz"
+      const [drive,drive2] = await Promise.all([
+        await stFeed.createDrive({ user_id: userId }),
+        await stFeed.createDrive({ user_id: userId2 })
+      ])
+      const b = await stFeed.startFeedBroadcast()
+      assert(b.feeds_started === 2)
     })
   })
 
@@ -314,5 +310,19 @@ describe('Feeds ', () => {
       let res  = await stFeed.getFeedFromDb(userId)
       assert(!res)
     })
+
+    it("Should create feed and delete it from db", async function () {
+      this.timeout(50000)
+      await stFeed.start()
+      const userId = "satoshi123xxx"
+      const drive = await stFeed.createDrive({ user_id: userId })
+      let dbUser  = await stFeed.getFeedFromDb(userId)
+      assert(dbUser.feed_key)
+      assert(dbUser.encrypt_key)
+      const res  = await stFeed.deleteUserFeed(userId)
+      dbUser  = await stFeed.getFeedFromDb(userId)
+      assert(!dbUser)
+    })
+
   })
 })

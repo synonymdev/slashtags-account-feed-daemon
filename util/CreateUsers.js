@@ -2,7 +2,7 @@ const Feeds = require("../src/Feeds")
 const config = require("./config.json")
 const path = require('path');
 const Schema = require("../schemas/slashfeed.json")
-const util = require("../test/util")
+const util = require("../src/util")
 
 const stConfig =  path.resolve("./fake-data/storage")
 const dbconfig = {

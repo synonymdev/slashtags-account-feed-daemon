@@ -1,3 +1,10 @@
 {
-  "rpc_port": 8787
+  "rpc":{
+    "port": 8787
+  },
+  "slashtags_dir":"./data",
+  "db":{
+    "name":"user-db",
+    "path": "./data"
+  }
 }

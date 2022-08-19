@@ -22,7 +22,11 @@ const _err ={
   invalidSchema: "INVALID_FEED_SCHEMA",
   badUpdateParam: "BAD_UPDATE_PARAM",
   updateFeedFailed:"FAILED_TO_UPDATE_FEED",
-  userNoFeed : "USER_ID_HAS_NO_FEED"
+  userNoFeed : "USER_ID_HAS_NO_FEED",
+  failedDeleteUser:"FAILED_USER_DELETE",
+  failedGettingActiveFeeds:"FAILED_GETTING_ACTIVE_FEEDS",
+  failedBroadcast:"FAILED_BROADCAST",
+  userExists:"FAILED_TO_CREATE_USER_EXISTS"
 }
 
 
@@ -42,15 +46,25 @@ class SlashtagsFeeds {
     this.db = new UserDb(config.db)
     this.feed_schema = config.feed_schema
     if(!config.slashtags) throw new Err(_err.badConfig)
+    this.validateFeed(this.feed_schema)
     this.ready = false
     this.slashtags = null
+  }
+
+  validateFeed(schema){
+    if(!schema) throw new Err(_err.invalidSchema)
+    const keys = [
+      "image","name","feed_type","version"
+    ]
+    keys.forEach((k)=>{
+      if(!schema[k]) throw new Err(_err.invalidSchema)
+    })
   }
 
   async start(){
     try{
       await this.db.init()
     } catch(err){
-      console.log(err)
       log.err(err)
       throw new Err(_err.dbFailedStart)
     }
@@ -93,11 +107,48 @@ class SlashtagsFeeds {
         return true
       }))
     } catch(err){
-      console.log(err)
       if(err instanceof Err) throw err
       throw new Err(_err.updateFeedFailed)
     }
     return  res
+  }
+
+  async startFeedBroadcast(){
+    let feeds
+    try{
+      feeds = await this.db.getAllActiveFeeds()
+    }catch(err){
+      log.error(err)
+      throw new Error(_err.failedGettingActiveFeeds)
+    }
+
+    let res
+    try{
+      res = await Promise.all(feeds.map((user)=>{
+        return this.slashtags.feed(user.user_id,{
+          announce: true
+        })
+      }))
+    }catch(err){
+      console.log(err)
+      throw new Error(_err.failedBroadcast)
+    }
+    return {
+      feeds_started: res.length
+    }
+  }
+
+  async deleteUserFeed(userId){
+    try{
+      const res = await this.db.removeUser(userId)
+      await this.slashtags.destroy(userId)
+    } catch(err){
+      throw new Error(_err.failedDeleteUser)
+    }
+
+    return {
+      deleted: true
+    }
   }
   
   /**
@@ -111,6 +162,7 @@ class SlashtagsFeeds {
       userFeed = await this.slashtags.feed(userId)
       if(!userFeed.key) throw new Err(_err.userNoFeed)
     } catch(err){
+      console.log(err)
       log.err(err)
       if(err instanceof Err) throw err
       throw new Err(_err.userNoFeed)
@@ -139,7 +191,7 @@ class SlashtagsFeeds {
    * @param {String} userId 
    */
    async _initFeed(userId){
-    Promise.all(this.feed_schema.wallets.map(async (w)=>{
+    return Promise.all(this.feed_schema.wallets.map(async (w)=>{
       await this.slashtags.update(userId, this._getWalletFeedKey(w.wallet_name), null)
     }))
   }
@@ -159,6 +211,11 @@ class SlashtagsFeeds {
     log.info(`Creating Slashdrive for ${args.user_id}`)
     const { slashtags } = this
     
+    const existingUser = await this.getFeedFromDb(args.user_id)
+    if(existingUser) {
+      throw new Err(_err.userExists)
+    }
+
     let userFeed
     const userId = args.user_id
 

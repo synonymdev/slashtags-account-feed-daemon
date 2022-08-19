@@ -30,7 +30,7 @@ class FeedManager {
 
   findByUser(userId){
     return new Promise((resolve,reject)=>{
-      this.db.sqlite.get(`SELECT * from slashtags WHERE user_id is "${userId}"`,[],(err,data)=>{
+      this.db.sqlite.get(`SELECT * from slashtags WHERE user_id is "${userId}" and state = 1`,[],(err,data)=>{
         if(err){
           return reject(err)
         }
@@ -38,6 +38,20 @@ class FeedManager {
           return resolve(null) 
         }
         data.meta = JSON.parse(data.meta)
+        resolve(data)
+      })
+    })
+  }
+
+  getAllActiveFeeds(userId){
+    return new Promise((resolve,reject)=>{
+      this.db.sqlite.all(`SELECT * from slashtags WHERE state is 1`,[],(err,data)=>{
+        if(err){
+          return reject(err)
+        }
+        if(!data) {
+          return resolve(null) 
+        }
         resolve(data)
       })
     })
@@ -73,15 +87,6 @@ class FeedManager {
         resolve(data)
       })
     })
-  }
-
-  update (key, id, data, cb) {
-    this.db.upsert({
-      table: 'slashtags',
-      pkey: key,
-      pval: id,
-      data: _.extend({}, data)
-    }, cb)
   }
 
   removeUser (userId) {

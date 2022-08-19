@@ -1,6 +1,7 @@
 test-data
 db
 util/fake-data
+data
 
 # Logs
 logs

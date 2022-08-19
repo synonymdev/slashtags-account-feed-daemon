@@ -1,0 +1,96 @@
+{
+	"info": {
+		"_postman_id": "7b52b965-e07f-480b-aef9-049db170b14e",
+		"name": "Feeds Daemon",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"method\":\"createFeed\",\n    \"params\":{\n        \"user_id\":\"satoshi123\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8787/v0.1/rpc",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8787",
+					"path": [
+						"v0.1",
+						"rpc"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User Feed",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"method\":\"createFeed\",\n    \"params\":{\n        \"user_id\":\"satoshi123\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8787/v0.1/rpc",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8787",
+					"path": [
+						"v0.1",
+						"rpc"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Feed By ID",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"method\":\"createFeed\",\n    \"params\":{\n        \"user_id\":\"satoshi123\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8787/v0.1/rpc",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8787",
+					"path": [
+						"v0.1",
+						"rpc"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

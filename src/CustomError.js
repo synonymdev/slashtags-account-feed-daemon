@@ -8,6 +8,7 @@ module.exports = function(config){
       this.name = config.errName
       this.file_name = config.fileName
       this.message = msg
+      this.custom_err = true
       if(cause){
         this.cause = cause || null
       }

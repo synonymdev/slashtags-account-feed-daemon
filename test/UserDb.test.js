@@ -2,7 +2,7 @@
 'use strict'
 const assert = require('assert')
 const UserDb = require("../src/UserDb")
-const util = require("./util")
+const util = require("../src/util")
 
 
 let udb = null
@@ -17,9 +17,8 @@ async function getUdb(){
 
 describe('UserDb', () => {
 
-  it('Should create instance User Db ', async () => {
+  it('Should create instance User Db', async () => {
     udb = await getUdb()
-    util.delFile(udb.db.dbPath)
   })
 
 
@@ -58,7 +57,7 @@ describe('UserDb', () => {
     assert(data.state === 1)
     await udb.removeUser(uid)
     data = await udb.findByUser(uid)
-    assert(data.state === 0)
+    assert(!data)
   })
 
   afterEach(async ()=>{

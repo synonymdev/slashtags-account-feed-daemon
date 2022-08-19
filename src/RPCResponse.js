@@ -3,13 +3,16 @@
 const {
   Err, log
 } = require("./BaseUtil")("RPC_RESP", __filename)
+const {randomBytes} = require("crypto")
 
 class RPCResponse {
   constructor({result, error, id}){
     this.response = {
       jsonrpc:"2.0"
     }
-    if(!id) throw new Err("RPC_ID_MISSING")
+    if(!id) {
+      id = randomBytes(32).toString("hex")
+    }
     this.response.id = id
 
     if(result) {
@@ -17,12 +20,13 @@ class RPCResponse {
     } else if(error){
       this.response.error = this._createErr(error)
     } else {
+      log.error("INVALID_RPC_RESPONSE:", error,result)
       throw new Err("INVALID_RPC_PARAMS")
     }
   }
 
-  toString(){
-    return JSON.stringify(this.response)
+  toResponse(){
+    return this.response
   }
 
   static error = {
@@ -47,15 +51,15 @@ class RPCResponse {
   }
 
   static fromResult(result, id){
-    return new RPCResponse({ result,id }).toString()
+    return new RPCResponse({ result,id }).toResponse()
   }
 
   static fromError({code, message}, id){
-    return new RPCResponse({ error : { code, message },id }).toString()
+    return new RPCResponse({ error : { code, message },id }).toResponse()
   }
 
   static genericErr(id){
-    return RPCResponse.fromError(RPCResponse.error.rpcErr, id).toString()
+    return RPCResponse.fromError(RPCResponse.error.rpcErr, id)
   }
 }
 
