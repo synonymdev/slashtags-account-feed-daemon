@@ -1,14 +1,14 @@
-const debug = require('debug');
+const debug = require('debug')
 
-const base = "stfeed"
+const base = 'stfeed'
 class Log {
-  constructor(name){
+  constructor (name) {
     this.name = `${base}:${name}`
-    this.info = debug(this.name+":"+"info")
-    this.err = this.error =  debug(this.name+":"+"err")
+    this.info = debug(this.name + ':' + 'info')
+    this.err = this.error = debug(this.name + ':' + 'err')
   }
 }
 
-module.exports = (name)=>{
+module.exports = (name) => {
   return new Log(name)
 }
