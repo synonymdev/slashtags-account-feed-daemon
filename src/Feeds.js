@@ -27,7 +27,8 @@ const _err = {
   failedBroadcast: 'FAILED_BROADCAST',
   userExists: 'FAILED_TO_CREATE_USER_EXISTS',
   useridNotString:"USER_ID_PARAM_NOT_STRING",
-  processAlreadyRunning:"PROCESS_ALREADY_RUNNING"
+  processAlreadyRunning:"PROCESS_ALREADY_RUNNING",
+  feedNotFound:"USER_FEED_NOT_FOUND"
 }
 
 class SlashtagsFeeds {
@@ -121,8 +122,9 @@ class SlashtagsFeeds {
     }
   }
 
-  async deleteUserFeed (userId) {
-    if (typeof userId !== "string") throw new Err(_err.useridNotString)
+  async deleteUserFeed (args) {
+    if (typeof args.user_id !== "string") throw new Err(_err.useridNotString)
+    const userId = args.user_id
     try {
       const existingUser = await this.getFeedFromDb(userId)
       if(!existingUser) {
@@ -162,12 +164,23 @@ class SlashtagsFeeds {
     }
   }
 
+  async getFeed (args) {
+    try{
+      const existingUser = await this.getFeedFromDb(args.user_id)
+      if (!existingUser) {
+        throw new Err(_err.feedNotFound)
+      }
+      return existingUser 
+    } catch(err){
+      throw new Err(_err.feedNotFound)
+    }
+  }
+
   async getFeedFromDb (userId) {
     const res = await this.db.findByUser(userId)
     if (!res) {
       return null
     }
-
     return {
       feed_key: res.feed_key,
       encrypt_key: res.encrypt_key

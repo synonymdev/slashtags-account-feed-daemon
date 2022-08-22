@@ -21,6 +21,10 @@ class RequestContext {
     this.rpcsvc = endpoints.getByName(this.data?.method)
   }
 
+  get method() {
+    return this.data?.method
+  }
+
   get params () {
     return this?.data?.params
   }
@@ -84,9 +88,9 @@ function server (config) {
       svc: 'feeds.updateFeedBalance'
     },
     {
-      name: 'getFeedFromDb',
+      name: 'getFeed',
       description: 'Get a user feed key',
-      svc: 'feeds.getFeedFromDb'
+      svc: 'feeds.getFeed'
     },
     {
       name: 'deleteUserFeed',

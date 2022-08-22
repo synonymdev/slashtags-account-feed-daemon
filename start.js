@@ -22,7 +22,7 @@ async function main () {
   await util.mkdir(config.db.path)
   await util.mkdir(config.slashtags_dir)
   config.rpc.handler = function rpcHandler (ctx) {
-    log.info('Processing new RPC call')
+    log.info(`Processing new RPC call: ${ctx.method}`)
     const fnName = ctx.getSvcFn()
     const fn = feeds[fnName]
     if (!fn) {
