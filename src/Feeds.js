@@ -190,7 +190,6 @@ class SlashtagsFeeds {
 
   async extCreateDrive(args){
     const key = "extCreateDrive"
-    console.log(this.lock.has(key))
     if(this.lock.has(key)){
       throw new Err(_err.processAlreadyRunning)
     }
