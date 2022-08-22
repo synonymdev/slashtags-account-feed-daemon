@@ -25,7 +25,9 @@ const _err = {
   failedDeleteUser: 'FAILED_USER_DELETE',
   failedGettingActiveFeeds: 'FAILED_GETTING_ACTIVE_FEEDS',
   failedBroadcast: 'FAILED_BROADCAST',
-  userExists: 'FAILED_TO_CREATE_USER_EXISTS'
+  userExists: 'FAILED_TO_CREATE_USER_EXISTS',
+  useridNotString:"USER_ID_PARAM_NOT_STRING",
+  processAlreadyRunning:"PROCESS_ALREADY_RUNNING"
 }
 
 class SlashtagsFeeds {
@@ -47,6 +49,7 @@ class SlashtagsFeeds {
     this.validateFeed(this.feed_schema)
     this.ready = false
     this.slashtags = null
+    this.lock = new Map()
   }
 
   validateFeed (schema) {
@@ -119,10 +122,17 @@ class SlashtagsFeeds {
   }
 
   async deleteUserFeed (userId) {
+    if (typeof userId !== "string") throw new Err(_err.useridNotString)
     try {
+      const existingUser = await this.getFeedFromDb(userId)
+      if(!existingUser) {
+        log.info(`Deleting user that does not exist: ${userId}`)
+        return { deleted: true }
+      }
       await this.db.removeUser(userId)
       await this.slashtags.destroy(userId)
     } catch (err) {
+      console.log(err)
       throw new Error(_err.failedDeleteUser)
     }
 
@@ -142,7 +152,6 @@ class SlashtagsFeeds {
       userFeed = await this.slashtags.feed(userId)
       if (!userFeed.key) throw new Err(_err.userNoFeed)
     } catch (err) {
-      console.log(err)
       log.err(err)
       if (err instanceof Err) throw err
       throw new Err(_err.userNoFeed)
@@ -179,6 +188,23 @@ class SlashtagsFeeds {
     return `wallet/${wname}/amount`
   }
 
+  async extCreateDrive(args){
+    const key = "extCreateDrive"
+    if(this.lock.has(key)){
+      throw new Err(_err.processAlreadyRunning)
+    }
+    this.lock.set(key,Date.now())
+    let res
+    try{
+      res = await this.createDrive(args)
+    } catch(err){
+      this.lock.delete(key)
+      throw err
+    }
+    this.lock.delete(key)
+    return res
+  }
+
   /**
    * @desc Create a slashdrive for user. If a slashdrive exists, we just return the existing drive key.
    * @param {String} args.user_id
@@ -186,6 +212,7 @@ class SlashtagsFeeds {
    */
   async createDrive (args) {
     if (!args?.user_id) throw new Err(_err.userIdMissing)
+    if (typeof args.user_id !== "string") throw new Err(_err.useridNotString)
     if (!this.ready) throw new Err(_err.notReady)
     log.info(`Creating Slashdrive for ${args.user_id}`)
 

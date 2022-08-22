@@ -54,7 +54,7 @@ class RequestContext {
     try {
       res = await this.handler(this)
     } catch (err) {
-      log.error(`Req to ${this.rpcsvc.name} failed:`, err)
+      log.error(`Req to ${this.rpcsvc.name} failed:`, err.message)
       if (err.custom_err) {
         return this.failedMethod(err.message)
       }
@@ -76,7 +76,7 @@ function server (config) {
     {
       name: 'createFeed',
       description: 'Create a user drive',
-      svc: 'feeds.createDrive'
+      svc: 'feeds.extCreateDrive'
     },
     {
       name: 'updateFeedBalance',
@@ -113,7 +113,6 @@ function server (config) {
       })
       return ctx.runRequest()
     } catch (err) {
-      console.log(err)
       req.send(500)
     }
   })
