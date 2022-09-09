@@ -1,6 +1,6 @@
 const debug = require('debug')
 
-const base = 'stfeed'
+const base = 'slashdeamon'
 class Log {
   constructor (name) {
     this.name = `${base}:${name}`

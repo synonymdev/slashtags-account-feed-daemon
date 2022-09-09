@@ -11,18 +11,14 @@ const {
   Err, log
 } = require('./src/BaseUtil')('Main', __filename)
 
-const _err = {
-  badConfig: 'BAD_CONFIG'
-}
 
 async function main () {
   log.info('Starting Slashtags Feeds Daemon')
   log.info('Config:')
   log.info(JSON.stringify(config, null, 2))
-  await util.mkdir(config.db.path)
   await util.mkdir(config.slashtags_dir)
   config.rpc.handler = function rpcHandler (ctx) {
-    log.info(`Processing new RPC call: ${ctx.method}`)
+    log.info(`New RPC: ${ctx.method}`)
     const fnName = ctx.getSvcFn()
     const fn = feeds[fnName]
     if (!fn) {
@@ -31,12 +27,9 @@ async function main () {
     return fn.call(feeds, ctx.params)
   }
   const rpc = new RPC(config.rpc)
-  if (!config?.db?.path) {
-    throw new Err(_err.badConfig)
-  }
-  config.db.path = path.resolve(config.db.path)
+
   const feeds = new Feeds({
-    db: config.db,
+    db: { path: path.resolve(config.db_dir), ...config.feeds_db },
     slashtags: config.slashtags_dir,
     feed_schema: schema
   })

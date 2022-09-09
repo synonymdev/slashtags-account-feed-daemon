@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 'use strict'
 const assert = require('assert')
-const UserDb = require('../src/UserDb')
+const AccountsDb = require('../src/AccountsDb')
 const util = require('../src/util')
 
 let udb = null
-async function getUdb () {
-  udb = new UserDb({
+async function getDb () {
+  udb = new AccountsDb({
     path: './db',
     name: `test-${util.rnd()}db`
   })
@@ -14,13 +14,13 @@ async function getUdb () {
   return udb
 }
 
-describe('UserDb', () => {
-  it('Should create instance User Db', async () => {
-    udb = await getUdb()
+describe('AccountsDb', () => {
+  it('Should create instance Accounts DbDb', async () => {
+    udb = await getDb()
   })
 
   it('Should insert new user feed info and fetch from db ', async () => {
-    udb = await getUdb()
+    udb = await getDb()
     const uid = util.rnd()
     const fk = util.rnd()
     const ek = util.rnd()
@@ -40,7 +40,7 @@ describe('UserDb', () => {
   })
 
   it('Should remove user ', async () => {
-    udb = await getUdb()
+    udb = await getDb()
     const uid = util.rnd()
     const fk = util.rnd()
     const ek = util.rnd()

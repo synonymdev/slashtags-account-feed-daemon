@@ -19,7 +19,6 @@ class RPCResponse {
     } else if (error) {
       this.response.error = this._createErr(error)
     } else {
-      console.trace('aaa')
       log.error('INVALID_RPC_RESPONSE:', error, result)
       throw new Err('INVALID_RPC_PARAMS')
     }

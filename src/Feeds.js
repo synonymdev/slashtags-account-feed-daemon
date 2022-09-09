@@ -1,5 +1,5 @@
 
-const UserDb = require('./UserDb')
+const UserDb = require('./FeedsDb')
 const SlashtagsFeedsLib = require('@synonymdev/feeds')
 const log = require('./Log')('core')
 
@@ -123,8 +123,7 @@ class SlashtagsFeeds {
   }
 
   async deleteUserFeed (args) {
-    if (typeof args.user_id !== "string") throw new Err(_err.useridNotString)
-    const userId = args.user_id
+    const userId = args.user_id.toString()
     try {
       const existingUser = await this.getFeedFromDb(userId)
       if(!existingUser) {
