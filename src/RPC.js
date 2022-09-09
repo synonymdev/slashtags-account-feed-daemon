@@ -5,6 +5,36 @@ const {
 } = require('./BaseUtil')('RPC', __filename)
 const Endpoints = require('./Endpoints')
 
+
+const endpointList = [
+  {
+    name: 'createFeed',
+    description: 'Create a user drive',
+    svc: 'feeds.extCreateDrive'
+  },
+  {
+    name: 'updateFeedBalance',
+    description: "Update user's feed balance",
+    svc: 'feeds.updateFeedBalance'
+  },
+  {
+    name: 'getFeed',
+    description: 'Get a user feed key',
+    svc: 'feeds.getFeed'
+  },
+  {
+    name: 'deleteUserFeed',
+    description: 'Delete a user feed',
+    svc: 'feeds.deleteUserFeed'
+  },
+  {
+    name: "createAccount",
+    description: 'Create a user drive',
+    svc: 'feeds.extCreateDrive'
+  }
+]
+
+
 function loadFastify () {
   const fastify = require('fastify')({ })
   fastify.register(require('@fastify/formbody'))
@@ -19,6 +49,10 @@ class RequestContext {
     this.reply = reply
     this.handler = handler
     this.rpcsvc = endpoints.getByName(this.data?.method)
+  }
+
+  get method() {
+    return this.data?.method
   }
 
   get params () {
@@ -71,29 +105,6 @@ function server (config) {
   if (!config?.port) throw new Err('RPC_PORT_NOT_PASSED')
   if (!config?.handler) throw new Err('RPC_HANDLER_NOT_PASSED')
   config.host = config.host || 'localhost'
-
-  const endpointList = [
-    {
-      name: 'createFeed',
-      description: 'Create a user drive',
-      svc: 'feeds.extCreateDrive'
-    },
-    {
-      name: 'updateFeedBalance',
-      description: "Update user's feed balance",
-      svc: 'feeds.updateFeedBalance'
-    },
-    {
-      name: 'getFeedFromDb',
-      description: 'Get a user feed key',
-      svc: 'feeds.getFeedFromDb'
-    },
-    {
-      name: 'deleteUserFeed',
-      description: 'Delete a user feed',
-      svc: 'feeds.deleteUserFeed'
-    }
-  ]
 
   const endpoints = new Endpoints({
     endpointList, version: 'v0.1', host: `http://${config.host}:${config.port}`

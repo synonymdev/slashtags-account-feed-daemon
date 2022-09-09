@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 'use strict'
 const assert = require('assert')
-const UserDb = require('../src/UserDb')
+const FeedsDB = require('../src/FeedsDb')
 const util = require('../src/util')
 
 let udb = null
 async function getUdb () {
-  udb = new UserDb({
+  udb = new FeedsDB({
     path: './db',
     name: `test-${util.rnd()}db`
   })
@@ -14,7 +14,7 @@ async function getUdb () {
   return udb
 }
 
-describe('UserDb', () => {
+describe('FeedsDB', () => {
   it('Should create instance User Db', async () => {
     udb = await getUdb()
   })

@@ -12,6 +12,7 @@ This schema file allows feed consumers to parse the feed.
 ```
 git clone
 npm install
+mkdir ./db
 node start.js
 ```
 
@@ -20,7 +21,7 @@ node start.js
 **Run with PM2** `pm2 start`
 
 
-## API
+## APIREADME
 **A Postman collection has been provided.**
 ### Create Feed
 Create an exchange feed for a user
@@ -81,8 +82,8 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "method":"getFeedFromDb",
-    "params":"satoshi123"
+    "method":"getFeed",
+    "params":{ "user_id" : "satoshi123" }
 }'
 ```
 ``` json
@@ -103,7 +104,7 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "method":"deleteUserFeed",
-    "params":"satoshi123"
+    "params":{ "user_id" : "satoshi123" }
 }'
 ```
 ``` json

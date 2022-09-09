@@ -2,25 +2,32 @@
 
 const async = require('async')
 const Sqlite = require('./Sqlite')
+const util = require('../src/util')
 
-class FeedManager {
+class AccountsDb {
   constructor (config) {
-    this.db = new Sqlite(config)
+    if (!config?.path) {
+      throw new Error('DB_PATH_NOT_SET')
+    }
+    this.config = config
   }
 
   async init () {
+    await util.mkdir(this.config.path)
+    this.db = new Sqlite(this.config)
+
     await this.db.start()
     await async.eachSeries([
-      `CREATE TABLE IF NOT EXISTS slashtags (
+      `CREATE TABLE IF NOT EXISTS slashtags_accounts (
             user_id VARCHAR(255) NOT NULL,
-            feed_key TEXT NOT NULL,
+            slashtag_pub TEXT NOT NULL,
             state INT,
-            encrypt_key TEXT,
             meta TEXT,
             ts_created BIGINT,
-            PRIMARY KEY (feed_key)
+            PRIMARY KEY (user_id)
           )`,
-      'CREATE INDEX IF NOT EXISTS slashtags_ix1 ON slashtags (user_id)'
+      'CREATE INDEX IF NOT EXISTS slashtags_ix1 ON slashtags_accounts (user_id)',
+      'CREATE INDEX IF NOT EXISTS slashtags_ix2 ON slashtags_accounts (slashtag_pub)'
     ], (cmd, next) => {
       this.db.sqlite.run(cmd, next)
     })
@@ -28,7 +35,22 @@ class FeedManager {
 
   findByUser (userId) {
     return new Promise((resolve, reject) => {
-      this.db.sqlite.get(`SELECT * from slashtags WHERE user_id is "${userId}" and state = 1`, [], (err, data) => {
+      this.db.sqlite.get(`SELECT * from slashtags_accounts WHERE user_id is "${userId}" and state = 1`, [], (err, data) => {
+        if (err) {
+          return reject(err)
+        }
+        if (!data) {
+          return resolve(null)
+        }
+        data.meta = JSON.parse(data.meta)
+        resolve(data)
+      })
+    })
+  }
+
+  findBySlashtag (key) {
+    return new Promise((resolve, reject) => {
+      this.db.sqlite.get(`SELECT * from slashtags_accounts WHERE slashtag_pub is "${key}" and state = 1`, [], (err, data) => {
         if (err) {
           return reject(err)
         }
@@ -43,7 +65,7 @@ class FeedManager {
 
   getAllActiveFeeds (userId) {
     return new Promise((resolve, reject) => {
-      this.db.sqlite.all('SELECT * from slashtags WHERE state is 1', [], (err, data) => {
+      this.db.sqlite.all('SELECT * from slashtags_accounts WHERE state is 1', [], (err, data) => {
         if (err) {
           return reject(err)
         }
@@ -57,27 +79,24 @@ class FeedManager {
 
   insert (data) {
     return new Promise((resolve, reject) => {
-      this.db.sqlite.run(`INSERT OR ${data.replace ? 'REPLACE' : 'IGNORE'} INTO slashtags 
+      this.db.sqlite.run(`INSERT OR ${data.replace ? 'REPLACE' : 'IGNORE'} INTO slashtags_accounts 
           (
             user_id,
-            feed_key,
+            slashtag_pub,
             state,
-            encrypt_key,
             meta,
             ts_created
           ) VALUES 
           (
             $user_id,
-            $feed_key,
+            $slashtag_pub,
             $state,
-            $encrypt_key,
             $meta,
             $ts_created
           )`, {
         $user_id: data.user_id,
-        $feed_key: data.feed_key,
+        $slashtag_pub: data.slashtag_pub,
         $state: 1,
-        $encrypt_key: data.encrypt_key,
         $meta: JSON.stringify(data.meta),
         $ts_created: Date.now()
       }, (err, data) => {
@@ -89,7 +108,7 @@ class FeedManager {
 
   removeUser (userId) {
     return new Promise((resolve, reject) => {
-      this.db.sqlite.run(`UPDATE slashtags SET state = 0 WHERE user_id="${userId}" `, [], (err, data) => {
+      this.db.sqlite.run(`UPDATE slashtags_accounts SET state = 0 WHERE user_id="${userId}" `, [], (err, data) => {
         if (err) {
           return reject(err)
         }
@@ -98,4 +117,4 @@ class FeedManager {
     })
   }
 }
-module.exports = FeedManager
+module.exports = AccountsDb

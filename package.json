@@ -6,6 +6,9 @@
   "dependencies": {
     "@fastify/formbody": "^7.0.1",
     "@synonymdev/feeds": "^1.0.0-alpha.2",
+    "@synonymdev/slashtag": "^1.0.0-alpha.13",
+    "@synonymdev/slashtags-auth": "^0.4.0-alpha.4",
+    "@synonymdev/slashtags-sdk": "^1.0.0-alpha.14",
     "async": "^3.2.4",
     "axios": "^0.27.2",
     "debug": "^4.3.4",
@@ -14,6 +17,7 @@
     "sqlite3": "^5.0.9"
   },
   "devDependencies": {
+    "@hyperswarm/testnet": "^3.1.0",
     "corestore": "^6.0.0",
     "hyperdrive": "github:Nazeh/hyperdrive-next#pass-options",
     "hyperswarm": "^4.2.0",

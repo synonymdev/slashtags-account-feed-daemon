@@ -14,7 +14,6 @@ class RPCResponse {
       id = randomBytes(32).toString('hex')
     }
     this.response.id = id
-
     if (result) {
       this.response.result = result
     } else if (error) {

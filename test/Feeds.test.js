@@ -313,7 +313,7 @@ describe('Feeds ', () => {
       let dbUser = await stFeed.getFeedFromDb(userId)
       assert(dbUser.feed_key)
       assert(dbUser.encrypt_key)
-      const res = await stFeed.deleteUserFeed(userId)
+      const res = await stFeed.deleteUserFeed({ user_id : userId })
       dbUser = await stFeed.getFeedFromDb(userId)
       assert(!dbUser)
     })
