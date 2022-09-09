@@ -15,26 +15,23 @@ async function getDb () {
 }
 
 describe('AccountsDb', () => {
-  it('Should create instance Accounts DbDb', async () => {
+  it('Should create instance Accounts', async () => {
     udb = await getDb()
   })
 
-  it('Should insert new user feed info and fetch from db ', async () => {
+  it('Should insert new user in accounts db ', async () => {
     udb = await getDb()
     const uid = util.rnd()
-    const fk = util.rnd()
-    const ek = util.rnd()
+    const pk = util.rnd()
     await udb.insert({
       user_id: uid,
-      feed_key: fk,
-      encrypt_key: ek,
+      slashtag_pub: pk,
       meta: { test: 123 }
     })
     const data = await udb.findByUser(uid)
     assert(typeof data === 'object')
     assert(data.user_id === uid)
-    assert(data.feed_key === fk)
-    assert(data.encrypt_key === ek)
+    assert(data.slashtag_pub === pk)
     assert(data.state === 1)
     assert(data.meta.test === 123)
   })
@@ -42,12 +39,10 @@ describe('AccountsDb', () => {
   it('Should remove user ', async () => {
     udb = await getDb()
     const uid = util.rnd()
-    const fk = util.rnd()
-    const ek = util.rnd()
+    const pk = util.rnd()
     await udb.insert({
       user_id: uid,
-      feed_key: fk,
-      encrypt_key: ek,
+      slashtag_pub: pk,
       meta: { test: 123 }
     })
     let data = await udb.findByUser(uid)
