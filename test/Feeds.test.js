@@ -150,7 +150,7 @@ describe('Feeds ', () => {
     })
 
     it('Should create a drive for user', async function () {
-      this.timeout(5000)
+      this.timeout(10000)
       await stFeed.start()
       assert(stFeed.ready)
       const drive = await stFeed.createDrive({ user_id: '11111' })
@@ -313,7 +313,7 @@ describe('Feeds ', () => {
       let dbUser = await stFeed.getFeedFromDb(userId)
       assert(dbUser.feed_key)
       assert(dbUser.encrypt_key)
-      const res = await stFeed.deleteUserFeed(userId)
+      const res = await stFeed.deleteUserFeed({ user_id : userId })
       dbUser = await stFeed.getFeedFromDb(userId)
       assert(!dbUser)
     })
