@@ -21,7 +21,7 @@ class RequestContext {
     this.rpcsvc = endpoints.getByName(this.data?.method)
   }
 
-  get method() {
+  get method () {
     return this.data?.method
   }
 
