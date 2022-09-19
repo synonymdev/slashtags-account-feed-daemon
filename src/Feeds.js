@@ -67,6 +67,7 @@ class SlashtagsFeeds {
     try {
       await this.db.init()
     } catch (err) {
+      console.log(err)
       log.err(err)
       throw new Err(_err.dbFailedStart)
     }
@@ -201,7 +202,7 @@ class SlashtagsFeeds {
     return `wallet/${wname}/amount`
   }
 
-  async extCreateDrive (args) {
+  async createFeed (args) {
     const key = 'extCreateDrive'
     if (this.lock.has(key)) {
       throw new Err(_err.processAlreadyRunning)
@@ -209,7 +210,7 @@ class SlashtagsFeeds {
     this.lock.set(key, Date.now())
     let res
     try {
-      res = await this.createDrive(args)
+      res = await this._createDrive(args)
     } catch (err) {
       this.lock.delete(key)
       throw err
@@ -223,7 +224,7 @@ class SlashtagsFeeds {
    * @param {String} args.user_id
    * @returns {Object} feed_key
    */
-  async createDrive (args) {
+  async _createDrive (args) {
     if (!args?.user_id) throw new Err(_err.userIdMissing)
     if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
     if (!this.ready) throw new Err(_err.notReady)
