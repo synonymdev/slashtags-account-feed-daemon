@@ -1,8 +1,34 @@
-# Slashtags Exchange Feeds Deamon
+# Slashtags Exchange Feeds Daemon
 
 A simple HTTP RPC deamon to enable publishing Slashtags Exchange Feeds.
 
-## How to run
+## Import as Library
+```sh
+npm i @synonymdev/feeds-daemon 
+```
+```js
+const { Feeds } = require('@synonymdev/feeds-daemon')
+const feeds = new Feeds({
+    db: {
+        name: 'feeds-db',
+        path: "./data"
+    },
+    slashtags: "./",
+    feed_schema: "<feed schema json file>"
+})
+
+await feeds.start()
+
+// You can now call various functions
+
+let feed = await feeds.getFeed({ user_id: "123123" })
+
+```
+
+
+
+## How to run as Daemon
+
 **1. Setup config**
 Go to `./schema/config.json` Update config items.
 
@@ -21,7 +47,7 @@ node start.js
 **Run with PM2** `pm2 start`
 
 
-## APIREADME
+## README
 **A Postman collection has been provided.**
 ### Create Feed
 Create an exchange feed for a user
