@@ -1,8 +1,34 @@
-# Slashtags Exchange Feeds Deamon
+# Slashtags Exchange Feeds Daemon
 
 A simple HTTP RPC deamon to enable publishing Slashtags Exchange Feeds.
 
-## How to run
+## Import as Library
+```sh
+npm i @synonymdev/feeds-daemon 
+```
+```js
+const { Feeds } = require('@synonymdev/feeds-daemon')
+const feeds = new Feeds({
+    db: {
+        name: 'feeds-db',
+        path: "./data"
+    },
+    slashtags: "./",
+    feed_schema: "<feed schema json file>"
+})
+
+await feeds.start()
+
+// You can now call various functions
+
+let feed = await feeds.getFeed({ user_id: "123123" })
+
+```
+
+
+
+## How to run as Daemon
+
 **1. Setup config**
 Go to `./schema/config.json` Update config items.
 
@@ -12,6 +38,7 @@ This schema file allows feed consumers to parse the feed.
 ```
 git clone
 npm install
+mkdir ./db
 node start.js
 ```
 
@@ -20,7 +47,7 @@ node start.js
 **Run with PM2** `pm2 start`
 
 
-## API
+## README
 **A Postman collection has been provided.**
 ### Create Feed
 Create an exchange feed for a user
@@ -81,8 +108,8 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "method":"getFeedFromDb",
-    "params":"satoshi123"
+    "method":"getFeed",
+    "params":{ "user_id" : "satoshi123" }
 }'
 ```
 ``` json
@@ -103,7 +130,7 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "method":"deleteUserFeed",
-    "params":"satoshi123"
+    "params":{ "user_id" : "satoshi123" }
 }'
 ```
 ``` json
