@@ -1,4 +1,3 @@
-
 const UserDb = require('./UserDb')
 const SlashtagsFeedsLib = require('@synonymdev/feeds')
 const log = require('./Log')('core')
@@ -129,6 +128,7 @@ class SlashtagsFeeds {
     try {
       const existingUser = await this.getFeedFromDb(userId)
       if (!existingUser) {
+        // TODO: rethink, this is in a way misleading
         log.info(`Deleting user that does not exist: ${userId}`)
         return { deleted: true }
       }
@@ -216,6 +216,7 @@ class SlashtagsFeeds {
       throw err
     }
     this.lock.delete(key)
+    // TODO: return url as well
     return res
   }
 
