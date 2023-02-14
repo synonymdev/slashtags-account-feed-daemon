@@ -80,7 +80,7 @@ function server (config) {
     {
       name: 'createFeed',
       description: 'Create a user drive',
-      svc: 'feeds.extCreateDrive'
+      svc: 'feeds.createFeed'
     },
     {
       name: 'updateFeedBalance',
