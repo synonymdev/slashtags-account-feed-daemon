@@ -42,7 +42,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"method\":\"createFeed\",\n    \"params\":{\n        \"user_id\":\"satoshi123\"\n    }\n}",
+					"raw": "{\n    \"method\":\"deleteUserFeed\",\n    \"params\":{\n        \"user_id\":\"satoshi125\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
