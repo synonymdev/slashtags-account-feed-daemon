@@ -123,7 +123,7 @@ function server (config) {
 
   function start (cb) {
     log.info(`Listening: ${config.host} Port: ${config.port}`)
-    fastify.listen(config.port, config.host, (err) => {
+    fastify.listen({ port: config.port, host: config.host }, (err) => {
       if (err) {
         log.err('FAILED_RPC_LISTEN', err)
         throw new Err('FAILED_RPC_LISTEN')
