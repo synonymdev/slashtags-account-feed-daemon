@@ -66,7 +66,6 @@ class SlashtagsFeeds {
     try {
       await this.db.init()
     } catch (err) {
-      console.log(err)
       log.err(err)
       throw new Err(_err.dbFailedStart)
     }
@@ -114,7 +113,6 @@ class SlashtagsFeeds {
         })
       }))
     } catch (err) {
-      console.log(err)
       throw new Error(_err.failedBroadcast)
     }
     return {
@@ -135,7 +133,6 @@ class SlashtagsFeeds {
       await this.db.removeUser(userId)
       await this.slashtags.destroy(userId)
     } catch (err) {
-      console.log(err)
       throw new Error(_err.failedDeleteUser)
     }
 
@@ -203,6 +200,7 @@ class SlashtagsFeeds {
   }
 
   async createFeed (args) {
+    // XXX what should it do if there is deleted user?
     const key = 'createFeed'
     if (this.lock.has(key)) {
       throw new Err(_err.processAlreadyRunning)
@@ -245,8 +243,6 @@ class SlashtagsFeeds {
     try {
       await this._initFeed(userId, args.init_data)
     } catch (err) {
-      console.log('FAILED_INIT_FEED', userId)
-      console.log(err)
       throw new Err(_err.badSchemaSetup)
     }
 
