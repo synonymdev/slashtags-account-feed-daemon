@@ -117,30 +117,29 @@ function server (config) {
       })
       return ctx.runRequest()
     } catch (err) {
+      log.err('ERROR_RCTX', err)
       req.send(500)
     }
   })
 
-  function start (cb) {
+  async function start () {
     log.info(`Listening: ${config.host} Port: ${config.port}`)
-    fastify.listen({ port: config.port, host: config.host }, (err) => {
-      if (err) {
-        log.err('FAILED_RPC_LISTEN', err)
-        throw new Err('FAILED_RPC_LISTEN')
-      }
-      cb(null)
-    })
+    try {
+      await fastify.listen({ port: config.port, host: config.host })
+    } catch(err) {
+      log.err('FAILED_RPC_LISTEN', err)
+      throw new Err('FAILED_RPC_LISTEN')
+    }
   }
 
-  function stop (cb) {
-    fastify.close((err) => {
+  async function stop () {
+    try {
+      await fastify.close()
       log.info('Stopped RPC server')
-      if (err) {
-        log.err('ERROR_STOPPING', err)
-        throw new Err('FAILED_RPC_STOPPING')
-      }
-      cb(null)
-    })
+    } catch (err) {
+      log.err('ERROR_STOPPING', err)
+      throw new Err('FAILED_RPC_STOPPING')
+    }
   }
 
   return {
