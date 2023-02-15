@@ -90,7 +90,6 @@ describe('RPC ', () => {
       })
 
       describe('unregistered method respone', () => {
-        console.log(res)
         it('returns error code', () => assert.equal(res.data.error.code, -32601))
         it('returns error message', () => assert.equal(res.data.error.message, 'Invalid method'))
         it('returns request Id', () => assert.deepStrictEqual(res.data.id, reqId))
