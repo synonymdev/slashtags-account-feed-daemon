@@ -2,6 +2,7 @@
 'use strict'
 const assert = require('assert')
 const Feeds = require('../src/Feeds')
+const UserDb = require('../src/UserDb')
 const util = require('../src/util')
 const path = require('path')
 const SlashtagsFeeds = require('../src/Feeds')
@@ -31,6 +32,70 @@ function newFeed () {
 }
 
 describe('Feeds ', () => {
+  const validConfig = {
+    db: {
+      name: 'user-db',
+      path: path.resolve('./test-db')
+    },
+    feed_schema: { ...Schema },
+    slashtags: path.resolve('./test-data/storage'),
+  }
+  const error = { name: 'Slashtags' }
+
+  describe.only('Constructor', () => {
+    describe('Valid config', () => {
+      let feed
+      before(() => feed = new Feeds(validConfig))
+
+      it('has config', () => assert.deepStrictEqual(feed.config, validConfig))
+      it('has db', () => assert.deepStrictEqual(feed.db, new UserDb(validConfig.db)))
+      it('has feed_schema', () => assert.deepStrictEqual(feed.feed_schema, validConfig.feed_schema))
+      it('has lock', () => assert.deepStrictEqual(feed.lock, new Map()))
+      it('has ready flag', () => assert.equal(feed.ready, false))
+      it('has slashtags properpty', () => assert.equal(feed.slashtags, null))
+    })
+
+    describe('Invalid config', () => {
+      const invalidConfig = {
+        db: {
+          name: 'user-db',
+          path: path.resolve('./test-db')
+        },
+        feed_schema: { ...Schema },
+        slashtags: path.resolve('./test-data/storage'),
+      }
+
+      describe('Invalid feed schema', () => {
+        const keys = [ 'image', 'name', 'feed_type', 'version' ]
+        keys.forEach((k) => {
+          let tmp
+          beforeEach(() => {
+            error.message = Feeds.err.invalidSchema
+            tmp = invalidConfig.feed_schema[k]
+            invalidConfig.feed_schema[k] = null
+          })
+          afterEach(() => invalidConfig.feed_schema[k] = tmp)
+
+          it(`fails without ${k}`, () => assert.throws(() => new Feeds(invalidConfig), error))
+        })
+      })
+
+      describe('Missing slashtags', () => {
+        let tmp
+        beforeEach(() => {
+          error.message = Feeds.err.badConfig
+          tmp = {...invalidConfig.slashtags }
+          invalidConfig.slashtags = null
+        })
+        afterEach(() => invalidConfig.slashtags = tmp)
+
+        it('fails without slashtags', () => assert.throws(() => new Feeds(invalidConfig), error))
+      })
+    })
+  })
+
+  describe('Start', () => {})
+
   beforeEach(async () => {
     await util.mkdir(dbconfig.path)
     await util.mkdir(stConfig)
