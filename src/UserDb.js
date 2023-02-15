@@ -41,7 +41,7 @@ class FeedManager {
     })
   }
 
-  getAllActiveFeeds (userId) {
+  getAllActiveFeeds () {
     return new Promise((resolve, reject) => {
       this.db.sqlite.all('SELECT * from slashtags WHERE state is 1', [], (err, data) => {
         if (err) {
