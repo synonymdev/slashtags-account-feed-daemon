@@ -77,10 +77,11 @@ class SlashtagsFeeds {
   }
 
   async stop () {
-    // TODO: check if "writing" flag exists and fail if so
-    // create writing flag otherwise
-    // add stop method to remove writing flag
+    // TODO: check if slashtags handls multiright by itself (worth being over careful though)
+    // TODO: check if "writing" flag exists and fail if so create writing flag otherwise add stop method to remove writing flag
+    
     await this.slashtags.close()
+    this.ready = false
   }
 
   /**
@@ -91,6 +92,7 @@ class SlashtagsFeeds {
    * @param {Object} updates[].amount amount
    */
   async updateFeedBalance (updates) {
+    // if (!this.ready) throw new Err(_err.notReady)
     let res
     try {
       res = await Promise.all(updates.map(async (update) => {
@@ -100,6 +102,7 @@ class SlashtagsFeeds {
         return true
       }))
     } catch (err) {
+      log.err(err)
       if (err instanceof Err) throw err
       throw new Err(_err.updateFeedFailed)
     }
@@ -107,6 +110,7 @@ class SlashtagsFeeds {
   }
 
   async startFeedBroadcast () {
+    // if (!this.ready) throw new Err(_err.notReady)
     let feeds
     try {
       feeds = await this.db.getAllActiveFeeds()
@@ -123,6 +127,7 @@ class SlashtagsFeeds {
         })
       }))
     } catch (err) {
+      log.err(err)
       throw new Error(_err.failedBroadcast)
     }
     return {
@@ -131,6 +136,8 @@ class SlashtagsFeeds {
   }
 
   async deleteUserFeed (args) {
+    // if (!this.ready) throw new Err(_err.notReady)
+    if (!args?.user_id) throw new Err(_err.userIdMissing)
     if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
     // XXX: see if slashtags hard delete things, consider hard delete on DB as well
     // Alternatively add options parameter for hard deletion and for recreation of soft deleted account
@@ -147,6 +154,7 @@ class SlashtagsFeeds {
       await this.db.removeUser(userId)
       await this.slashtags.destroy(userId)
     } catch (err) {
+      log.err(err)
       throw new Error(_err.failedDeleteUser)
     }
 
@@ -161,6 +169,7 @@ class SlashtagsFeeds {
    * @returns UserFeed object
    */
   async getFeedKey (userId) {
+    // if (!this.ready) throw new Err(_err.notReady)
     let userFeed
     try {
       userFeed = await this.slashtags.feed(userId)
@@ -177,6 +186,7 @@ class SlashtagsFeeds {
   }
 
   async getFeed (args) {
+    // if (!this.ready) throw new Err(_err.notReady)
     try {
       const existingUser = await this.getFeedFromDb(args.user_id)
       if (!existingUser) {
@@ -184,11 +194,13 @@ class SlashtagsFeeds {
       }
       return existingUser
     } catch (err) {
+      log.err(err)
       throw new Err(_err.feedNotFound)
     }
   }
 
   async getFeedFromDb (userId) {
+    // if (!this.ready) throw new Err(_err.notReady)
     const res = await this.db.findByUser(userId)
     if (!res) {
       return null
@@ -215,11 +227,11 @@ class SlashtagsFeeds {
   }
 
   async createFeed (args) {
-    // XXX what should it do if there is deleted user?
+    // if (!this.ready) throw new Err(_err.notReady)
+
     const key = 'createFeed'
-    if (this.lock.has(key)) {
-      throw new Err(_err.processAlreadyRunning)
-    }
+    if (this.lock.has(key)) throw new Err(_err.processAlreadyRunning)
+
     this.lock.set(key, Date.now())
     let res
     try {
@@ -256,6 +268,7 @@ class SlashtagsFeeds {
     try {
       await this._initFeed(userId, args.init_data) // Init the feed with values
     } catch (err) {
+      log.err(err)
       throw new Err(_err.badSchemaSetup)
     }
     // Insert into database
