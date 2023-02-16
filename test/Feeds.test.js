@@ -125,7 +125,7 @@ describe('Feeds ', () => {
         await feed.stop()
       })
       afterEach(async () => {
-        // XXX check what does not releaser
+        // XXX check what does not release
         await feed.lock.delete('createFeed')
         await feed.deleteUserFeed(input)
       })
@@ -252,6 +252,7 @@ describe('Feeds ', () => {
       await feed.stop()
     })
 
+    //    TODO:
 //    describe('Calling delete user before starting feed', () => {
 //      beforeEach(async function () {
 //        this.timeout(5000)
@@ -344,7 +345,84 @@ describe('Feeds ', () => {
     })
   })
 
-  describe('getFeed', () => {})
+  describe('getFeed', () => {
+    const input = { user_id: 'testGetFeed' }
+
+    let feed
+    before(async () => {
+      feed = new Feeds(validConfig)
+      await feed.start()
+    })
+    after(async function () {
+      this.timeout(5000)
+      await feed.stop()
+    })
+
+    //    TODO:
+//    describe('Calling getFeed before starting feed', () => {
+//      beforeEach(async function () {
+//        this.timeout(5000)
+//        await feed.stop()
+//        error.message = Feeds.err.notReady
+//      })
+//
+//      it('fails with out args', async () => assert.rejects(async () => feed.getFeed(), error))
+//    })
+
+    //    TODO:
+//    describe('user_id validation', () => {
+//      before(() => error.message = Feeds.err.userIdMissing)
+//
+//      it('fails with out args', async () => assert.rejects(async () => feed.getFeed(), error))
+//      it('fails with missing user_id', async () => assert.rejects(async () => feed.getFeed({}), error))
+//      it('fails with non string user_id', async () => assert.rejects(
+//        async () => feed.getFeed({ user_id: 1 }),
+//        { ...error, message: Feeds.err.useridNotString }
+//      ))
+//    })
+
+
+    describe('Error handling', () => {
+      before(() => error.message = Feeds.err.feedNotFound)
+
+      describe('User does not exist in DB', () => {
+        it('throws an error', async () => assert.rejects(async () => feed.getFeed(input), error))
+      })
+
+      describe('User lookup failed', () => {
+        let getFeedFromDb
+        before(() => {
+          getFeedFromDb = feed.getFeedFromDb
+          feed.getFeedFromDb = () => { throw new Error('test') }
+        })
+        after(() => feed.getFeedFromDb = getFeedFromDb)
+
+        it('throws an error', async () => assert.rejects(async () => feed.getFeed(input), error))
+      })
+    })
+
+    describe('Succesfull retreival', () => {
+      let readResult
+      let createResult
+      before(async function () {
+        this.timeout(5000)
+
+        createResult = await feed.createFeed(input)
+        readResult = await feed.getFeed(input)
+      })
+      after(async () => await feed.deleteUserFeed(input))
+
+      describe('feed_key', () => {
+        it('has `feed_key`', () => assert(readResult.feed_key))
+        it('is correct', () => assert.strictEqual(createResult.slashdrive.key, readResult.feed_key))
+      })
+
+      describe('encrypt_key', () => {
+        it('has `encrypt_key`', () => assert(readResult.encrypt_key))
+        it('is correct', () => assert.strictEqual(createResult.slashdrive.encryption_key, readResult.encrypt_key))
+      })
+    })
+  })
 
   describe('startFeedBroadcast', () => {})
 
