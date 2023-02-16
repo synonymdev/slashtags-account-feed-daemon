@@ -89,7 +89,8 @@ class FeedManager {
 
   removeUser (userId) {
     return new Promise((resolve, reject) => {
-      this.db.sqlite.run(`UPDATE slashtags SET state = 0 WHERE user_id="${userId}" `, [], (err, data) => {
+      //this.db.sqlite.run(`UPDATE slashtags SET state = 0 WHERE user_id="${userId}" `, [], (err, data) => {
+      this.db.sqlite.run(`DELETE FROM slashtags WHERE user_id="${userId}" `, [], (err, data) => {
         if (err) {
           return reject(err)
         }
