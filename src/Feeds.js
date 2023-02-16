@@ -70,7 +70,17 @@ class SlashtagsFeeds {
       throw new Err(_err.dbFailedStart)
     }
     this.slashtags = new SlashtagsFeedsLib(this.config.slashtags, this.feed_schema)
+    // TODO: check if "writing" flag exists and fail if so
+    // create writing flag otherwise
+    // add stop method to remove writing flag
     this.ready = true
+  }
+
+  async stop () {
+    // TODO: check if "writing" flag exists and fail if so
+    // create writing flag otherwise
+    // add stop method to remove writing flag
+    await this.slashtags.close()
   }
 
   /**
@@ -190,6 +200,7 @@ class SlashtagsFeeds {
    * @param {String} userId
    */
   async _initFeed (userId) {
+    // XXX wallet is part of the schema which is not enforced in updateFeedBalance
     return Promise.all(this.feed_schema.wallets.map(async (w) => {
       await this.slashtags.update(userId, this._getWalletFeedKey(w.wallet_name), null)
     }))
@@ -238,6 +249,8 @@ class SlashtagsFeeds {
 
     // Find or create the Slashdrive
     const userFeed = await this.getFeedKey(userId)
+
+    // XXX: should not these to below be an atomic operation
 
     // Init the feed with values
     try {
