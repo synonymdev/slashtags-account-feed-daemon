@@ -187,6 +187,7 @@ class SlashtagsFeeds {
 
   async getFeed (args) {
     // if (!this.ready) throw new Err(_err.notReady)
+    // XXX it should validate input
     try {
       const existingUser = await this.getFeedFromDb(args.user_id)
       if (!existingUser) {
@@ -194,6 +195,7 @@ class SlashtagsFeeds {
       }
       return existingUser
     } catch (err) {
+      // XXX this should be DB error
       log.err(err)
       throw new Err(_err.feedNotFound)
     }
