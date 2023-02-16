@@ -116,7 +116,7 @@ class SlashtagsFeeds {
       feeds = await this.db.getAllActiveFeeds()
     } catch (err) {
       log.error(err)
-      throw new Error(_err.failedGettingActiveFeeds)
+      throw new Err(_err.failedGettingActiveFeeds)
     }
 
     let res
@@ -128,7 +128,7 @@ class SlashtagsFeeds {
       }))
     } catch (err) {
       log.err(err)
-      throw new Error(_err.failedBroadcast)
+      throw new Err(_err.failedBroadcast)
     }
     return {
       feeds_started: res.length
@@ -155,7 +155,7 @@ class SlashtagsFeeds {
       await this.slashtags.destroy(userId)
     } catch (err) {
       log.err(err)
-      throw new Error(_err.failedDeleteUser)
+      throw new Err(_err.failedDeleteUser)
     }
 
     return {
