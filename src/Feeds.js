@@ -132,6 +132,9 @@ class SlashtagsFeeds {
 
   async deleteUserFeed (args) {
     if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
+    // XXX: see if slashtags hard delete things, consider hard delete on DB as well
+    // Alternatively add options parameter for hard deletion and for recreation of soft deleted account
+    // Keep in mind there must be no discrepancy between local DB and Hyperdrive
     const userId = args.user_id
     try {
       const existingUser = await this.getFeedFromDb(userId)
@@ -140,6 +143,7 @@ class SlashtagsFeeds {
         log.info(`Deleting user that does not exist: ${userId}`)
         return { deleted: true }
       }
+      // TODO: this needs to be atomic to prevent discrepancy between local DB and Hyperdrive
       await this.db.removeUser(userId)
       await this.slashtags.destroy(userId)
     } catch (err) {
@@ -246,19 +250,14 @@ class SlashtagsFeeds {
     }
 
     const userId = args.user_id
+    const userFeed = await this.getFeedKey(userId) // Find or create the Slashdrive
 
-    // Find or create the Slashdrive
-    const userFeed = await this.getFeedKey(userId)
-
-    // XXX: should not these to below be an atomic operation
-
-    // Init the feed with values
+    // TODO: this needs to be atomic to prevent discrepancy between local DB and Hyperdrive
     try {
-      await this._initFeed(userId, args.init_data)
+      await this._initFeed(userId, args.init_data) // Init the feed with values
     } catch (err) {
       throw new Err(_err.badSchemaSetup)
     }
-
     // Insert into database
     try {
       await this.db.insert({
