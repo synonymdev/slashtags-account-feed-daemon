@@ -28,7 +28,7 @@ describe('Feeds ', () => {
       it('has feed_schema', () => assert.deepStrictEqual(feed.feed_schema, validConfig.feed_schema))
       it('has lock', () => assert.deepStrictEqual(feed.lock, new Map()))
       it('has ready flag', () => assert.equal(feed.ready, false))
-      it('has slashtags properpty', () => assert.equal(feed.slashtags, null))
+      it('has slashtags property', () => assert.equal(feed.slashtags, null))
     })
 
     describe('Invalid config', () => {
@@ -122,7 +122,9 @@ describe('Feeds ', () => {
         this.timeout(5000)
         await feed.stop()
       })
-      afterEach(async function () {
+      afterEach(async () => {
+        // XXX check what does not releaser
+        await feed.lock.delete('createFeed')
         await feed.deleteUserFeed({ user_id: 'testUser' })
       })
 
@@ -198,24 +200,49 @@ describe('Feeds ', () => {
       })
 
       describe('Initializing feed', () => {
-        let updateFeed
-        before(() => {
-          error.message = Feeds.err.badSchemaSetup
-          updateFeed = feed.slashtags.update
-        })
-        after(() => feed.slashtags.update = updateFeed)
-
         describe('Feed update fails', () => {
-          before(() => feed.slashtags.udpate = () => { throw new Error('test') })
+          let updateFeed
+          before(() => {
+            error.message = Feeds.err.badSchemaSetup
+            updateFeed = feed.slashtags.update
+            feed.slashtags.udpate = () => { throw new Error('test') }
+          })
+          after(() => feed.slashtags.update = updateFeed)
+
+          it('fails with no feed error', async function () {
+            assert.rejects(async () => feed.createFeed({ user_id: 'testUser' }), error)
+          })
+        })
+
+        describe('DB insert fails', () => {
+          let insertFeed
+          before(() => {
+            error.message = Feeds.err.failedCreateDrive
+            insertFeed = feed.db.insert
+            feed.slashtags.insert = () => { throw new Error('test') }
+          })
+          after(() => feed.db.insert = insertFeed)
 
           it('fails with no feed error', async function () {
             assert.rejects(async () => feed.createFeed({ user_id: 'testUser' }), error)
           })
         })
       })
+
+      describe('Successfull feed initializaiton', () => {
+        let res
+        before(async function () {
+          this.timeout(5000)
+          res = await feed.createFeed({ user_id: 'testUser' })
+        })
+
+        it('has slashdrive property', () => assert(res.slashdrive))
+        describe('slashdrive property', () => {
+          it('has key', () => assert(res.slashdrive.key))
+          it('has encryption_key', () => assert(res.slashdrive.encryption_key))
+        })
+      })
     })
-    //   slashtags.update
-    //  insert in to db
   })
 
 //  beforeEach(async () => {
@@ -229,55 +256,6 @@ describe('Feeds ', () => {
 //  })
 
 //  describe('Create Drive', () => {
-//    it('Should create a drive for user', async function () {
-//      this.timeout(10000)
-//      await stFeed.start()
-//      assert(stFeed.ready)
-//      const drive = await stFeed.createDrive({ user_id: '11111' })
-//      assert(drive.slashdrive)
-//    })
-//
-//    it('Should throw error if the new feed fails to get initialized', async function () {
-//      this.timeout(10000)
-//      await stFeed.start()
-//      const userId = '111'
-//      try {
-//        stFeed.slashtags.update = async (userid, key, data) => {
-//          throw new Error('FAILED TO UPDATE')
-//        }
-//        const drive = await stFeed.createDrive({ user_id: userId })
-//      } catch (err) {
-//        console.log(err)
-//        assert(err.message === Feeds.err.badSchemaSetup)
-//        return
-//      }
-//      fail()
-//    })
-//    it('Should throw error if the new feed fails to be saved to db', async function () {
-//      this.timeout(50000)
-//      await stFeed.start()
-//      const userId = '111'
-//      try {
-//        stFeed.db.insert = async (userid, key, data) => {
-//          throw new Error('FAILED TO INSERT')
-//        }
-//        const drive = await stFeed.createDrive({ user_id: userId })
-//      } catch (err) {
-//        assert(err.message === Feeds.err.failedCreateDrive)
-//        return
-//      }
-//      fail()
-//    })
-//    it('Should create a drive', async function () {
-//      this.timeout(50000)
-//      await stFeed.start()
-//      const userId = 'satoshi123'
-//      const drive = await stFeed.createDrive({
-//        user_id: userId
-//      })
-//      assert(drive.slashdrive)
-//    })
-//
 //    it('Should create a drive and update it and read it', async function () {
 //      this.timeout(50000)
 //      await stFeed.start()
