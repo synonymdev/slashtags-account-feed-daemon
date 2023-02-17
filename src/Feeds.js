@@ -68,15 +68,13 @@ class SlashtagsFeeds {
     }
     this.slashtags = new SlashtagsFeedsLib(this.config.slashtags, this.feed_schema)
     // TODO: check if "writing" flag exists and fail if so
+    // NOTE: check with new slashtags instance but using different data-dir to exclude os level locks
     // create writing flag otherwise
     // add stop method to remove writing flag
     this.ready = true
   }
 
   async stop () {
-    // TODO: check if slashtags handles multi-write by itself (worth being over careful though)
-    // TODO: check if "writing" flag exists and fail if so create writing flag otherwise add stop method to remove writing flag
-
     await this.slashtags.close()
     this.ready = false
   }
