@@ -120,7 +120,7 @@ class SlashtagsFeeds {
     // Keep in mind there must be no discrepancy between local DB and Hyperdrive
     const userId = args.user_id
     try {
-      const existingUser = await this.getFeedFromDb(userId)
+      const existingUser = await this.getFeedFromDb(args)
       if (!existingUser) {
         // TODO: rethink, this is in a way misleading
         log.info(`Deleting user that does not exist: ${userId}`)
@@ -167,7 +167,7 @@ class SlashtagsFeeds {
     if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
 
     try {
-      const existingUser = await this.getFeedFromDb(args.user_id)
+      const existingUser = await this.getFeedFromDb(args)
       if (!existingUser) throw new Err(_err.feedNotFound)
       return existingUser
     } catch (err) {
@@ -177,12 +177,12 @@ class SlashtagsFeeds {
     }
   }
 
-  async getFeedFromDb (userId) {
-    // if (!this.ready) throw new Err(_err.notReady)
-    // if (!args?.user_id) throw new Err(_err.userIdMissing)
-    // if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
+  async getFeedFromDb (args) {
+    if (!this.ready) throw new Err(_err.notReady)
+    if (!args.user_id) throw new Err(_err.userIdMissing)
+    if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
 
-    const res = await this.db.findByUser(userId)
+    const res = await this.db.findByUser(args.user_id)
     if (!res) return null
 
     return {
@@ -236,7 +236,7 @@ class SlashtagsFeeds {
     if (!this.ready) throw new Err(_err.notReady)
     log.info(`Creating Slashdrive for ${args.user_id}`)
 
-    const existingUser = await this.getFeedFromDb(args.user_id)
+    const existingUser = await this.getFeedFromDb(args)
     if (existingUser) throw new Err(_err.userExists)
 
     const userId = args.user_id
