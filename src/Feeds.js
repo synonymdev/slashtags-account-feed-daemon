@@ -143,11 +143,13 @@ class SlashtagsFeeds {
    * @param {String} userId userId
    * @returns UserFeed object
    */
-  async getFeedKey (userId) {
+  async getFeedKey (args) {
     if (!this.ready) throw new Err(_err.notReady)
+    if (!args.user_id) throw new Err(_err.userIdMissing)
+    if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
     let userFeed
     try {
-      userFeed = await this.slashtags.feed(userId)
+      userFeed = await this.slashtags.feed(args.user_id)
       if (!userFeed.key) throw new Err(_err.userNoFeed)
     } catch (err) {
       log.err(err)
@@ -239,7 +241,7 @@ class SlashtagsFeeds {
     if (existingUser) throw new Err(_err.userExists)
 
     const userId = args.user_id
-    const userFeed = await this.getFeedKey(userId) // Find or create the Slashdrive
+    const userFeed = await this.getFeedKey(args) // Find or create the Slashdrive
 
     // TODO: this needs to be atomic to prevent discrepancy between local DB and Hyperdrive
     try {
