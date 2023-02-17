@@ -1,11 +1,12 @@
 /* eslint-env mocha */
 'use strict'
+// TODO: consider using sinon for stubs instead of manual replacements
 const assert = require('assert')
 const Feeds = require('../src/Feeds')
 const UserDb = require('../src/UserDb')
-const util = require('../src/util')
 const path = require('path')
 const Schema = require('../schemas/slashfeed.json')
+const SlashtagsFeedsLib = require('@synonymdev/feeds')
 
 describe('Feeds ', () => {
   const validConfig = {
@@ -90,7 +91,7 @@ describe('Feeds ', () => {
       it('does not get ready', () => assert.equal(feed.ready, false))
     })
 
-    describe('Successfull start', () => {
+    describe('Successful start', () => {
       before(async () => await feed.start())
       after(async () => await feed.stop())
 
@@ -196,7 +197,7 @@ describe('Feeds ', () => {
           before(() => {
             error.message = Feeds.err.badSchemaSetup
             updateFeed = feed.slashtags.update
-            feed.slashtags.udpate = () => { throw new Error('test') }
+            feed.slashtags.update = () => { throw new Error('test') }
           })
           after(() => feed.slashtags.update = updateFeed)
 
@@ -222,7 +223,7 @@ describe('Feeds ', () => {
         })
       })
 
-      describe('Successfull feed initializaiton', () => {
+      describe('Successful feed initializaiton', () => {
         let res
         before(async function () {
           this.timeout(5000)
@@ -332,16 +333,39 @@ describe('Feeds ', () => {
       })
     })
 
-    describe('Succesfull deletion', () => {
+    describe('Successful deletion', () => {
+      let res
       before(async function () {
         this.timeout(5000)
         await feed.createFeed(input)
-        await feed.getFeedFromDb(input)
+        const updates = [{
+          user_id: input.user_id,
+          wallet_name: 'Bitcoin',
+          amount: 12
+        }]
+        await feed.updateFeedBalance(updates)
+        res = await feed.deleteUserFeed(input)
       })
 
-      it('returns success', async () => assert.deepStrictEqual(await feed.deleteUserFeed(input), success))
+      it('returns success', () => assert.deepStrictEqual(res, success))
       it('removes user from db', async () => assert.equal(await feed.getFeedFromDb(input), null))
       // TODO: add lookup in hypercore directly
+      describe('entry in hypercore', () => {
+        let feedReader
+        let res
+        before(async () => {
+          await feed.stop()
+          feedReader = new SlashtagsFeedsLib(validConfig.slashtags, validConfig.feed_schema)
+          res = await feedReader.get(input.user_id, `wallet/${input.wallet_name}/amount`)
+        })
+
+        after(async () => {
+          await feedReader.close()
+          await feed.start()
+        })
+
+        it('is removed', () => assert.equal(res, null))
+      })
     })
   })
 
@@ -401,7 +425,7 @@ describe('Feeds ', () => {
       })
     })
 
-    describe('Succesfull retreival', () => {
+    describe('Successful retreival', () => {
       let readResult
       let createResult
       before(async function () {
@@ -424,59 +448,85 @@ describe('Feeds ', () => {
     })
   })
 
-  describe('startFeedBroadcast', () => {})
+  describe('updateFeedBalance', () => {
+    const updates = [{
+      user_id: 'testUpdateFeed',
+      // wallet_name: 'Bitcoin',// XXX: this is part of the slashfeed,
+      wallet_name: 'test_wallet',
+      amount: 12
+    }]
 
-  describe('updateFeedBalance', () => {})
+    let feed
+    before(async () => {
+      feed = new Feeds(validConfig)
+      await feed.start()
+    })
+    after(async function () {
+      this.timeout(5000)
+      await feed.stop()
+    })
 
-//  describe('Create Drive', () => {
-//    it('Should create a drive and update it and read it', async function () {
-//      this.timeout(50000)
-//      await stFeed.start()
-//      const userId = 'satoshi123'
-//      const drive = await stFeed.createDrive({ user_id: userId })
-//      const wName = Schema.wallets[0].wallet_name
-//      const bal = 1.5
-//      const res = await stFeed.updateFeedBalance([
-//        {
-//          user_id: userId,
-//          wallet_name: wName,
-//          amount: bal
-//        }
-//      ])
-//      assert(res.includes(false) === false)
-//      await stFeed.slashtags.close()
-//
-//      const feedReader = new SlashtagsFeedsLib(stConfig, Schema)
-//
-//      const balance = await feedReader.get(userId, `wallet/${wName}/amount`)
-//      assert(balance === bal)
-//      await feedReader.close()
-//    })
-//
-//    it('Should create a drive and broadcast it', async function () {
-//      this.timeout(50000)
-//      await stFeed.start()
-//      const userId = 'satoshi123'
-//      const userId2 = 'satoshixyz'
-//      const [drive, drive2] = await Promise.all([
-//        await stFeed.createDrive({ user_id: userId }),
-//        await stFeed.createDrive({ user_id: userId2 })
-//      ])
-//      const b = await stFeed.startFeedBroadcast()
-//      assert(b.feeds_started === 2)
-//    })
-//  })
-//
-//  describe('User Feed Database', () => {
-//    it('Should return data if user has feed in the db', async function () {
-//      this.timeout(50000)
-//      await stFeed.start()
-//      const userId = 'satoshi123xxx'
-//      const drive = await stFeed.createDrive({ user_id: userId })
-//      const res = await stFeed.getFeedFromDb(userId)
-//      assert(typeof res.feed_key === 'string')
-//      assert(typeof res.encrypt_key === 'string')
-//    })
-//
-//  })
+    describe('Input handling', () => {
+      let input
+      before(() => error.message = Feeds.err.badUpdateParam)
+
+      describe('wallet_name is not string', () => {
+        beforeEach(() => input = [{ ...updates[0], wallet_name: 1 }])
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+      })
+
+      describe('user_id is not string', () => {
+        beforeEach(() => input = [{ ...updates[0], user_id: 1 }])
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+      })
+
+      describe('amount is not numberic', () => {
+        beforeEach(() => input = [{ ...updates[0], amount: 'a' }])
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+      })
+    })
+
+    describe('Error handling', () => {
+      let updateFeed
+      before(() => {
+        error.message = Feeds.err.updateFeedFailed
+        updateFeed = feed.slashtags.update
+        feed.slashtags.update = () => { throw new Error('test') }
+      })
+      after(() => feed.slashtags.update = updateFeed)
+
+      it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(updates), error))
+
+      describe('Partially correct input', () => {
+        it('throws an error', async () => assert.rejects(
+          async () => feed.updateFeedBalance([...updates, { ...updates[0], amount: 'a' }]),
+          error
+        ))
+      })
+    })
+
+    describe('Successful update', () => {
+      let res
+      before(async () => res = await feed.updateFeedBalance(updates))
+
+      it('returns true', () => assert.deepStrictEqual(res, [true]))
+      describe('Reading feed', () => {
+        let feedReader
+        let balance
+        before(async () => {
+          await feed.stop()
+          feedReader = new SlashtagsFeedsLib(validConfig.slashtags, validConfig.feed_schema)
+          balance = await feedReader.get(updates[0].user_id, `wallet/${updates[0].wallet_name}/amount`)
+        })
+
+        after(async () => {
+          await feedReader.close()
+          await feed.start()
+          await feed.deleteUserFeed({ user_id: updates[0].user_id })
+        })
+
+        it('returns correct balance', () => assert.equal(balance, updates[0].amount))
+      })
+    })
+  })
 })
