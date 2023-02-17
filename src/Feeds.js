@@ -79,7 +79,7 @@ class SlashtagsFeeds {
   async stop () {
     // TODO: check if slashtags handls multiright by itself (worth being over careful though)
     // TODO: check if "writing" flag exists and fail if so create writing flag otherwise add stop method to remove writing flag
-    
+
     await this.slashtags.close()
     this.ready = false
   }
@@ -100,6 +100,8 @@ class SlashtagsFeeds {
       res = await Promise.all(updates.map(async (update) => {
         if (typeof update.wallet_name !== 'string' || typeof update.user_id !== 'string') throw new Err(_err.badUpdateParam)
         if (Number.isNaN(+update.amount)) throw new Err(_err.badUpdateParam)
+        // TODO: verify that user exist in db
+        // NOTE: consider storing balance on db as well
         // TODO: this might be changed after generalizing slashfeed.json
         // XXX wallet is part of the schema which is not enforced in updateFeedBalance
         await this.slashtags.update(update.user_id, this._getWalletFeedKey(update.wallet_name), update.amount)
