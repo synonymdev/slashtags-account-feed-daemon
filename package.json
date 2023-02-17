@@ -19,8 +19,7 @@
     "hyperdrive": "github:Nazeh/hyperdrive-next#pass-options",
     "hyperswarm": "^4.2.0",
     "mocha": "^10.0.0",
-    "random-access-memory": "^5.0.0",
-    "sinon": "^15.0.1"
+    "random-access-memory": "^5.0.0"
   },
   "scripts": {
     "test": "mocha ./test/ "
