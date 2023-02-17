@@ -144,7 +144,7 @@ class SlashtagsFeeds {
    * @returns UserFeed object
    */
   async getFeedKey (userId) {
-    // if (!this.ready) throw new Err(_err.notReady)
+    if (!this.ready) throw new Err(_err.notReady)
     let userFeed
     try {
       userFeed = await this.slashtags.feed(userId)
