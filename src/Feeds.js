@@ -32,7 +32,6 @@ class SlashtagsFeeds {
   static Error = Err
 
   /**
-   *
    * @param {String} config.db.name Database name
    * @param {String} config.db.path Database path location
    * @param {String} config.slashtags.path Feeds storage path location
@@ -73,7 +72,7 @@ class SlashtagsFeeds {
   }
 
   async stop () {
-    // TODO: check if slashtags handls multiright by itself (worth being over careful though)
+    // TODO: check if slashtags handles multi-write by itself (worth being over careful though)
     // TODO: check if "writing" flag exists and fail if so create writing flag otherwise add stop method to remove writing flag
 
     await this.slashtags.close()
@@ -112,7 +111,7 @@ class SlashtagsFeeds {
   }
 
   async deleteUserFeed (args) {
-    // if (!this.ready) throw new Err(_err.notReady)
+    if (!this.ready) throw new Err(_err.notReady)
     if (!args?.user_id) throw new Err(_err.userIdMissing)
     if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
     // XXX: see if slashtags hard delete things, consider hard delete on DB as well

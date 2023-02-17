@@ -128,7 +128,6 @@ describe('Feeds ', () => {
       afterEach(async () => {
         // XXX check what does not release
         await feed.lock.delete('createFeed')
-        await feed.deleteUserFeed(input)
       })
 
       describe('user_id validation', () => {
@@ -230,6 +229,11 @@ describe('Feeds ', () => {
           res = await feed.createFeed(input)
         })
 
+        after(async function () {
+          this.timeout(5000)
+          await feed.deleteUserFeed(input)
+        })
+
         it('has slashdrive property', () => assert(res.slashdrive))
         describe('slashdrive property', () => {
           it('has key', () => assert(res.slashdrive.key))
@@ -253,17 +257,20 @@ describe('Feeds ', () => {
       await feed.stop()
     })
 
-    //    TODO:
-//    describe('Calling delete user before starting feed', () => {
-//      beforeEach(async function () {
-//        this.timeout(5000)
-//        await feed.stop()
-//        error.message = Feeds.err.notReady
-//      })
-//
-//      it('fails with out args', async () => assert.rejects(async () => feed.deleteUserFeed(), error))
-//
-//    })
+    describe('Calling delete user before starting feed', () => {
+      before(async function () {
+        this.timeout(5000)
+        await feed.stop()
+        error.message = Feeds.err.notReady
+      })
+
+      after(async function () {
+        this.timeout(5000)
+        await feed.start()
+      })
+
+      it('fails', async () => assert.rejects(async () => feed.deleteUserFeed(), error))
+    })
 
     describe('user_id validation', () => {
       before(() => error.message = Feeds.err.userIdMissing)
