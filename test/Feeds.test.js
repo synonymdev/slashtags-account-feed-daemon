@@ -119,8 +119,7 @@ describe('Feeds ', () => {
       beforeEach(() => feed.lock.set('createFeed', 'test'))
       afterEach(() => feed.lock.delete('createFeed'))
 
-      it('fails', () => assert.rejects(async () => feed.createFeed(input), error))
-      // TODO: for extra safety make sure it fails without calling _createDrive?
+      it('fails', async () => assert.rejects(async () => feed.createFeed(input), error))
     })
 
     describe('Creating a drive', () => {
@@ -129,8 +128,6 @@ describe('Feeds ', () => {
         this.timeout(5000)
         await feed.stop()
       })
-      // XXX check what does not release
-      afterEach(() => feed.lock.delete('createFeed'))
 
       describe('user_id validation', () => {
         before(() => error.message = Feeds.err.userIdMissing)
@@ -202,9 +199,9 @@ describe('Feeds ', () => {
           })
           after(() => feed.slashtags.update = updateFeed)
 
-          // fails on timeout with arrow syntax
           it('fails with no feed error', async function () {
-            assert.rejects(async () => feed.createFeed(input), error)
+            this.timeout(5000)
+            await assert.rejects(async () => feed.createFeed(input), error)
           })
         })
 
@@ -213,13 +210,13 @@ describe('Feeds ', () => {
           before(() => {
             error.message = Feeds.err.failedCreateDrive
             insertFeed = feed.db.insert
-            feed.slashtags.insert = () => { throw new Error('test') }
+            feed.db.insert = () => { throw new Error('test') }
           })
           after(() => feed.db.insert = insertFeed)
 
-          // fails on timeout with arrow syntax
-          it('fails with no feed error', async () => {
-            assert.rejects(async () => feed.createFeed(input), error)
+          it('fails with no feed error', async function () {
+            this.timeout(5000)
+            await assert.rejects(async () => feed.createFeed(input), error)
           })
         })
       })
