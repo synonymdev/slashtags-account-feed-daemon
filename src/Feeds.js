@@ -113,32 +113,6 @@ class SlashtagsFeeds {
     return res
   }
 
-  async startFeedBroadcast () {
-    // if (!this.ready) throw new Err(_err.notReady)
-    let feeds
-    try {
-      feeds = await this.db.getAllActiveFeeds()
-    } catch (err) {
-      log.error(err)
-      throw new Err(_err.failedGettingActiveFeeds)
-    }
-
-    let res
-    try {
-      res = await Promise.all(feeds.map((user) => {
-        return this.slashtags.feed(user.user_id, {
-          announce: true
-        })
-      }))
-    } catch (err) {
-      log.err(err)
-      throw new Err(_err.failedBroadcast)
-    }
-    return {
-      feeds_started: res.length
-    }
-  }
-
   async deleteUserFeed (args) {
     // if (!this.ready) throw new Err(_err.notReady)
     if (!args?.user_id) throw new Err(_err.userIdMissing)
