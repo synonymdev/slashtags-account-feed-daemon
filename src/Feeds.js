@@ -196,10 +196,13 @@ class SlashtagsFeeds {
    * @desc Setup user's slashdrive with init values
    * @param {String} userId
    */
-  async _initFeed (userId) {
+  async _initFeed (args) {
+    if (!args?.user_id) throw new Err(_err.userIdMissing)
+    if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
     // XXX wallet is part of the schema which is not enforced in updateFeedBalance
+    // TODO: add init data
     return Promise.all(this.feed_schema.wallets.map(async (w) => {
-      await this.slashtags.update(userId, this._getWalletFeedKey(w.wallet_name), null)
+      await this.slashtags.update(args.user_id, this._getWalletFeedKey(w.wallet_name), null)
     }))
   }
 
@@ -245,7 +248,7 @@ class SlashtagsFeeds {
 
     // TODO: this needs to be atomic to prevent discrepancy between local DB and Hyperdrive
     try {
-      await this._initFeed(userId, args.init_data) // Init the feed with values
+      await this._initFeed(args)
     } catch (err) {
       log.err(err)
       throw new Err(_err.badSchemaSetup)
