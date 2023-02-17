@@ -343,13 +343,7 @@ describe('Feeds ', () => {
       let res
       before(async function () {
         this.timeout(5000)
-        await feed.createFeed(input)
-        const updates = [{
-          user_id: input.user_id,
-          wallet_name: 'Bitcoin',
-          amount: 12
-        }]
-        await feed.updateFeedBalance(updates)
+        await feed.createFeed({ ...input, init_data: 11 })
         res = await feed.deleteUserFeed(input)
       })
 
@@ -362,7 +356,7 @@ describe('Feeds ', () => {
           this.timeout(5000)
           await feed.stop()
           feedReader = new SlashtagsFeedsLib(validConfig.slashtags, validConfig.feed_schema)
-          res = await feedReader.get(input.user_id, `wallet/${input.wallet_name}/amount`)
+          res = await feedReader.get(input.user_id, `wallet/Bitcoin/amount`)
         })
 
         after(async () => {
@@ -460,8 +454,7 @@ describe('Feeds ', () => {
   describe('updateFeedBalance', () => {
     const updates = [{
       user_id: 'testUpdateFeed',
-      // wallet_name: 'Bitcoin',// XXX: this is part of the slashfeed,
-      wallet_name: 'test_wallet',
+      wallet_name: 'Bitcoin',// XXX: this is part of the slashfeed,
       amount: 12
     }]
 
@@ -526,7 +519,11 @@ describe('Feeds ', () => {
 
     describe('Successful update', () => {
       let res
-      before(async () => res = await feed.updateFeedBalance(updates))
+      before(async function() {
+        this.timeout(5000)
+
+        res = await feed.updateFeedBalance(updates)
+      })
 
       it('returns true', () => assert.deepStrictEqual(res, [true]))
       describe('Reading feed', () => {

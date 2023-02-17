@@ -114,14 +114,11 @@ class SlashtagsFeeds {
     if (!this.ready) throw new Err(_err.notReady)
     if (!args?.user_id) throw new Err(_err.userIdMissing)
     if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
-    // XXX: see if slashtags hard delete things, consider hard delete on DB as well
-    // Alternatively add options parameter for hard deletion and for recreation of soft deleted account
-    // Keep in mind there must be no discrepancy between local DB and Hyperdrive
+
     const userId = args.user_id
     try {
       const existingUser = await this.getFeedFromDb(args)
       if (!existingUser) {
-        // TODO: rethink, this is in a way misleading
         log.info(`Deleting user that does not exist: ${userId}`)
         return { deleted: true }
       }
@@ -200,9 +197,8 @@ class SlashtagsFeeds {
     if (!args?.user_id) throw new Err(_err.userIdMissing)
     if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
     // XXX wallet is part of the schema which is not enforced in updateFeedBalance
-    // TODO: add init data
     return Promise.all(this.feed_schema.wallets.map(async (w) => {
-      await this.slashtags.update(args.user_id, this._getWalletFeedKey(w.wallet_name), null)
+      await this.slashtags.update(args.user_id, this._getWalletFeedKey(w.wallet_name), args.init_data || null)
     }))
   }
 
@@ -227,7 +223,7 @@ class SlashtagsFeeds {
       throw err
     }
     this.lock.delete(key)
-    // TODO: return url as well?
+
     return res
   }
 
