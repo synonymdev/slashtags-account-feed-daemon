@@ -126,7 +126,7 @@ function server (config) {
     log.info(`Listening: ${config.host} Port: ${config.port}`)
     try {
       await fastify.listen({ port: config.port, host: config.host })
-    } catch(err) {
+    } catch (err) {
       log.err('FAILED_RPC_LISTEN', err)
       throw new Err('FAILED_RPC_LISTEN')
     }
