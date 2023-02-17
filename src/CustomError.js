@@ -1,4 +1,3 @@
-
 module.exports = function (config) {
   if (!config.errName) throw new TypeError('ERR_NAME_MISSING')
   if (!config.fileName) throw new TypeError('FILE_NAME_MISSING')

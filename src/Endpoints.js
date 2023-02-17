@@ -1,14 +1,10 @@
 'use strict'
-const {
-  Err, log
-} = require('./BaseUtil')('RPC', __filename)
+const { Err, log } = require('./BaseUtil')('RPC', __filename)
 
 class Endpoints {
   constructor ({ endpointList, version, host, route, method }) {
     this.data = endpointList.map((ep) => {
-      if (!ep.name ||
-          !ep.svc
-      ) throw new Err('INVALID_RPC_ENDPOINT_' + JSON.stringify(ep))
+      if (!ep.name || !ep.svc) throw new Err('INVALID_RPC_ENDPOINT_' + JSON.stringify(ep))
 
       log.info(`Method: ${ep.name} - ${ep.description}`)
       return ep

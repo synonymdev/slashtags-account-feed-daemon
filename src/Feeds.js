@@ -1,11 +1,8 @@
 const UserDb = require('./UserDb')
 const SlashtagsFeedsLib = require('@synonymdev/feeds')
-const log = require('./Log')('core')
 
-const Err = require('./CustomError')({
-  errName: 'Slashtags',
-  fileName: __dirname
-})
+const log = require('./Log')('core')
+const Err = require('./CustomError')({ errName: 'Slashtags', fileName: __dirname })
 
 const _err = {
   notReady: 'SLASHTAGS_NOT_READY',
@@ -54,9 +51,8 @@ class SlashtagsFeeds {
 
   validateFeed (schema) {
     if (!schema) throw new Err(_err.invalidSchema)
-    const keys = [
-      'image', 'name', 'feed_type', 'version'
-    ]
+
+    const keys = ['image', 'name', 'feed_type', 'version']
     keys.forEach((k) => {
       if (!schema[k]) throw new Err(_err.invalidSchema)
     })
@@ -170,9 +166,7 @@ class SlashtagsFeeds {
     // XXX it should validate input
     try {
       const existingUser = await this.getFeedFromDb(args.user_id)
-      if (!existingUser) {
-        throw new Err(_err.feedNotFound)
-      }
+      if (!existingUser) throw new Err(_err.feedNotFound)
       return existingUser
     } catch (err) {
       // XXX this should be DB error
@@ -184,9 +178,8 @@ class SlashtagsFeeds {
   async getFeedFromDb (userId) {
     // if (!this.ready) throw new Err(_err.notReady)
     const res = await this.db.findByUser(userId)
-    if (!res) {
-      return null
-    }
+    if (!res) return null
+
     return {
       feed_key: res.feed_key,
       encrypt_key: res.encrypt_key
@@ -223,7 +216,7 @@ class SlashtagsFeeds {
       throw err
     }
     this.lock.delete(key)
-    // TODO: return url as well
+    // TODO: return url as well?
     return res
   }
 
@@ -239,9 +232,7 @@ class SlashtagsFeeds {
     log.info(`Creating Slashdrive for ${args.user_id}`)
 
     const existingUser = await this.getFeedFromDb(args.user_id)
-    if (existingUser) {
-      throw new Err(_err.userExists)
-    }
+    if (existingUser) throw new Err(_err.userExists)
 
     const userId = args.user_id
     const userFeed = await this.getFeedKey(userId) // Find or create the Slashdrive

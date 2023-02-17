@@ -29,12 +29,9 @@ class FeedManager {
   findByUser (userId) {
     return new Promise((resolve, reject) => {
       this.db.sqlite.get(`SELECT * from slashtags WHERE user_id is "${userId}" and state = 1`, [], (err, data) => {
-        if (err) {
-          return reject(err)
-        }
-        if (!data) {
-          return resolve(null)
-        }
+        if (err) return reject(err)
+        if (!data) return resolve(null)
+
         data.meta = JSON.parse(data.meta)
         resolve(data)
       })
@@ -44,12 +41,9 @@ class FeedManager {
   getAllActiveFeeds () {
     return new Promise((resolve, reject) => {
       this.db.sqlite.all('SELECT * from slashtags WHERE state is 1', [], (err, data) => {
-        if (err) {
-          return reject(err)
-        }
-        if (!data) {
-          return resolve(null)
-        }
+        if (err) return reject(err)
+        if (!data) return resolve(null)
+
         resolve(data)
       })
     })
@@ -82,6 +76,8 @@ class FeedManager {
         $ts_created: Date.now()
       }, (err, data) => {
         if (err) return reject(err)
+        if (!data) return resolve(null)
+
         resolve(data)
       })
     })
@@ -92,9 +88,9 @@ class FeedManager {
       // TODO: consider optional force removal instead
       // this.db.sqlite.run(`UPDATE slashtags SET state = 0 WHERE user_id="${userId}" `, [], (err, data) => {
       this.db.sqlite.run(`DELETE FROM slashtags WHERE user_id="${userId}" `, [], (err, data) => {
-        if (err) {
-          return reject(err)
-        }
+        if (err) return reject(err)
+        if (!data) return resolve(null)
+
         resolve(data)
       })
     })

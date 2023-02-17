@@ -32,15 +32,15 @@ class Sqlite {
 
   deleteSqlite () {
     if (!this.ready) throw new SqliteErr(_err.notReady)
+
     return fs.unlink(this.dbPath)
   }
 
   async start () {
     return new Promise((resolve, reject) => {
       this.sqlite = new Sqlite3.Database(this.dbPath, (err) => {
-        if (err) {
-          return reject(err)
-        }
+        if (err) return reject(err)
+
         this.ready = true
         resolve()
       })

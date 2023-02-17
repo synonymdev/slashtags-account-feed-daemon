@@ -6,9 +6,7 @@ const { randomBytes } = require('crypto')
 
 class RPCResponse {
   constructor ({ result, error, id }) {
-    this.response = {
-      jsonrpc: '2.0'
-    }
+    this.response = { jsonrpc: '2.0' }
     if (!id) {
       id = randomBytes(32).toString('hex')
     }

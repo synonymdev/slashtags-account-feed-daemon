@@ -1,18 +1,16 @@
 'use strict'
 const RPCResponse = require('./RPCResponse')
-const {
-  Err, log
-} = require('./BaseUtil')('RPC', __filename)
+const { Err, log } = require('./BaseUtil')('RPC', __filename)
 const Endpoints = require('./Endpoints')
 
 function loadFastify () {
-  const fastify = require('fastify')({ })
+  const fastify = require('fastify')({})
   fastify.register(require('@fastify/formbody'))
   return fastify
 }
 
 class RequestContext {
-  constructor ({ req, endpoints, serverConfig, handler, reply }) {
+  constructor ({ req, endpoints, handler, reply }) {
     this.data = req.body
     this.meta = req.headers
     this.req = req
@@ -51,7 +49,10 @@ class RequestContext {
   async runRequest () {
     if (!this.rpcsvc) {
       log.error(`Invalid RPC method called: ${this.data?.method}`)
-      return this.reply.send(RPCResponse.fromError({ code: RPCResponse.error.badMethod, message: 'Invalid method' }, this.data?.id))
+      return this.reply.send(RPCResponse.fromError({
+        code: RPCResponse.error.badMethod,
+        message: 'Invalid method'
+      }, this.data?.id))
     }
 
     let res
@@ -99,9 +100,7 @@ function server (config) {
     }
   ]
 
-  const endpoints = new Endpoints({
-    endpointList, version: 'v0.1', host: `http://${config.host}:${config.port}`
-  })
+  const endpoints = new Endpoints({ endpointList, version: 'v0.1', host: `http://${config.host}:${config.port}` })
 
   const fastify = loadFastify()
 
