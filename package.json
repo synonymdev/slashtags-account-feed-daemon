@@ -23,7 +23,7 @@
     "sinon": "^15.0.1"
   },
   "scripts": {
-    "test": "mocha -w ./src/ "
+    "test": "mocha ./test/ "
   },
   "repository": {
     "type": "git",
