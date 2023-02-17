@@ -1,3 +1,4 @@
+// TODO: do not obfuscate errors
 const UserDb = require('./UserDb')
 const SlashtagsFeedsLib = require('@synonymdev/feeds')
 
@@ -22,6 +23,7 @@ const _err = {
   failedGettingActiveFeeds: 'FAILED_GETTING_ACTIVE_FEEDS',
   failedBroadcast: 'FAILED_BROADCAST',
   userExists: 'FAILED_TO_CREATE_USER_EXISTS',
+  userNotExists: 'FAILED_TO_CREATE_USER_EXISTS',
   useridNotString: 'USER_ID_PARAM_NOT_STRING',
   processAlreadyRunning: 'PROCESS_ALREADY_RUNNING',
   feedNotFound: 'USER_FEED_NOT_FOUND'
@@ -95,7 +97,10 @@ class SlashtagsFeeds {
       res = await Promise.all(updates.map(async (update) => {
         if (typeof update.wallet_name !== 'string' || typeof update.user_id !== 'string') throw new Err(_err.badUpdateParam)
         if (Number.isNaN(+update.amount)) throw new Err(_err.badUpdateParam)
-        // TODO: verify that user exist in db
+
+        const existingUser = await this.db.findByUser(update.user_id)
+        if (!existingUser) throw new Err(this.err.userNotExists)
+
         // NOTE: consider storing balance on db as well
         // TODO: this might be changed after generalizing slashfeed.json
         // XXX wallet is part of the schema which is not enforced in updateFeedBalance

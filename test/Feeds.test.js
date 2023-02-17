@@ -510,8 +510,19 @@ describe('Feeds ', () => {
       it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(updates), error))
 
       describe('Partially correct input', () => {
+        before(() => error.message = Feeds.err.badUpdateParam)
+
         it('throws an error', async () => assert.rejects(
           async () => feed.updateFeedBalance([...updates, { ...updates[0], amount: 'a' }]),
+          error
+        ))
+      })
+
+      describe('User does not exist', () => {
+        before(() => error.message = Feeds.err.updateFeedFailed)
+
+        it('throws an error', async () => assert.rejects(
+          async () => feed.updateFeedBalance([{...updates[0], user_id: 'do_not_exist' }]),
           error
         ))
       })
@@ -522,6 +533,7 @@ describe('Feeds ', () => {
       before(async function() {
         this.timeout(5000)
 
+        await feed.createFeed({ user_id: updates[0].user_id })
         res = await feed.updateFeedBalance(updates)
       })
 
