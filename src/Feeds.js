@@ -211,7 +211,9 @@ class SlashtagsFeeds {
   }
 
   async createFeed (args) {
-    // if (!this.ready) throw new Err(_err.notReady)
+    if (!this.ready) throw new Err(_err.notReady)
+    if (!args?.user_id) throw new Err(_err.userIdMissing)
+    if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
 
     const key = 'createFeed'
     if (this.lock.has(key)) throw new Err(_err.processAlreadyRunning)

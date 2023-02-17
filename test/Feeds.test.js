@@ -110,13 +110,17 @@ describe('Feeds ', () => {
     before(() => feed = new Feeds(validConfig))
 
     describe('Process already running', () => {
-      before(() => error.message = Feeds.err.processAlreadyRunning)
+      before(() => {
+        feed.ready = true
+        error.message = Feeds.err.processAlreadyRunning
+      })
+      after(() =>  feed.ready = false)
 
       beforeEach(() => feed.lock.set('createFeed', 'test'))
       afterEach(() => feed.lock.delete('createFeed'))
 
+      it('fails', () => assert.rejects(async () => feed.createFeed(input), error))
       // TODO: for extra safety make sure it fails without calling _createDrive?
-      it('fails to start', () => assert.rejects(async () => feed.createFeed(), error))
     })
 
     describe('Creating a drive', () => {
@@ -125,10 +129,8 @@ describe('Feeds ', () => {
         this.timeout(5000)
         await feed.stop()
       })
-      afterEach(async () => {
-        // XXX check what does not release
-        await feed.lock.delete('createFeed')
-      })
+      // XXX check what does not release
+      afterEach(() => feed.lock.delete('createFeed'))
 
       describe('user_id validation', () => {
         before(() => error.message = Feeds.err.userIdMissing)
