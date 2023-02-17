@@ -349,11 +349,11 @@ describe('Feeds ', () => {
 
       it('returns success', () => assert.deepStrictEqual(res, success))
       it('removes user from db', async () => assert.equal(await feed.getFeedFromDb(input), null))
-      // TODO: add lookup in hypercore directly
       describe('entry in hypercore', () => {
         let feedReader
         let res
-        before(async () => {
+        before(async function () {
+          this.timeout(5000)
           await feed.stop()
           feedReader = new SlashtagsFeedsLib(validConfig.slashtags, validConfig.feed_schema)
           res = await feedReader.get(input.user_id, `wallet/${input.wallet_name}/amount`)
@@ -382,28 +382,31 @@ describe('Feeds ', () => {
       await feed.stop()
     })
 
-    //    TODO:
-//    describe('Calling getFeed before starting feed', () => {
-//      beforeEach(async function () {
-//        this.timeout(5000)
-//        await feed.stop()
-//        error.message = Feeds.err.notReady
-//      })
-//
-//      it('fails with out args', async () => assert.rejects(async () => feed.getFeed(), error))
-//    })
+    describe('Calling getFeed before starting feed', () => {
+      before(async function () {
+        this.timeout(5000)
+        await feed.stop()
+        error.message = Feeds.err.notReady
+      })
 
-    //    TODO:
-//    describe('user_id validation', () => {
-//      before(() => error.message = Feeds.err.userIdMissing)
-//
-//      it('fails with out args', async () => assert.rejects(async () => feed.getFeed(), error))
-//      it('fails with missing user_id', async () => assert.rejects(async () => feed.getFeed({}), error))
-//      it('fails with non string user_id', async () => assert.rejects(
-//        async () => feed.getFeed({ user_id: 1 }),
-//        { ...error, message: Feeds.err.useridNotString }
-//      ))
-//    })
+      after(async function () {
+        this.timeout(5000)
+        await feed.start()
+      })
+
+      it('fails', async () => assert.rejects(async () => feed.getFeed(input), error))
+    })
+
+    describe('user_id validation', () => {
+      before(() => error.message = Feeds.err.userIdMissing)
+
+      it('fails with out args', async () => assert.rejects(async () => feed.getFeed(), error))
+      it('fails with missing user_id', async () => assert.rejects(async () => feed.getFeed({}), error))
+      it('fails with non string user_id', async () => assert.rejects(
+        async () => feed.getFeed({ user_id: 1 }),
+        { ...error, message: Feeds.err.useridNotString }
+      ))
+    })
 
 
     describe('Error handling', () => {

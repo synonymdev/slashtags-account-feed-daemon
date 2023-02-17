@@ -162,8 +162,10 @@ class SlashtagsFeeds {
   }
 
   async getFeed (args) {
-    // if (!this.ready) throw new Err(_err.notReady)
-    // XXX it should validate input
+    if (!this.ready) throw new Err(_err.notReady)
+    if (!args?.user_id) throw new Err(_err.userIdMissing)
+    if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
+
     try {
       const existingUser = await this.getFeedFromDb(args.user_id)
       if (!existingUser) throw new Err(_err.feedNotFound)
@@ -177,6 +179,9 @@ class SlashtagsFeeds {
 
   async getFeedFromDb (userId) {
     // if (!this.ready) throw new Err(_err.notReady)
+    // if (!args?.user_id) throw new Err(_err.userIdMissing)
+    // if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
+
     const res = await this.db.findByUser(userId)
     if (!res) return null
 
