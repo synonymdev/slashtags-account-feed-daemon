@@ -466,6 +466,16 @@ describe('Feeds ', () => {
       await feed.stop()
     })
 
+    describe('Slashtags is not ready', () => {
+      before(() => {
+        feed.ready = false
+        error.message = Feeds.err.notReady
+      })
+      after(() => feed.ready = true)
+
+      it('fails if slahstags is not ready', async () => assert.rejects(async () => feed.updateFeedBalance(updates), error))
+    })
+
     describe('Input handling', () => {
       let input
       before(() => error.message = Feeds.err.badUpdateParam)

@@ -89,7 +89,7 @@ class SlashtagsFeeds {
    */
   // TODO: consider opting for individual update as it improves error handling
   async updateFeedBalance (updates) {
-    // if (!this.ready) throw new Err(_err.notReady)
+    if (!this.ready) throw new Err(_err.notReady)
     let res
     // XXX individual error handling vs general
     try {
