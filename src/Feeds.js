@@ -227,6 +227,7 @@ class SlashtagsFeeds {
     }
     this.lock.delete(key)
 
+    // TODO: extend res with URL
     return res
   }
 
@@ -269,6 +270,31 @@ class SlashtagsFeeds {
     }
     log.info(`Finished creating new drive for ${userId}`)
     return { slashdrive: userFeed }
+  }
+
+  async startFeedBroadcast () {
+    let feeds
+    try {
+      feeds = await this.db.getAllActiveFeeds()
+    } catch (err) {
+      log.error(err)
+      throw new Error(_err.failedGettingActiveFeeds)
+    }
+
+    let res
+    try {
+      res = await Promise.all(feeds.map((user) => {
+        return this.slashtags.feed(user.user_id, {
+          announce: true
+        })
+      }))
+    } catch (err) {
+      console.log(err)
+      throw new Error(_err.failedBroadcast)
+    }
+    return {
+      feeds_started: res.length
+    }
   }
 }
 
