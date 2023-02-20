@@ -5,6 +5,7 @@ import UserDb from'./UserDb.js'
 
 import { format } from '@synonymdev/slashtags-url'
 import b4a from 'b4a'
+import z32 from 'z32'
 
 import Log from './Log.js'
 import customErr from './CustomError.js'
@@ -282,7 +283,7 @@ export default class SlashtagsFeeds {
       b4a.from(userFeed.key, 'hex'),
       {
         protocol: 'slashfeed:',
-        fragment: { encryptionKey: userFeed.encryption_key }
+        fragment: { encryptionKey: z32.encode(b4a.from(userFeed.encryption_key, 'hex')) }
       }
     )
 
