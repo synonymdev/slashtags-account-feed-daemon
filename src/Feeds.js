@@ -318,7 +318,6 @@ export default class SlashtagsFeeds {
         })
       }))
     } catch (err) {
-      console.log(err)
       throw new Error(_err.failedBroadcast)
     }
     return {
