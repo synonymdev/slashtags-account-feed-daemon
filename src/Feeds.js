@@ -194,7 +194,16 @@ export default class SlashtagsFeeds {
     const res = await this.db.findByUser(args.user_id)
     if (!res) return null
 
+    const url = format(
+      b4a.from(res.feed_key, 'hex'),
+      {
+        protocol: 'slashfeed:',
+        fragment: { encryptionKey: z32.encode(b4a.from(res.encrypt_key, 'hex')) }
+      }
+    )
+
     return {
+      url,
       feed_key: res.feed_key,
       encrypt_key: res.encrypt_key
     }
@@ -278,7 +287,6 @@ export default class SlashtagsFeeds {
     }
     log.info(`Finished creating new drive for ${userId}`)
 
-    // TODO: extend res with URL
     const url = format(
       b4a.from(userFeed.key, 'hex'),
       {
