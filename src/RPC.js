@@ -1,11 +1,17 @@
-'use strict'
-const RPCResponse = require('./RPCResponse')
-const { Err, log } = require('./BaseUtil')('RPC', __filename)
-const Endpoints = require('./Endpoints')
+import { __filename } from './util.js'
+import RPCResponse from './RPCResponse.js'
+import Endpoints from './Endpoints.js'
+import Schema from '../schemas/slashfeed.json' assert { type: 'json' }
+
+import util from './BaseUtil.js'
+const { Err, log } = util('RPC', __filename())
+
+import Fastify from 'fastify'
+import formBodyPlugin from '@fastify/formbody'
 
 function loadFastify () {
-  const fastify = require('fastify')({})
-  fastify.register(require('@fastify/formbody'))
+  const fastify = Fastify({})
+  fastify.register(formBodyPlugin)
   return fastify
 }
 
@@ -69,9 +75,10 @@ class RequestContext {
   }
 }
 
-function server (config) {
+
+export default function (config) {
   if (!config) {
-    config = require('../schemas/config.json')
+    config = Schema
   }
   if (!config?.port) throw new Err('RPC_PORT_NOT_PASSED')
   if (!config?.handler) throw new Err('RPC_HANDLER_NOT_PASSED')
@@ -147,5 +154,3 @@ function server (config) {
     endpoints
   }
 }
-
-module.exports = server

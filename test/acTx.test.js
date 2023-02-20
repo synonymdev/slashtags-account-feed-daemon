@@ -1,5 +1,5 @@
-const assert = require('assert')
-const acTx = require('../src/acTx')
+import { strict as assert } from 'node:assert';
+import acTx from '../src/acTx.js'
 
 describe('acTx ', () => {
   let state = { res: 0}

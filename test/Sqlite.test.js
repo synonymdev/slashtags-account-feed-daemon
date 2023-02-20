@@ -1,8 +1,8 @@
 'use strict'
-const assert = require('assert')
-const path = require('path')
-const Sqlite = require('../src/Sqlite')
-const util = require('../src/util')
+import { strict as assert } from 'node:assert';
+import path from 'path'
+import Sqlite from '../src/Sqlite.js'
+import { rnd, mkdir } from '../src/util.js'
 
 describe('Sqlite', () => {
   const ERROR_NAME = 'SQLITE_ERROR:'
@@ -17,7 +17,7 @@ describe('Sqlite', () => {
       { name: ERROR_NAME, message: Sqlite.err.dbNameMissing }
     ))
     it('fails to init db without config.path', () => assert.throws(
-      () => new Sqlite({ name: `test-${util.rnd()}-db` }),
+      () => new Sqlite({ name: `test-${rnd()}-db` }),
       { name: ERROR_NAME, message: Sqlite.err.dbPathMissing }
     ))
   })
@@ -27,10 +27,10 @@ describe('Sqlite', () => {
 
     before(async () => {
       let dbPath = path.resolve("./test-db")
-      await util.mkdir(dbPath)
+      await mkdir(dbPath)
       config = {
         path: dbPath,
-        name: `test-${util.rnd()}-db`
+        name: `test-${rnd()}-db`
       }
     })
 

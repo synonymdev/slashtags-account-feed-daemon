@@ -1,10 +1,8 @@
-/* eslint-env mocha */
-'use strict'
-const assert = require('assert')
-const axios = require('axios').default
+import assert from 'assert'
+import axios from 'axios'
 
-const rpc = require('../src/RPC')
-const util = require('../src/util')
+import rpc from '../src/RPC.js'
+import { rnd } from '../src/util.js'
 
 const noop = () => {}
 describe('RPC ', () => {
@@ -69,7 +67,7 @@ describe('RPC ', () => {
 
     ENDPOINTS.forEach((ep) => {
       let res
-      const reqId = util.rnd()
+      const reqId = rnd()
       before(async () => {
         res = await axios.post(server.endpoints.full_route, { id: reqId, method: ep })
       })
@@ -84,7 +82,7 @@ describe('RPC ', () => {
 
     describe('Unregisterd endpoint', () => {
       let res
-      const reqId = util.rnd()
+      const reqId = rnd()
       before(async () => {
         res = await axios.post(server.endpoints.full_route, { id: reqId, method: 'undefined' })
       })

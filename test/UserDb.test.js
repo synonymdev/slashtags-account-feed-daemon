@@ -1,13 +1,11 @@
-/* eslint-env mocha */
-'use strict'
-const assert = require('assert')
-const UserDb = require('../src/UserDb')
-const util = require('../src/util')
+import { strict as assert } from 'node:assert';
+import UserDb from '../src/UserDb.js'
+import { rnd } from '../src/util.js'
 
 async function getUdb () {
   let udb = new UserDb({
     path: './test-db',
-    name: `test-${util.rnd()}db`
+    name: `test-${rnd()}db`
   })
   await udb.init()
   return udb
@@ -24,9 +22,9 @@ describe('UserDb', () => {
   })
 
   it('Should insert new user feed info and fetch from db ', async () => {
-    const uid = util.rnd()
-    const fk = util.rnd()
-    const ek = util.rnd()
+    const uid = rnd()
+    const fk = rnd()
+    const ek = rnd()
     await udb.insert({
       user_id: uid,
       feed_key: fk,
@@ -35,9 +33,9 @@ describe('UserDb', () => {
     })
 
     await udb.insert({
-      user_id: util.rnd(),
-      feed_key: util.rnd(),
-      encrypt_key: util.rnd(),
+      user_id: rnd(),
+      feed_key: rnd(),
+      encrypt_key: rnd(),
       meta: { test: 2 }
     })
 
@@ -50,9 +48,9 @@ describe('UserDb', () => {
   })
 
   it('Should remove user ', async () => {
-    const uid = util.rnd()
-    const fk = util.rnd()
-    const ek = util.rnd()
+    const uid = rnd()
+    const fk = rnd()
+    const ek = rnd()
     await udb.insert({
       user_id: uid,
       feed_key: fk,

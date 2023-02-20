@@ -1,10 +1,10 @@
-'use strict'
-const {
-  Err, log
-} = require('./BaseUtil')('RPC_RESP', __filename)
-const { randomBytes } = require('crypto')
+import { randomBytes } from 'crypto'
+import { __filename } from './util.js'
 
-class RPCResponse {
+import util from './BaseUtil.js'
+const { Err, log } = util('RPC', __filename())
+
+export default class RPCResponse {
   constructor ({ result, error, id }) {
     this.response = { jsonrpc: '2.0' }
     if (!id) {
@@ -58,5 +58,3 @@ class RPCResponse {
     return RPCResponse.fromError(RPCResponse.error.rpcErr, id)
   }
 }
-
-module.exports = RPCResponse

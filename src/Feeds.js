@@ -1,9 +1,16 @@
 // TODO: do not obfuscate errors
-const UserDb = require('./UserDb')
-const SlashtagsFeedsLib = require('@synonymdev/feeds')
+import { __filename } from './util.js'
+import Feeds from '@synonymdev/feeds'
+import UserDb from'./UserDb.js'
 
-const log = require('./Log')('core')
-const Err = require('./CustomError')({ errName: 'Slashtags', fileName: __dirname })
+import { format } from '@synonymdev/slashtags-url'
+import b4a from 'b4a'
+
+import Log from './Log.js'
+import customErr from './CustomError.js'
+
+const log = Log('core')
+const Err = customErr({ errName: 'Slashtags', fileName: __filename() })
 
 const _err = {
   notReady: 'SLASHTAGS_NOT_READY',
@@ -29,7 +36,7 @@ const _err = {
   feedNotFound: 'USER_FEED_NOT_FOUND'
 }
 
-class SlashtagsFeeds {
+export default class SlashtagsFeeds {
   static err = _err
   static Error = Err
 
@@ -66,7 +73,7 @@ class SlashtagsFeeds {
       log.err(err)
       throw new Err(_err.dbFailedStart)
     }
-    this.slashtags = new SlashtagsFeedsLib(this.config.slashtags, this.feed_schema)
+    this.slashtags = new Feeds(this.config.slashtags, this.feed_schema)
     // TODO: check if "writing" flag exists and fail if so
     // NOTE: check with new slashtags instance but using different data-dir to exclude os level locks
     // create writing flag otherwise
@@ -227,7 +234,7 @@ class SlashtagsFeeds {
     }
     this.lock.delete(key)
 
-    // TODO: extend res with URL
+
     return res
   }
 
@@ -269,7 +276,20 @@ class SlashtagsFeeds {
       throw new Err(_err.failedCreateDrive)
     }
     log.info(`Finished creating new drive for ${userId}`)
-    return { slashdrive: userFeed }
+
+    // TODO: extend res with URL
+    const url = format(
+      b4a.from(userFeed.key, 'hex'),
+      {
+        protocol: 'slashfeed:',
+        fragment: { encryptionKey: userFeed.encryption_key }
+      }
+    )
+
+    return {
+      url,
+      slashdrive: userFeed,
+    }
   }
 
   async startFeedBroadcast () {
@@ -297,5 +317,3 @@ class SlashtagsFeeds {
     }
   }
 }
-
-module.exports = SlashtagsFeeds

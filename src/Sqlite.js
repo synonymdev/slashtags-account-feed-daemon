@@ -1,9 +1,9 @@
-'use strict'
+import path from 'path'
+import fs from 'fs/promises'
+import Sqlite3 from 'sqlite3'
 
-const path = require('path')
-const fs = require('fs/promises')
-const Sqlite3 = require('sqlite3')
-const customErr = require('./CustomError')
+import customErr from './CustomError.js'
+import { __filename } from './util.js'
 
 const _err = {
   dbNameMissing: 'DB_NAME_MISSING',
@@ -14,10 +14,10 @@ const _err = {
 
 const SqliteErr = customErr({
   errName: 'SQLITE_ERROR:',
-  fileName: __filename
+  fileName: __filename()
 })
 
-class Sqlite {
+export default class Sqlite {
   constructor (config) {
     if (!config) throw new SqliteErr(_err.configMissing)
     this.config = { ...config }
@@ -49,5 +49,3 @@ class Sqlite {
 
   static err = _err
 }
-
-module.exports = Sqlite
