@@ -14,6 +14,7 @@ const Err = customErr({ errName: 'Slashtags', fileName: __filename() })
 
 export default class Slashtag {
   static FEED_PREFIX = '/feed'
+  // TODO: store header file upon creation of feed
   static HEADER_PATH = '/slashfeed.json'
 
   constructor (slashtagConfig) {
@@ -43,6 +44,8 @@ export default class Slashtag {
   }
 
   async getFeed (feedId) {
+    // TODO: store header file upon creation of feed
+    // TODO: use batch for it
     if (!this.ready) throw new Err('Slashtag is not ready')
 
     const slashtag = this.sdk.slashtag(feedId)
@@ -66,6 +69,7 @@ export default class Slashtag {
 
     const { drive } = await this.getFeed(feedId)
 
+    // TODO: use batch for it
     await drive.put(
       path.join(Slashtag.FEED_PREFIX, key),
       b4a.from(JSON.stringify(value))

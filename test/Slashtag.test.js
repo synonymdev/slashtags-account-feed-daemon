@@ -44,6 +44,7 @@ describe('Slashtag', () => {
       it('has feedUrl', () => assert(feed.feedUrl))
 
       describe('feedUrl', () => {
+        // TODO: make sure data is readable via url 
         let parsed
         before(() => parsed = SlashURL.parse(feed.feedUrl))
 
@@ -88,6 +89,7 @@ describe('Slashtag', () => {
     })
 
     describe('destroyFeed', () => {
+      // TODO: make sure it does not delete extra data
       before(async () => await slashtag.destroyFeed('testFeedId'))
 
       it('makes feed unreadable', async() => assert.equal(await slashtag.readFeed('testFeedId', 'foo'), null))
