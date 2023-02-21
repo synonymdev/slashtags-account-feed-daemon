@@ -1,7 +1,7 @@
 import { __filename } from './util.js'
 import { SDK, SlashURL } from '@synonymdev/slashtags-sdk'
 import { readFileSync } from 'fs'
-import { rm } from 'node:fs/promises';
+import { rm } from 'node:fs/promises'
 import path from 'path'
 import b4a from 'b4a'
 import z32 from 'z32'
@@ -16,12 +16,12 @@ export default class Slashtag {
   static FEED_PREFIX = '/feed'
   static HEADER_PATH = '/slashfeed.json'
 
-  constructor(slashtagConfig) {
+  constructor (slashtagConfig) {
     const conf = { storage: slashtagConfig }
-    let keyPath = path.join(slashtagConfig, 'primary-key')
+    const keyPath = path.join(slashtagConfig, 'primary-key')
     try {
       conf.primaryKey = readFileSync(keyPath)
-    } catch(e) {
+    } catch (e) {
       log.err(e)
       log.info(`Generating new key, ${keyPath}`)
     }
@@ -32,17 +32,17 @@ export default class Slashtag {
     this.closed = true
   }
 
-  async start() {
+  async start () {
     await this.sdk.ready()
     this.ready = true
   }
 
-  async stop() {
+  async stop () {
     this.sdk.close()
     this.ready = false
   }
 
-  async getFeed(feedId) {
+  async getFeed (feedId) {
     if (!this.ready) throw new Err('Slashtag is not ready')
 
     const slashtag = this.sdk.slashtag(feedId)
@@ -86,7 +86,7 @@ export default class Slashtag {
     }
   }
 
-  async destroyFeed(feedId) {
+  async destroyFeed (feedId) {
     if (!this.ready) throw new Err('Slashtag is not ready')
 
     const { drive } = await this.getFeed(feedId)
