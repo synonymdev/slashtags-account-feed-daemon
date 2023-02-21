@@ -1,7 +1,7 @@
 // TODO: do not obfuscate errors
 import { __filename } from './util.js'
 import Feeds from '@synonymdev/feeds'
-import UserDb from'./UserDb.js'
+import UserDb from './UserDb.js'
 
 import { format } from '@synonymdev/slashtags-url'
 import b4a from 'b4a'
@@ -244,7 +244,6 @@ export default class SlashtagsFeeds {
     }
     this.lock.delete(key)
 
-
     return res
   }
 
@@ -297,7 +296,7 @@ export default class SlashtagsFeeds {
 
     return {
       url,
-      slashdrive: userFeed,
+      slashdrive: userFeed
     }
   }
 

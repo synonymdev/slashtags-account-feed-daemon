@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto'
-import { unlink, rm, mkdir as fsMkdir } from 'node:fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { unlink, rm, mkdir as fsMkdir } from 'node:fs/promises'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 export function delFile (file) {
   return unlink(file)
@@ -27,6 +27,5 @@ export const __filename = () => {
 }
 
 export const __dirname = (fileName) => {
-  return path.dirname(fileName);
+  return path.dirname(fileName)
 }
-
