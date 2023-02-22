@@ -44,7 +44,6 @@ describe('Slashtag', () => {
       it('has feedUrl', () => assert(feed.feedUrl))
 
       describe('feedUrl', () => {
-        // TODO: make sure data is readable via url 
         let parsed
         before(() => parsed = SlashURL.parse(feed.feedUrl))
 
@@ -54,6 +53,29 @@ describe('Slashtag', () => {
         it('has empty path', () => assert.equal(parsed.path, ''))
         it('has empty query', () => assert.deepStrictEqual(parsed.query, {}))
         it('has encryptionKey', () => assert(parsed.privateQuery.encryptionKey))
+
+        describe('Reading by feedURL', () => {
+          // TODO: test that:
+          // make sure data is readable via url 
+          // drive has slashfeed.json and it is correct
+          let drive
+          let sdk
+          let content
+          before(async function () {
+            this.timeout(10000)
+            const res = await Slashtag.openDrive(feed.feedUrl)
+            drive = res.drive
+            sdk = res.sdk
+
+            content = await Slashtag.readFromDrive(drive, Slashtag.HEADER_PATH)
+          })
+
+          after(async function() {
+            await Slashtag.closeDrive(sdk)
+          })
+
+          it('reads feed', () => { console.log(content)})
+        })
       })
 
       describe('url', () => {

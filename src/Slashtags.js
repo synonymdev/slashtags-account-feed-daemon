@@ -17,14 +17,21 @@ export default class Slashtag {
   // TODO: store header file upon creation of feed
   static HEADER_PATH = '/slashfeed.json'
 
-  constructor (slashtagConfig) {
-    const conf = { storage: slashtagConfig }
-    const keyPath = path.join(slashtagConfig, 'primary-key')
+  constructor (slashtagPath, slashfeedPath = './schemas/slashfeed.json') {
+    const conf = { storage: slashtagPath }
+    const keyPath = path.join(slashtagPath, 'primary-key')
     try {
       conf.primaryKey = readFileSync(keyPath)
     } catch (e) {
       log.err(e)
       log.info(`Generating new key, ${keyPath}`)
+    }
+
+    try {
+      this.header = readFileSync(slashfeedPath)
+    } catch (e) {
+      log.err(e)
+      throw new Err('FAILED_TO_READ_SLAHSFEED_FILE')
     }
 
     this.sdk = new SDK(conf)
@@ -44,13 +51,23 @@ export default class Slashtag {
   }
 
   async getFeed (feedId) {
-    // TODO: store header file upon creation of feed
     // TODO: use batch for it
     if (!this.ready) throw new Err('Slashtag is not ready')
 
     const slashtag = this.sdk.slashtag(feedId)
     const drive = slashtag.drivestore.get(feedId)
     await drive.ready()
+
+    try {
+      const headerContent = Buffer.from(JSON.stringify(this.header))
+      await drive.put(
+        path.join(feedId, Slashtag.HEADER_PATH),
+        b4a.from(JSON.stringify(headerContent))
+      )
+    } catch (e) {
+      throw new Err('FAILED_TO_STORE_SLASHFEED_FILE')
+    }
+
     const { url } = slashtag
 
     const feedUrl = SlashURL.format(
@@ -115,5 +132,41 @@ export default class Slashtag {
     } catch (e) {
       throw new Err('FAILED_TO_DESTROY_FEED')
     }
+  }
+
+  static async openDrive(url) {
+    const sdk = new SDK()
+    await sdk.ready()
+
+    let parsed
+    try {
+      parsed = SlashURL.parse(url)
+    } catch (e) {
+      log.err(e)
+      throw new Err('FAILED_TO_OPEN_DRIVE_BAD_URL')
+    }
+    const key = parsed.key
+    const encryptionKey =
+      typeof parsed.privateQuery.encryptionKey === 'string'
+        ? SlashURL.decode(parsed.privateQuery.encryptionKey)
+        : undefined
+
+    return {
+      sdk,
+      drive: sdk.drive(key, { encryptionKey }),
+    }
+  }
+
+  static async closeDrive(sdk) {
+    await sdk.close()
+  }
+
+  static async readFromDrive(drive, path) {
+    if (!drive) throw new Err('FAILED_TO_READ_BAD_DRIVE')
+    if (!path) throw new Err('FAILED_TO_READ_BAD_PATH')
+    return await drive.get(path).then((buf) => {
+      if (!buf) return null
+      return JSON.parse(b4a.toString(buf))
+    })
   }
 }
