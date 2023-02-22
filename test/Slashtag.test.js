@@ -89,10 +89,13 @@ describe('Slashtag', () => {
     })
 
     describe('destroyFeed', () => {
-      // TODO: make sure it does not delete extra data
-      before(async () => await slashtag.destroyFeed('testFeedId'))
+      before(async () => {
+        await slashtag.destroyFeed('testFeedId')
+        await slashtag.updateFeed('testFeedId1', 'tar', 'zar')
+      })
 
-      it('makes feed unreadable', async() => assert.equal(await slashtag.readFeed('testFeedId', 'foo'), null))
+      it('makes deleted feed unreadable', async() => assert.equal(await slashtag.readFeed('testFeedId', 'foo'), null))
+      it('does not affect other feeds', async() => assert.equal(await slashtag.readFeed('testFeedId1', 'tar'), 'zar'))
     })
   })
 })
