@@ -14,7 +14,6 @@ const Err = customErr({ errName: 'Slashtags', fileName: __filename() })
 
 export default class Slashtag {
   static FEED_PREFIX = '/feed'
-  // TODO: store header file upon creation of feed
   static HEADER_PATH = '/slashfeed.json'
 
   constructor (slashtagPath, slashfeedPath = './schemas/slashfeed.json') {
@@ -28,7 +27,7 @@ export default class Slashtag {
     }
 
     try {
-      this.header = readFileSync(slashfeedPath)
+      this.header = readFileSync(slashfeedPath, 'utf8')
     } catch (e) {
       log.err(e)
       throw new Err('FAILED_TO_READ_SLAHSFEED_FILE')
@@ -54,21 +53,17 @@ export default class Slashtag {
     // TODO: use batch for it
     if (!this.ready) throw new Err('Slashtag is not ready')
 
-    const slashtag = this.sdk.slashtag(feedId)
-    const drive = slashtag.drivestore.get(feedId)
-    await drive.ready()
+    const { slashtag, drive } = await this._getDrive(feedId)
+    await this.sdk.swarm.join(drive.discoveryKey, { server: true, client: false }).flushed()
 
     try {
-      const headerContent = Buffer.from(JSON.stringify(this.header))
-      await drive.put(
-        path.join(feedId, Slashtag.HEADER_PATH),
-        b4a.from(JSON.stringify(headerContent))
-      )
+      // XXX: this will be always overwriting existing slashfeed.json
+      await drive.put(Slashtag.HEADER_PATH, b4a.from(JSON.stringify(this.header)))
     } catch (e) {
+      log.err(e)
       throw new Err('FAILED_TO_STORE_SLASHFEED_FILE')
     }
 
-    const { url } = slashtag
 
     const feedUrl = SlashURL.format(
       b4a.from(drive.key, 'hex'),
@@ -77,6 +72,8 @@ export default class Slashtag {
         fragment: { encryptionKey: z32.encode(b4a.from(drive.core.encryptionKey, 'hex')) }
       }
     )
+    const { url } = slashtag
+
 
     return { feedUrl, url, drive }
   }
@@ -84,7 +81,7 @@ export default class Slashtag {
   async updateFeed (feedId, key, value) {
     if (!this.ready) throw new Err('Slashtag is not ready')
 
-    const { drive } = await this.getFeed(feedId)
+    const { drive } = await this._getDrive(feedId)
 
     // TODO: use batch for it
     await drive.put(
@@ -96,7 +93,7 @@ export default class Slashtag {
   async readFeed (feedId, key) {
     if (!this.ready) throw new Err('Slashtag is not ready')
 
-    const { drive } = await this.getFeed(feedId)
+    const { drive } = await this._getDrive(feedId)
     const block = await drive.get(path.join(Slashtag.FEED_PREFIX, key))
 
     try {
@@ -110,9 +107,17 @@ export default class Slashtag {
   async destroyFeed (feedId) {
     if (!this.ready) throw new Err('Slashtag is not ready')
 
-    const { drive } = await this.getFeed(feedId)
+    const { drive } = await this._getDrive(feedId)
 
     await Promise.all(Array.from(drive.corestore.cores.values()).map(this._destroyCore.bind(this)))
+  }
+
+  async _getDrive(feedId) {
+    const slashtag = this.sdk.slashtag(feedId)
+    const drive = slashtag.drivestore.get(feedId)
+    await drive.ready()
+
+    return { slashtag, drive }
   }
 
   async _destroyCore (core) {
@@ -150,23 +155,24 @@ export default class Slashtag {
       typeof parsed.privateQuery.encryptionKey === 'string'
         ? SlashURL.decode(parsed.privateQuery.encryptionKey)
         : undefined
+    const drive = sdk.drive(key, { encryptionKey })
+    await drive.ready()
 
-    return {
-      sdk,
-      drive: sdk.drive(key, { encryptionKey }),
-    }
+    return { sdk, drive }
   }
 
-  static async closeDrive(sdk) {
+  static async closeDrive({ sdk, drive }) {
+    await drive.close()
     await sdk.close()
   }
 
   static async readFromDrive(drive, path) {
     if (!drive) throw new Err('FAILED_TO_READ_BAD_DRIVE')
     if (!path) throw new Err('FAILED_TO_READ_BAD_PATH')
-    return await drive.get(path).then((buf) => {
-      if (!buf) return null
-      return JSON.parse(b4a.toString(buf))
-    })
+
+    const res = await drive.get(path)
+    if (!res) return null
+
+    return JSON.parse(b4a.toString(res))
   }
 }

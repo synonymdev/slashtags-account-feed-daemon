@@ -1,6 +1,7 @@
 import { strict as assert } from 'node:assert';
 import path from 'path'
 import { SlashURL } from '@synonymdev/slashtags-sdk'
+import { readFileSync } from 'fs'
 
 import Slashtag from '../src/Slashtags.js'
 
@@ -38,7 +39,10 @@ describe('Slashtag', () => {
 
     describe('getFeed', () => {
       let feed
-      before(async () => feed = await slashtag.getFeed('testFeedId'))
+      before(async function () {
+        this.timeout(10000)
+        feed = await slashtag.getFeed('testFeedId')
+      })
 
       it('has drive', () => assert(feed.drive))
       it('has feedUrl', () => assert(feed.feedUrl))
@@ -55,26 +59,23 @@ describe('Slashtag', () => {
         it('has encryptionKey', () => assert(parsed.privateQuery.encryptionKey))
 
         describe('Reading by feedURL', () => {
-          // TODO: test that:
-          // make sure data is readable via url 
-          // drive has slashfeed.json and it is correct
-          let drive
-          let sdk
           let content
+          let res
           before(async function () {
             this.timeout(10000)
-            const res = await Slashtag.openDrive(feed.feedUrl)
-            drive = res.drive
-            sdk = res.sdk
-
-            content = await Slashtag.readFromDrive(drive, Slashtag.HEADER_PATH)
+            res = await Slashtag.openDrive(feed.feedUrl)
+            content = await Slashtag.readFromDrive(res.drive, Slashtag.HEADER_PATH)
           })
 
           after(async function() {
-            await Slashtag.closeDrive(sdk)
+            this.timeout(10000)
+            await Slashtag.closeDrive(res)
           })
 
-          it('reads feed', () => { console.log(content)})
+          it('reads feed', () => assert.deepStrictEqual(
+            JSON.parse(content),
+            JSON.parse(readFileSync('./schemas/slashfeed.json', 'utf8')))
+          )
         })
       })
 
