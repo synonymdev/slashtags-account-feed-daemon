@@ -6,6 +6,7 @@ import { readFileSync } from 'fs'
 import Slashtag from '../src/Slashtags.js'
 
 describe('Slashtag', () => {
+  // TODO: move to testnet and RAM storage
   const slashtagConfig = path.resolve('./test-data/storage')
 
   describe('constructor', () => {
