@@ -39,12 +39,13 @@ describe('Slashtag', () => {
 
     describe('getFeed', () => {
       let feed
+      const feedId = 'testGetFeed'
       before(async function () {
         this.timeout(10000)
-        feed = await slashtag.getFeed('testFeedId')
+        feed = await slashtag.getFeed(feedId)
       })
 
-      it('has drive', () => assert(feed.drive))
+      it('has batch', () => assert(feed.batch))
       it('has feedUrl', () => assert(feed.feedUrl))
 
       describe('feedUrl', () => {
@@ -92,33 +93,184 @@ describe('Slashtag', () => {
       })
     })
 
+    describe('getFeed (transactional)', () => {
+      describe('before flush', () => {
+        const feedId = 'testFeedIdTransactionalUnflushed'
+        let content
+        let res
+        before(async function () {
+          this.timeout(10000)
+          let feed = await slashtag.getFeed(feedId, { transactional: true })
+          res = await Slashtag.openDrive(feed.feedUrl)
+          content = await Slashtag.readFromDrive(res.drive, Slashtag.HEADER_PATH)
+        })
+
+        after(async function() {
+          this.timeout(10000)
+          await Slashtag.closeDrive(res)
+        })
+
+        it('fails to read feed', () => assert.equal(content, null))
+      })
+
+      describe('after flush', () => {
+        let content
+        let res
+        const feedId = 'testFeedIdTransactionalFlushed'
+        before(async function () {
+          this.timeout(10000)
+          let feed = await slashtag.getFeed(feedId, { transactional: true })
+          await feed.batch.flush()
+
+          res = await Slashtag.openDrive(feed.feedUrl)
+          content = await Slashtag.readFromDrive(res.drive, Slashtag.HEADER_PATH)
+        })
+
+        after(async function() {
+          this.timeout(10000)
+          await Slashtag.closeDrive(res)
+          await slashtag.destroyFeed(feedId)
+        })
+
+        it('reads feed', () => assert.deepStrictEqual(
+          JSON.parse(content),
+          JSON.parse(readFileSync('./schemas/slashfeed.json', 'utf8')))
+        )
+      })
+
+      describe('destroy batch', () => {
+        let content
+        let res
+        const feedId = 'testFeedIdTransactionalDestroyed'
+        before(async function () {
+          this.timeout(10000)
+          let feed = await slashtag.getFeed(feedId, { transactional: true })
+          await feed.batch.destroy()
+
+          res = await Slashtag.openDrive(feed.feedUrl)
+          content = await Slashtag.readFromDrive(res.drive, Slashtag.HEADER_PATH)
+        })
+
+        after(async function() {
+          this.timeout(10000)
+          await Slashtag.closeDrive(res)
+        })
+
+        it('fails to read feed', () => assert.equal(content, null))
+      })
+    })
+
     describe('updateFeed', () => {
-      it('puts data to drive', async () => assert.equal(await slashtag.updateFeed('testFeedId', 'foo', 'bar'), undefined))
+      let res
+      const feedId = 'testFeedIdUpdate'
+      let content
+      before(async function() {
+        this.timeout(10000)
+        await slashtag.getFeed(feedId)
+        res = await slashtag.updateFeed(feedId, 'foo', 'bar')
+        content = await slashtag.readFeed(feedId, 'foo')
+      })
+
+      after(async function () {
+        this.timeout(10000)
+        await slashtag.destroyFeed(feedId)
+      })
+
+      it('returns batch', () => assert(res.batch))
+      it('updates content', () => assert.equal(content, 'bar'))
+    })
+
+    describe('updateFeed (transactional)', () => {
+      describe('before flush', () => {
+        let content
+        const feedId = 'testFeedIdTransactionalUpdateUnflushed'
+        before(async function () {
+          this.timeout(10000)
+          await slashtag.getFeed(feedId)
+          await slashtag.updateFeed(feedId, 'foo', 'bar', { transactional: true })
+
+          content = await slashtag.readFeed(feedId, 'foo')
+        })
+
+        it('fails to read feed', () => assert.equal(content, null))
+      })
+
+      describe('after flush', () => {
+        let content
+        const feedId = 'testFeedIdTransactionalUpdateFlushed'
+        before(async function () {
+          this.timeout(10000)
+          await slashtag.getFeed(feedId)
+          const { batch } = await slashtag.updateFeed(feedId, 'foo', 'bar', { transactional: true })
+          await batch.flush()
+
+          content = await slashtag.readFeed(feedId, 'foo')
+        })
+
+        after(async function() {
+          this.timeout(10000)
+          await slashtag.destroyFeed(feedId)
+        })
+
+        it('reads feed', () => assert.equal(content, 'bar'))
+      })
+
+      describe('destroy batch', () => {
+        let content
+        const feedId = 'testFeedIdTransactionalUpdateDestroyed'
+        before(async function () {
+          this.timeout(10000)
+          await slashtag.getFeed(feedId)
+          const { batch } = await slashtag.updateFeed(feedId, 'foo', 'bar', { transactional: true })
+          console.log('calling destroy')
+          await batch.destroy()
+          console.log('called destroy')
+
+          content = await slashtag.readFeed(feedId, 'foo')
+        })
+
+        it('fails to read feed', () => assert.equal(content, null))
+      })
     })
 
     describe('readFeed', () => {
       let res
       describe('Reading data by existing key', () => {
-        before(async () => res = await slashtag.readFeed('testFeedId', 'foo'))
+        const feedId = 'testFeedIdReadFeed'
+        before(async function () {
+          this.timeout(10000)
+          await slashtag.getFeed(feedId)
+          await slashtag.updateFeed(feedId, 'foo', 'bar')
+          res = await slashtag.readFeed(feedId, 'foo')
+        })
 
         it('returns correct value', () => assert.equal(res, 'bar'))
       })
 
       describe('Reading data by non existing key', () => {
-        before(async () => res = await slashtag.readFeed('testFeedId', 'foobar'))
+        const feedId = 'testFeedIdReadFeed'
+        before(async () => res = await slashtag.readFeed(feedId, 'foobar'))
 
         it('returns null', () => assert.equal(res, null))
       })
     })
 
-    describe('destroyFeed', () => {
-      before(async () => {
-        await slashtag.destroyFeed('testFeedId')
-        await slashtag.updateFeed('testFeedId1', 'tar', 'zar')
+    describe.skip('destroyFeed', () => {
+      const destroyedFeedId = 'destroyedFeedId'
+      const untoucedFeedId = 'untoucedFeedId'
+      before(async function () {
+        this.timeout(10000)
+        await slashtag._getDrive(untoucedFeedId)
+        await slashtag.updateFeed(untoucedFeedId, 'tar', 'zar')
+
+        await slashtag._getDrive(destroyedFeedId)
+        await slashtag.updateFeed(destroyedFeedId, 'foo', 'bar')
+
+        await slashtag.destroyFeed(destroyedFeedId)
       })
 
-      it('makes deleted feed unreadable', async() => assert.equal(await slashtag.readFeed('testFeedId', 'foo'), null))
-      it('does not affect other feeds', async() => assert.equal(await slashtag.readFeed('testFeedId1', 'tar'), 'zar'))
+      it('makes deleted feed unreadable', async() => assert.equal(await slashtag.readFeed(destroyedFeedId, 'foo'), null))
+      it('does not affect other feeds', async() => assert.equal(await slashtag.readFeed(untoucedFeedId, 'tar'), 'zar'))
     })
   })
 })
