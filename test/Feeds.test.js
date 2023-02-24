@@ -528,7 +528,7 @@ describe('SlashtagsFeeds', () => {
         res = await feed.updateFeedBalance(update)
       })
 
-      it('returns true', () => assert.deepStrictEqual(res, true))
+      it('returns true', () => assert.deepStrictEqual(res, { updated: true }))
       describe('Reading feed', () => {
         let feedReader
         let balance

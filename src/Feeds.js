@@ -1,4 +1,3 @@
-// TODO: do not obfuscate errors
 import { __filename } from './util.js'
 import Feeds from '@synonymdev/feeds'
 import UserDb from './UserDb.js'
@@ -94,11 +93,8 @@ export default class SlashtagsFeeds {
    * @param {Object} updates[].wallet_name user id to update
    * @param {Object} updates[].amount amount
    */
-  // TODO: consider opting for individual update as it improves error handling
   async updateFeedBalance (update) {
     if (!this.ready) throw new Err(_err.notReady)
-    let res
-    // XXX individual error handling vs general
     try {
       if (typeof update.wallet_name !== 'string' || typeof update.user_id !== 'string') throw new Err(_err.badUpdateParam)
       if (Number.isNaN(+update.amount)) throw new Err(_err.badUpdateParam)
@@ -110,13 +106,12 @@ export default class SlashtagsFeeds {
       // TODO: this might be changed after generalizing slashfeed.json
       // XXX wallet is part of the schema which is not enforced in updateFeedBalance
       await this.slashtags.update(update.user_id, this._getWalletFeedKey(update.wallet_name), update.amount)
-      return true
+      return { updated: true }
     } catch (err) {
       log.err(err)
       if (err instanceof Err) throw err
       throw new Err(_err.updateFeedFailed)
     }
-    return res
   }
 
   async deleteUserFeed (args) {
@@ -136,12 +131,11 @@ export default class SlashtagsFeeds {
       await this.slashtags.destroy(userId)
     } catch (err) {
       log.err(err)
+      if (err instanceof Err) throw err
       throw new Err(_err.failedDeleteUser)
     }
 
-    return {
-      deleted: true
-    }
+    return { deleted: true }
   }
 
   /**
@@ -178,8 +172,8 @@ export default class SlashtagsFeeds {
       if (!existingUser) throw new Err(_err.feedNotFound)
       return existingUser
     } catch (err) {
-      // XXX this should be DB error
       log.err(err)
+      if (err instanceof Err) throw err
       throw new Err(_err.feedNotFound)
     }
   }
@@ -238,7 +232,9 @@ export default class SlashtagsFeeds {
       res = await this._createDrive(args)
     } catch (err) {
       this.lock.delete(key)
-      throw err
+      log.error(err)
+      if (err instanceof Err) throw err
+      throw new Error(_err.failedCreateDrive)
     }
     this.lock.delete(key)
 
@@ -267,6 +263,7 @@ export default class SlashtagsFeeds {
       await this._initFeed(args)
     } catch (err) {
       log.err(err)
+      if (err instanceof Err) throw err
       throw new Err(_err.badSchemaSetup)
     }
     // Insert into database
@@ -279,7 +276,7 @@ export default class SlashtagsFeeds {
       })
     } catch (err) {
       log.error(err)
-      log.info('FAILED_TO_INSERT_INTO_DB', err)
+      if (err instanceof Err) throw err
       throw new Err(_err.failedCreateDrive)
     }
     log.info(`Finished creating new drive for ${userId}`)
@@ -304,6 +301,7 @@ export default class SlashtagsFeeds {
       feeds = await this.db.getAllActiveFeeds()
     } catch (err) {
       log.error(err)
+      if (err instanceof Err) throw err
       throw new Error(_err.failedGettingActiveFeeds)
     }
 
@@ -315,6 +313,8 @@ export default class SlashtagsFeeds {
         })
       }))
     } catch (err) {
+      log.error(err)
+      if (err instanceof Err) throw err
       throw new Error(_err.failedBroadcast)
     }
     return {
