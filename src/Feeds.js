@@ -206,8 +206,6 @@ export default class SlashtagsFeeds {
    * @param {String} userId
    */
   async _initFeed (args) {
-    if (!args?.user_id) throw new Err(_err.userIdMissing)
-    if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
     // XXX wallet is part of the schema which is not enforced in updateFeedBalance
     return Promise.all(this.feed_schema.wallets.map(async (w) => {
       await this.slashtags.update(args.user_id, this._getWalletFeedKey(w.wallet_name), args.init_data || null)
@@ -225,20 +223,17 @@ export default class SlashtagsFeeds {
 
     const key = 'createFeed'
     if (this.lock.has(key)) throw new Err(_err.processAlreadyRunning)
-
     this.lock.set(key, Date.now())
-    let res
+
     try {
-      res = await this._createDrive(args)
+      return await this._createDrive(args)
     } catch (err) {
-      this.lock.delete(key)
       log.error(err)
       if (err instanceof Err) throw err
       throw new Error(_err.failedCreateDrive)
+    } finally {
+      this.lock.delete(key)
     }
-    this.lock.delete(key)
-
-    return res
   }
 
   /**
@@ -247,15 +242,11 @@ export default class SlashtagsFeeds {
    * @returns {Object} feed_key
    */
   async _createDrive (args) {
-    if (!args?.user_id) throw new Err(_err.userIdMissing)
-    if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
-    if (!this.ready) throw new Err(_err.notReady)
     log.info(`Creating Slashdrive for ${args.user_id}`)
 
     const existingUser = await this.getFeedFromDb(args)
     if (existingUser) throw new Err(_err.userExists)
 
-    const userId = args.user_id
     const userFeed = await this.getFeedKey(args) // Find or create the Slashdrive
 
     // TODO: this needs to be atomic to prevent discrepancy between local DB and Hyperdrive
@@ -269,7 +260,7 @@ export default class SlashtagsFeeds {
     // Insert into database
     try {
       await this.db.insert({
-        user_id: userId,
+        user_id: args.user_id,
         feed_key: userFeed.key,
         encrypt_key: userFeed.encryption_key,
         meta: {}
@@ -279,7 +270,7 @@ export default class SlashtagsFeeds {
       if (err instanceof Err) throw err
       throw new Err(_err.failedCreateDrive)
     }
-    log.info(`Finished creating new drive for ${userId}`)
+    log.info(`Finished creating new drive for ${args.user_id}`)
 
     const url = format(
       b4a.from(userFeed.key, 'hex'),
