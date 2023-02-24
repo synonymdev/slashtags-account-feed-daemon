@@ -100,7 +100,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"method\":\"updateFeedBalance\",\n    \"params\":[\n        {\n            \"user_id\":\"satoshi123\",\n            \"wallet_name\":\"Bitcoin\",\n            \"amount\":1.442\n        }\n    ]\n}",
+					"raw": "{\n    \"method\":\"updateFeedBalance\",\n    \"params\":{\n            \"user_id\":\"satoshi123\",\n            \"wallet_name\":\"Bitcoin\",\n            \"amount\":1.442\n        }\n}",
 					"options": {
 						"raw": {
 							"language": "json"

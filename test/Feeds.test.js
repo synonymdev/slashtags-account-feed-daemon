@@ -451,11 +451,11 @@ describe('SlashtagsFeeds', () => {
   })
 
   describe('updateFeedBalance', () => {
-    const updates = [{
+    const update = {
       user_id: 'testUpdateFeed',
       wallet_name: 'Bitcoin',// XXX: this is part of the slashfeed,
       amount: 12
-    }]
+    }
 
     let feed
     before(async () => {
@@ -474,7 +474,7 @@ describe('SlashtagsFeeds', () => {
       })
       after(() => feed.ready = true)
 
-      it('fails if slahstags is not ready', async () => assert.rejects(async () => feed.updateFeedBalance(updates), error))
+      it('fails if slahstags is not ready', async () => assert.rejects(async () => feed.updateFeedBalance(update), error))
     })
 
     describe('Input handling', () => {
@@ -482,17 +482,17 @@ describe('SlashtagsFeeds', () => {
       before(() => error.message = SlashtagsFeeds.err.badUpdateParam)
 
       describe('wallet_name is not string', () => {
-        beforeEach(() => input = [{ ...updates[0], wallet_name: 1 }])
+        beforeEach(() => input = { ...update, wallet_name: 1 })
         it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
       })
 
       describe('user_id is not string', () => {
-        beforeEach(() => input = [{ ...updates[0], user_id: 1 }])
+        beforeEach(() => input = { ...update, user_id: 1 })
         it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
       })
 
       describe('amount is not numberic', () => {
-        beforeEach(() => input = [{ ...updates[0], amount: 'a' }])
+        beforeEach(() => input = { ...update, amount: 'a' })
         it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
       })
     })
@@ -506,22 +506,13 @@ describe('SlashtagsFeeds', () => {
       })
       after(() => feed.slashtags.update = updateFeed)
 
-      it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(updates), error))
-
-      describe('Partially correct input', () => {
-        before(() => error.message = SlashtagsFeeds.err.badUpdateParam)
-
-        it('throws an error', async () => assert.rejects(
-          async () => feed.updateFeedBalance([...updates, { ...updates[0], amount: 'a' }]),
-          error
-        ))
-      })
+      it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(update), error))
 
       describe('User does not exist', () => {
         before(() => error.message = SlashtagsFeeds.err.updateFeedFailed)
 
         it('throws an error', async () => assert.rejects(
-          async () => feed.updateFeedBalance([{...updates[0], user_id: 'do_not_exist' }]),
+          async () => feed.updateFeedBalance({...update, user_id: 'do_not_exist' }),
           error
         ))
       })
@@ -532,28 +523,28 @@ describe('SlashtagsFeeds', () => {
       before(async function() {
         this.timeout(5000)
 
-        await feed.deleteUserFeed({ user_id: updates[0].user_id })
-        await feed.createFeed({ user_id: updates[0].user_id })
-        res = await feed.updateFeedBalance(updates)
+        await feed.deleteUserFeed({ user_id: update.user_id })
+        await feed.createFeed({ user_id: update.user_id })
+        res = await feed.updateFeedBalance(update)
       })
 
-      it('returns true', () => assert.deepStrictEqual(res, [true]))
+      it('returns true', () => assert.deepStrictEqual(res, true))
       describe('Reading feed', () => {
         let feedReader
         let balance
         before(async () => {
           await feed.stop()
           feedReader = new Feeds(validConfig.slashtags, validConfig.feed_schema)
-          balance = await feedReader.get(updates[0].user_id, `wallet/${updates[0].wallet_name}/amount`)
+          balance = await feedReader.get(update.user_id, `wallet/${update.wallet_name}/amount`)
         })
 
         after(async () => {
           await feedReader.close()
           await feed.start()
-          await feed.deleteUserFeed({ user_id: updates[0].user_id })
+          await feed.deleteUserFeed({ user_id: update.user_id })
         })
 
-        it('returns correct balance', () => assert.equal(balance, updates[0].amount))
+        it('returns correct balance', () => assert.equal(balance, update.amount))
       })
     })
   })

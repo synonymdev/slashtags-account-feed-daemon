@@ -83,13 +83,11 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "method":"updateFeedBalance",
-    "params":[
-        {
-            "user_id":"satoshi123",
-            "wallet_name":"Bitcoin",
-            "amount":1.442
-        }
-    ]
+    "params": {
+        "user_id":"satoshi123",
+        "wallet_name":"Bitcoin",
+        "amount":1.442
+    }
 }'
 ```
 ``` json
@@ -97,9 +95,7 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 {
     "jsonrpc": "2.0",
     "id": "4fefad839fa440cc2a85d8178d1d895fa1044460080b8fe1a26b4942aa86c07f",
-    "result": [
-        true
-    ]
+    "result": true
 }
 ```
 

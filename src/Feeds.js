@@ -95,24 +95,22 @@ export default class SlashtagsFeeds {
    * @param {Object} updates[].amount amount
    */
   // TODO: consider opting for individual update as it improves error handling
-  async updateFeedBalance (updates) {
+  async updateFeedBalance (update) {
     if (!this.ready) throw new Err(_err.notReady)
     let res
     // XXX individual error handling vs general
     try {
-      res = await Promise.all(updates.map(async (update) => {
-        if (typeof update.wallet_name !== 'string' || typeof update.user_id !== 'string') throw new Err(_err.badUpdateParam)
-        if (Number.isNaN(+update.amount)) throw new Err(_err.badUpdateParam)
+      if (typeof update.wallet_name !== 'string' || typeof update.user_id !== 'string') throw new Err(_err.badUpdateParam)
+      if (Number.isNaN(+update.amount)) throw new Err(_err.badUpdateParam)
 
-        const existingUser = await this.db.findByUser(update.user_id)
-        if (!existingUser) throw new Err(this.err.userNotExists)
+      const existingUser = await this.db.findByUser(update.user_id)
+      if (!existingUser) throw new Err(this.err.userNotExists)
 
-        // NOTE: consider storing balance on db as well
-        // TODO: this might be changed after generalizing slashfeed.json
-        // XXX wallet is part of the schema which is not enforced in updateFeedBalance
-        await this.slashtags.update(update.user_id, this._getWalletFeedKey(update.wallet_name), update.amount)
-        return true
-      }))
+      // NOTE: consider storing balance on db as well
+      // TODO: this might be changed after generalizing slashfeed.json
+      // XXX wallet is part of the schema which is not enforced in updateFeedBalance
+      await this.slashtags.update(update.user_id, this._getWalletFeedKey(update.wallet_name), update.amount)
+      return true
     } catch (err) {
       log.err(err)
       if (err instanceof Err) throw err
