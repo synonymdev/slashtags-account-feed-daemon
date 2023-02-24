@@ -122,7 +122,13 @@ export default class Slashtag {
       throw new Err('FAILED_TO_STORE_SLASHFEED_FILE')
     }
 
-    return { feedUrl, url, batch }
+    return {
+      feedUrl,
+      url,
+      batch,
+      key: batch.key.toString('hex'),
+      encryptionKey: batch.core.encryptionKey.toString('hex')
+    }
   }
 
   async updateFeed (feedId, key, value, opts = { transactional: false }) {

@@ -48,6 +48,8 @@ describe('Slashtag', () => {
 
       it('has batch', () => assert(feed.batch))
       it('has feedUrl', () => assert(feed.feedUrl))
+      it('has key', () => assert(feed.key))
+      it('has encryptionKey', () => assert(feed.encryptionKey))
 
       describe('feedUrl', () => {
         let parsed
@@ -223,9 +225,7 @@ describe('Slashtag', () => {
           this.timeout(10000)
           await slashtag.getFeed(feedId)
           const { batch } = await slashtag.updateFeed(feedId, 'foo', 'bar', { transactional: true })
-          console.log('calling destroy')
           await batch.destroy()
-          console.log('called destroy')
 
           content = await slashtag.readFeed(feedId, 'foo')
         })
