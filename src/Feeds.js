@@ -30,7 +30,7 @@ const _err = {
   failedGettingActiveFeeds: 'FAILED_GETTING_ACTIVE_FEEDS',
   failedBroadcast: 'FAILED_BROADCAST',
   userExists: 'FAILED_TO_CREATE_USER_EXISTS',
-  userNotExists: 'FAILED_TO_CREATE_USER_EXISTS',
+  userNotExists: 'FAILED_TO_CREATE_USER_NOT_EXISTS',
   useridNotString: 'USER_ID_PARAM_NOT_STRING',
   processAlreadyRunning: 'PROCESS_ALREADY_RUNNING',
   feedNotFound: 'USER_FEED_NOT_FOUND',
@@ -43,7 +43,8 @@ const _err = {
 
   missingFields: 'MISSING_FIELDS',
   invialidFeedFields: 'INVALID_FEED_FIELDS',
-  missingFieldName: 'MISSING_FEED_FIELDS',
+  missingFieldName: 'MISSING_FIELD_NAME',
+  missingFieldDescription: 'MISSING_FIELD_DESCRIPTION',
   badFieldType: 'UNSUPPORTED_FIELD_TYPE',
 }
 
@@ -58,14 +59,35 @@ export default class SlashtagsFeeds {
     'utf-8',
   ]
 
+  static validateSchemaConfig(schemaConfig) {
+    if (!schemaConfig.name) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedName)
+    if (!schemaConfig.description) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedDescription)
+    if (!schemaConfig.icons) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedIcons)
+    if (!schemaConfig.fields) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedFields)
+    if (!Array.isArray(schemaConfig.fields)) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invialidFeedFields)
+
+    // FIXME (revise regexp)
+//    for (let size in schemaConfig.icons) {
+//      const icon = schemaConfig.icons[size]
+//      const imageRX = new RegExp('^data:image\/((svg\+xml)|(png));base64,.+$')
+//
+//      if (typeof icon !== 'string') throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invalidFeedIcon)
+//      if (!imageRX.test(icon)) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invalidFeedIcon)
+//    }
+
+    schemaConfig.fields.forEach((field) => {
+      if (field.type && (field.type !== '') && !SlashtagsFeeds.VALID_TYPES.includes(field.type)) {
+        throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.badFieldType)
+      }
+
+      if(!field.name) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFieldName)
+      if(!field.description) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFieldDescription)
+    })
+  }
+
   static generateSchema(config) {
     const { schemaConfig } = config
-
-    if (!schemaConfig.name) throw new Err(err.missingFeedName)
-    if (!schemaConfig.description) throw new Err(err.missingFeedDescription)
-    if (!schemaConfig.icons) throw new Err(err.missingFeedIcons)
-    if (!schemaConfig.fields) throw new Err(err.missingFeedFields)
-    if (Array.isArray(schemaConfig.fields)) throw new Err(err.invialidFeedFields)
+    SlashtagsFeeds.validateSchemaConfig(schemaConfig)
 
     const schema = {
       name: schemaConfig.name,
@@ -76,19 +98,10 @@ export default class SlashtagsFeeds {
     }
 
     for (let size in schemaConfig.icons) {
-      const icon = schemaConfig.icons[size]
-      const imageRX = new RegExp('^data:image\/((svg\+xml)|(png));base64.+$')
-
-      if (typeof icon !== 'string') throw new Error(err.invalidFeedIcon)
-      if (!imageRX.test(icon)) throw new Error(err.invalidFeedIcon)
-
-      schema.icons[size] = icon
+      schema.icons[size] = schemaConfig.icons[size]
     }
 
     schema.fields = schemaConfig.fields.map((field) => {
-      if (field.type && (field.type !== '') && !SlashtagsFeeds.VALID_TYPES.includes(field.type)) {
-        throw Err(err.badFieldType)
-      }
       return {
         name: field.name,
         description: field.description,
@@ -113,27 +126,21 @@ export default class SlashtagsFeeds {
     if (config.schemaConfig && !config.feed_schema) throw new Err(_.badConfig)
     if (!config.slashtags) throw new Err(_err.badConfig)
 
-    // schemaConfig overwrites feed_schema
-    if (config.schemaConfig) {
-      SlashtagsFeeds.generateSchema(config)
+    let feedSchema
+    if (config.feed_schema) {
+      feedSchema = config.feed_schema
+      SlashtagsFeeds.validateSchemaConfig(feedSchema)
+    } else if (config.schemaConfig) {
+      feedSchema = SlashtagsFeeds.generateSchema(config)
     }
+    SlashtagsFeeds.validateSchemaConfig(feedSchema)
 
     this.config = config
     this.db = new UserDb(config.db)
-    this.feed_schema = config.feed_schema
-    this.validateFeed(this.feed_schema)
+    this.feed_schema = feedSchema
     this.ready = false
     this.slashtags = null
     this.lock = new Map()
-  }
-
-  validateFeed (schema) {
-    if (!schema) throw new Err(_err.invalidSchema)
-
-    const keys = ['image', 'name', 'feed_type', 'version']
-    keys.forEach((k) => {
-      if (!schema[k]) throw new Err(_err.invalidSchema)
-    })
   }
 
   async start () {
@@ -165,17 +172,28 @@ export default class SlashtagsFeeds {
    */
   async updateFeedBalance (update) {
     if (!this.ready) throw new Err(_err.notReady)
+
+    this.validateUpdate(update)
+
+    const existingUser = await this.db.findByUser(update.user_id)
+    if (!existingUser) throw new Err(_err.userNotExists)
+
     try {
-      if (typeof update.wallet_name !== 'string' || typeof update.user_id !== 'string') throw new Err(_err.badUpdateParam)
-      if (Number.isNaN(+update.amount)) throw new Err(_err.badUpdateParam)
-
-      const existingUser = await this.db.findByUser(update.user_id)
-      if (!existingUser) throw new Err(this.err.userNotExists)
-
       // NOTE: consider storing balance on db as well
-      // TODO: this might be changed after generalizing slashfeed.json
-      // XXX wallet is part of the schema which is not enforced in updateFeedBalance
-      await this.slashtags.update(update.user_id, this._getWalletFeedKey(update.wallet_name), update.amount)
+      for (let field of update.fields) {
+        await this.slashtags.update(
+          update.user_id,
+          `/${field.name}/main`,
+          field.value
+        )
+
+        // TODO: update not main
+        // await this.slashtags.update(
+        //   update.user_id,
+        //   `${field.name}/${(new Date()).getTime()}`,
+        //   field.value
+        // )
+      }
       return { updated: true }
     } catch (err) {
       log.err(err)
@@ -276,14 +294,17 @@ export default class SlashtagsFeeds {
    * @param {String} userId
    */
   async _initFeed (args) {
-    // XXX wallet is part of the schema which is not enforced in updateFeedBalance
-    return Promise.all(this.feed_schema.wallets.map(async (w) => {
-      await this.slashtags.update(args.user_id, this._getWalletFeedKey(w.wallet_name), args.init_data || null)
-    }))
-  }
-
-  _getWalletFeedKey (wname) {
-    return `wallet/${wname}/amount`
+    return Promise.all(
+      this.feed_schema.fields.map(
+        async (field) => {
+          await this.slashtags.update(
+            args.user_id,
+            `/${field.name}/main`,
+            args.init_data || null
+          )
+        }
+      )
+    )
   }
 
   async createFeed (args) {
@@ -380,6 +401,16 @@ export default class SlashtagsFeeds {
     }
     return {
       feeds_started: res.length
+    }
+  }
+
+  validateUpdate(update) {
+    if (!update.user_id) throw new Error('missing user id')
+    if (!update.fields || !Array.isArray(update.fields)) throw new Error('invalid update fields')
+    for (let field of update.fields) {
+      if (!field.name) throw new Error('missing field name')
+      if (!field.value) throw new Error('missing field value')
+      // TODO: validate values according to specified types
     }
   }
 }
