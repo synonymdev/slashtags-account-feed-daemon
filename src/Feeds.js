@@ -33,12 +33,74 @@ const _err = {
   userNotExists: 'FAILED_TO_CREATE_USER_EXISTS',
   useridNotString: 'USER_ID_PARAM_NOT_STRING',
   processAlreadyRunning: 'PROCESS_ALREADY_RUNNING',
-  feedNotFound: 'USER_FEED_NOT_FOUND'
+  feedNotFound: 'USER_FEED_NOT_FOUND',
+
+  missingFeedName: 'MISSING_FEED_NAME',
+  missingFeedDescription: 'MISSING_FEED_DESCRIPTION',
+  missingFeedIcons: 'MISSING_FEED_ICONS',
+  missingFeedFields: 'MISSING_FEED_FIELDS',
+  invalidFeedIcon: 'INVALID_FEED_ICON',
+
+  missingFields: 'MISSING_FIELDS',
+  invialidFeedFields: 'INVALID_FEED_FIELDS',
+  missingFieldName: 'MISSING_FEED_FIELDS',
+  badFieldType: 'UNSUPPORTED_FIELD_TYPE',
 }
 
 export default class SlashtagsFeeds {
   static err = _err
   static Error = Err
+
+  static DEFAULT_SCHEMA_PATH = './schemas/slashfeed.json'
+  static VALID_TYPES = [
+    'number',
+    'number-chage',
+    'utf-8',
+  ]
+
+  static generateSchema(config) {
+    const { schemaConfig } = config
+
+    if (!schemaConfig.name) throw new Err(err.missingFeedName)
+    if (!schemaConfig.description) throw new Err(err.missingFeedDescription)
+    if (!schemaConfig.icons) throw new Err(err.missingFeedIcons)
+    if (!schemaConfig.fields) throw new Err(err.missingFeedFields)
+    if (Array.isArray(schemaConfig.fields)) throw new Err(err.invialidFeedFields)
+
+    const schema = {
+      name: schemaConfig.name,
+      description: schemaConfig.description,
+      type: 'account_feed',
+      version: '0.0.1',
+      icons: {},
+    }
+
+    for (let size in schemaConfig.icons) {
+      const icon = schemaConfig.icons[size]
+      const imageRX = new RegExp('^data:image\/((svg\+xml)|(png));base64.+$')
+
+      if (typeof icon !== 'string') throw new Error(err.invalidFeedIcon)
+      if (!imageRX.test(icon)) throw new Error(err.invalidFeedIcon)
+
+      schema.icons[size] = icon
+    }
+
+    schema.fields = schemaConfig.fields.map((field) => {
+      if (field.type && (field.type !== '') && !SlashtagsFeeds.VALID_TYPES.includes(field.type)) {
+        throw Err(err.badFieldType)
+      }
+      return {
+        name: field.name,
+        description: field.description,
+        main: `/${field.name}/main`,
+        type: field.type || 'utf-8'
+      }
+    })
+
+    fs.writeFileSync(this.DEFAULT_SCHEMA_PATH, schema, 'utf-8')
+
+    return schema
+  }
 
   /**
    * @param {String} config.db.name Database name
@@ -47,10 +109,18 @@ export default class SlashtagsFeeds {
    * @param {String} config.slashtags.key Feeds seed key
    */
   constructor (config) {
+    // Either schema needs to provided or its configuration
+    if (config.schemaConfig && !config.feed_schema) throw new Err(_.badConfig)
+    if (!config.slashtags) throw new Err(_err.badConfig)
+
+    // schemaConfig overwrites feed_schema
+    if (config.schemaConfig) {
+      SlashtagsFeeds.generateSchema(config)
+    }
+
     this.config = config
     this.db = new UserDb(config.db)
     this.feed_schema = config.feed_schema
-    if (!config.slashtags) throw new Err(_err.badConfig)
     this.validateFeed(this.feed_schema)
     this.ready = false
     this.slashtags = null
