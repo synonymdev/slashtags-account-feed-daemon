@@ -46,6 +46,7 @@ const _err = {
   missingFieldName: 'MISSING_FIELD_NAME',
   missingFieldDescription: 'MISSING_FIELD_DESCRIPTION',
   badFieldType: 'UNSUPPORTED_FIELD_TYPE',
+  missingFieldValue: 'MISSING_FIELD_VALUE',
 }
 
 export default class SlashtagsFeeds {
@@ -214,7 +215,7 @@ export default class SlashtagsFeeds {
         log.info(`Deleting user that does not exist: ${userId}`)
         return { deleted: true }
       }
-      // TODO: this needs to be atomic to prevent discrepancy between local DB and Hyperdrive
+      // XXX: this needs to be atomic to prevent discrepancy between local DB and Hyperdrive
       await this.db.removeUser(userId)
       await this.slashtags.destroy(userId)
     } catch (err) {
@@ -340,7 +341,7 @@ export default class SlashtagsFeeds {
 
     const userFeed = await this.getFeedKey(args) // Find or create the Slashdrive
 
-    // TODO: this needs to be atomic to prevent discrepancy between local DB and Hyperdrive
+    // XXX: this needs to be atomic to prevent discrepancy between local DB and Hyperdrive
     try {
       await this._initFeed(args)
     } catch (err) {
@@ -405,11 +406,12 @@ export default class SlashtagsFeeds {
   }
 
   validateUpdate(update) {
-    if (!update.user_id) throw new Error('missing user id')
-    if (!update.fields || !Array.isArray(update.fields)) throw new Error('invalid update fields')
+    if (!update.user_id) throw new Err(_err.userIdMissing)
+    if (!update.fields) throw new Err(_err.missingFields)
+    if (!Array.isArray(update.fields)) throw new Err(_err.invialidFeedFields)
     for (let field of update.fields) {
-      if (!field.name) throw new Error('missing field name')
-      if (!field.value) throw new Error('missing field value')
+      if (!field.name) throw new Err(_err.missingFieldName)
+      if (!field.value) throw new Err(_err.missingFieldValue)
       // TODO: validate values according to specified types
     }
   }
