@@ -1,0 +1,23 @@
+{
+    "name": "whatever",
+    "description": "more descriptive whatever",
+    "icons": {
+      "<size>": "/images/<name>_48.svg/png"
+    },
+    "type": "account_feed",
+    "version": "0.0.1",
+    "fields": [
+        {
+            "name": "Balance",
+            "description": "Bitcoin balance",
+            "main": "any path",
+            "type": "number"
+        },
+        {
+            "name": "Balance Change",
+            "description": "foobar { value: number, change: number}",
+            "main": "any path",
+            "type": "number-change"
+        }
+    ]
+}
