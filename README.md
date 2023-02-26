@@ -85,8 +85,12 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
     "method":"updateFeedBalance",
     "params": {
         "user_id":"satoshi123",
-        "wallet_name":"Bitcoin",
-        "amount":1.442
+        "fields": [
+          {
+            "name": "Bitcoin",
+            "value": 1.442
+          }
+        ]
     }
 }'
 ```

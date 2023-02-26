@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "009bab8c-5ce3-4c71-b4d3-fabfed639da1",
+		"_postman_id": "ea4f7e42-4b6e-4040-9464-d58d02793e3d",
 		"name": "Feeds Daemon",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "25849674"
@@ -100,7 +100,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"method\":\"updateFeedBalance\",\n    \"params\":{\n            \"user_id\":\"satoshi123\",\n            \"wallet_name\":\"Bitcoin\",\n            \"amount\":1.442\n        }\n}",
+					"raw": "{\n    \"method\":\"updateFeedBalance\",\n    \"params\":[\n        {\n            \"user_id\":\"satoshi123\",\n            \"wallet_name\":\"Bitcoin\",\n            \"amount\":1.442\n        }\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
