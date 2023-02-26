@@ -47,6 +47,8 @@ const _err = {
   missingFieldDescription: 'MISSING_FIELD_DESCRIPTION',
   badFieldType: 'UNSUPPORTED_FIELD_TYPE',
   missingFieldValue: 'MISSING_FIELD_VALUE',
+  unknownField: 'UKNOWN_FIELD',
+  invalidFieldValue: 'INVALID_FIELD_VALUE',
 }
 
 export default class SlashtagsFeeds {
@@ -56,7 +58,7 @@ export default class SlashtagsFeeds {
   static DEFAULT_SCHEMA_PATH = './schemas/slashfeed.json'
   static VALID_TYPES = [
     'number',
-    'number-chage',
+    'number-change',
     'utf-8',
   ]
 
@@ -412,9 +414,19 @@ export default class SlashtagsFeeds {
     if (update.fields.length === 0) throw new Err(_err.invalidFeedFields)
 
     for (let field of update.fields) {
-      if (!field.name) throw new Err(_err.missingFieldName)
-      if (!field.value) throw new Err(_err.missingFieldValue)
-      // TODO: validate values according to specified types
+      this.validateFieldUpdate(field)
+    }
+  }
+
+  validateFieldUpdate(field) {
+    if (!field.name) throw new Err(_err.missingFieldName)
+    if (!field.value) throw new Err(_err.missingFieldValue)
+
+    const schemaField = this.feed_schema.fields.find((sF) => sF.name === field.name)
+    if (!schemaField) throw new Err(_err.unknownField)
+
+    if (schemaField.type === 'number-change') {
+      if (!(field.value.value && field.value.change)) throw new Err(_err.invalidFieldValue)
     }
   }
 }

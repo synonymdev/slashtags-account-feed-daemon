@@ -9,11 +9,13 @@
   "fields" : [
     {
       "name" : "Bitcoin",
-      "description" : "Bitcoin balance"
+      "description" : "Bitcoin balance",
+      "type": "number"
     },
     {
       "name" : "Bitcoin Change",
-      "description" : "Bitcoin balance change"
+      "description" : "Bitcoin balance change",
+      "type": "number-change"
     }
   ]
 }
