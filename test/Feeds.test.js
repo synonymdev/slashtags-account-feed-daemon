@@ -40,6 +40,7 @@ describe('SlashtagsFeeds', () => {
         slashtags: path.resolve('./test-data/storage'),
       }
 
+      //      TODO:
 //      describe('Invalid feed schema', () => {
 //        before(() => error.message = SlashtagsFeeds.err.invalidSchema)
 //
@@ -485,25 +486,57 @@ describe('SlashtagsFeeds', () => {
       it('fails if slahstags is not ready', async () => assert.rejects(async () => feed.updateFeedBalance(update), error))
     })
 
-//    describe('Input handling', () => {
-//      let input
-//      before(() => error.message = SlashtagsFeeds.err.badUpdateParam)
-//
-//      describe('wallet_name is not string', () => {
-//        beforeEach(() => input = { ...update, wallet_name: 1 })
-//        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
-//      })
-//
-//      describe('user_id is not string', () => {
-//        beforeEach(() => input = { ...update, user_id: 1 })
-//        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
-//      })
-//
-//      describe('amount is not numberic', () => {
-//        beforeEach(() => input = { ...update, amount: 'a' })
-//        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
-//      })
-//    })
+    describe('Input handling', () => {
+      let input
+
+      describe('user_id is missing', () => {
+        before(() => {
+          input = { ...update, user_id: undefined }
+          error.message = SlashtagsFeeds.err.userIdMissing
+        })
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+      })
+
+      describe('fields is missing', () => {
+        before(() => {
+          input = { ...update, fields: undefined }
+          error.message = SlashtagsFeeds.err.missingFields
+        })
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+      })
+
+      describe('fields is not an array', () => {
+        before(() => {
+          input = { ...update, fields: 'fields' }
+          error.message = SlashtagsFeeds.err.invalidFeedFields
+        })
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+      })
+
+      describe('fields is empty array', () => {
+        before(() => {
+          input = { ...update, fields: [] }
+          error.message = SlashtagsFeeds.err.invalidFeedFields
+        })
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+      })
+
+      describe('field is missing name', () => {
+        before(() => {
+          input = { ...update, fields: [{ value: 1 }]}
+          error.message = SlashtagsFeeds.err.missingFieldName
+        })
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+      })
+
+      describe('field is missing value', () => {
+        before(() => {
+          input = { ...update, fields: [{ name: 1 }]}
+          error.message = SlashtagsFeeds.err.missingFieldValue
+        })
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+      })
+    })
 
     describe('Error handling', () => {
       describe('User does not exist', () => {

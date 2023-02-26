@@ -42,7 +42,7 @@ const _err = {
   invalidFeedIcon: 'INVALID_FEED_ICON',
 
   missingFields: 'MISSING_FIELDS',
-  invialidFeedFields: 'INVALID_FEED_FIELDS',
+  invalidFeedFields: 'INVALID_FEED_FIELDS',
   missingFieldName: 'MISSING_FIELD_NAME',
   missingFieldDescription: 'MISSING_FIELD_DESCRIPTION',
   badFieldType: 'UNSUPPORTED_FIELD_TYPE',
@@ -65,7 +65,7 @@ export default class SlashtagsFeeds {
     if (!schemaConfig.description) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedDescription)
     if (!schemaConfig.icons) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedIcons)
     if (!schemaConfig.fields) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedFields)
-    if (!Array.isArray(schemaConfig.fields)) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invialidFeedFields)
+    if (!Array.isArray(schemaConfig.fields)) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invalidFeedFields)
 
     // FIXME (revise regexp)
 //    for (let size in schemaConfig.icons) {
@@ -408,7 +408,9 @@ export default class SlashtagsFeeds {
   validateUpdate(update) {
     if (!update.user_id) throw new Err(_err.userIdMissing)
     if (!update.fields) throw new Err(_err.missingFields)
-    if (!Array.isArray(update.fields)) throw new Err(_err.invialidFeedFields)
+    if (!Array.isArray(update.fields)) throw new Err(_err.invalidFeedFields)
+    if (update.fields.length === 0) throw new Err(_err.invalidFeedFields)
+
     for (let field of update.fields) {
       if (!field.name) throw new Err(_err.missingFieldName)
       if (!field.value) throw new Err(_err.missingFieldValue)
