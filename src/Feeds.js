@@ -69,14 +69,13 @@ export default class SlashtagsFeeds {
     if (!schemaConfig.fields) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedFields)
     if (!Array.isArray(schemaConfig.fields)) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invalidFeedFields)
 
-    // FIXME (revise regexp)
-//    for (let size in schemaConfig.icons) {
-//      const icon = schemaConfig.icons[size]
-//      const imageRX = new RegExp('^data:image\/((svg\+xml)|(png));base64,.+$')
-//
-//      if (typeof icon !== 'string') throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invalidFeedIcon)
-//      if (!imageRX.test(icon)) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invalidFeedIcon)
-//    }
+    const imageRX = new RegExp('^data:image\/((svg\\+xml)|(png));base64,.+$')
+    for (let size in schemaConfig.icons) {
+      const icon = schemaConfig.icons[size]
+
+      if (typeof icon !== 'string') throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invalidFeedIcon)
+      if (!imageRX.test(icon)) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invalidFeedIcon)
+    }
 
     schemaConfig.fields.forEach((field) => {
       if (field.type && (field.type !== '') && !SlashtagsFeeds.VALID_TYPES.includes(field.type)) {
