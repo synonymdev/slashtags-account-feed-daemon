@@ -590,8 +590,8 @@ describe('SlashtagsFeeds', () => {
         before(async () => {
           await feed.stop()
           feedReader = new Feeds(validConfig.slashtags, validConfig.feed_schema)
-          balance = await feedReader.get(update.user_id, `/${update.fields[0].name}/main`)
-          balanceChange = await feedReader.get(update.user_id, `/${update.fields[1].name}/main`)
+          balance = await feedReader.get(update.user_id, feed.getFileName(update.fields[0]))
+          balanceChange = await feedReader.get(update.user_id, feed.getFileName(update.fields[1]))
         })
 
         after(async () => {

@@ -107,7 +107,7 @@ export default class SlashtagsFeeds {
       return {
         name: field.name,
         description: field.description,
-        main: `/${field.name}/`,
+        main: path.join(Feeds.FEED_PREFIX, this.getFileName(field)),
         type: field.type || 'utf-8'
       }
     })
@@ -153,10 +153,6 @@ export default class SlashtagsFeeds {
       throw new Err(_err.dbFailedStart)
     }
     this.slashtags = new Feeds(this.config.slashtags, this.feed_schema)
-    // TODO: check if "writing" flag exists and fail if so
-    // NOTE: check with new slashtags instance but using different data-dir to exclude os level locks
-    // create writing flag otherwise
-    // add stop method to remove writing flag
     this.ready = true
   }
 
@@ -183,18 +179,7 @@ export default class SlashtagsFeeds {
     try {
       // NOTE: consider storing balance on db as well
       for (let field of update.fields) {
-        await this.slashtags.update(
-          update.user_id,
-          `/${field.name}/`,
-          field.value
-        )
-
-        // TODO: update not main
-        // await this.slashtags.update(
-        //   update.user_id,
-        //   `${field.name}/${(new Date()).getTime()}`,
-        //   field.value
-        // )
+        await this.slashtags.update(update.user_id, this.getFileName(field), field.value)
       }
       return { updated: true }
     } catch (err) {
@@ -302,7 +287,7 @@ export default class SlashtagsFeeds {
         async (field) => {
           await this.slashtags.update(
             args.user_id,
-            `/${field.name}/main`,
+            this.getFileName(field),
             args.init_data || null
           )
         }
@@ -426,5 +411,12 @@ export default class SlashtagsFeeds {
     if (schemaField.type === 'number-change') {
       if (!(field.value.value && field.value.change)) throw new Err(_err.invalidFieldValue)
     }
+  }
+
+  getFileName(field) {
+    const regex = /[^a-z0-9]+/gi
+    const trailing = /-+$/
+
+    return `/${field.name.toLowerCase().trim().replace(regex, '-').replace(trailing, '')}/`
   }
 }
