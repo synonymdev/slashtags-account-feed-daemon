@@ -10,11 +10,13 @@
     {
       "name" : "Bitcoin",
       "description" : "Bitcoin balance",
+      "main": "/bitcoin/",
       "type": "number"
     },
     {
       "name" : "Bitcoin Change",
       "description" : "Bitcoin balance change",
+      "main": "/bitcoin-change/",
       "type": "number-change"
     }
   ]

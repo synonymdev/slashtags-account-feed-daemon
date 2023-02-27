@@ -1,9 +1,8 @@
 {
-
-  "user_id":[
+  "userIds":[
     "abcde123",
     "satoshi9191",
     "synonymxyz"
   ],
-  "timer": 5000
+  "feedTimer": 5000
 }

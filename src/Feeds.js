@@ -107,7 +107,7 @@ export default class SlashtagsFeeds {
       return {
         name: field.name,
         description: field.description,
-        main: `/${field.name}/main`,
+        main: `/${field.name}/`,
         type: field.type || 'utf-8'
       }
     })
@@ -185,7 +185,7 @@ export default class SlashtagsFeeds {
       for (let field of update.fields) {
         await this.slashtags.update(
           update.user_id,
-          `/${field.name}/main`,
+          `/${field.name}/`,
           field.value
         )
 
@@ -247,6 +247,7 @@ export default class SlashtagsFeeds {
       throw new Err(_err.userNoFeed)
     }
     return {
+      // XXX should it be hex or base32
       key: userFeed.key.toString('hex'),
       encryption_key: userFeed.encryptionKey.toString('hex')
     }

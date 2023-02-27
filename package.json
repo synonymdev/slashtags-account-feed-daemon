@@ -20,6 +20,7 @@
     "z32": "^1.0.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^7.6.0",
     "corestore": "^6.0.0",
     "hyperdrive": "github:Nazeh/hyperdrive-next#pass-options",
     "hyperswarm": "^4.2.0",
