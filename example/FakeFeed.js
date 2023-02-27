@@ -11,16 +11,7 @@ const userLogger = (userId) => debug(`example:${userId}`)
 
 async function main (config) {
   appLogger('Starting account feed')
-  let persitedUserIds
-  try {
-    persitedUserIds = await setupUsers()
-  } catch (e) {
-    if (e.message.includes('ECONNREFUSED')) {
-      debug('example:error')(`Error: ${TARGET} is not reachable`)
-      return
-    }
-    throw e
-  }
+  const persitedUserIds = await setupUsers()
 
   setInterval(async () => await updateUsers([...persitedUserIds]), config.feedTimer)
 }
@@ -79,7 +70,14 @@ async function getFeed(userId) {
 }
 
 async function callRPC(method, params) {
-  return await axios.post(TARGET, { method, params })
+  try {
+    return await axios.post(TARGET, { method, params })
+  } catch (e) {
+    if (e.message.includes('ECONNREFUSED')) {
+      debug('example:error')(`Error: ${TARGET} is not reachable`)
+    }
+    throw e.message
+  }
 }
 
 main(config)
