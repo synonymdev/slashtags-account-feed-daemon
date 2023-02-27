@@ -392,9 +392,7 @@ export default class SlashtagsFeeds {
     let res
     try {
       res = await Promise.all(feeds.map((user) => {
-        return this.slashtags.feed(user.user_id, {
-          announce: true
-        })
+        return this.slashtags.feed(user.user_id)
       }))
     } catch (err) {
       log.error(err)

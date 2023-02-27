@@ -356,7 +356,7 @@ describe('SlashtagsFeeds', () => {
           this.timeout(5000)
           await feed.stop()
           feedReader = new Feeds(validConfig.slashtags, validConfig.feed_schema)
-          res = await feedReader.get(input.user_id, `wallet/Bitcoin/amount`)
+          res = await feedReader.get(input.user_id, `/Bitcoin/main`)
         })
 
         after(async () => {
