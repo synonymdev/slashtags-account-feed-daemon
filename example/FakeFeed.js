@@ -2,23 +2,31 @@ import { faker } from '@faker-js/faker'
 import debug from 'debug'
 import axios from 'axios';
 import config from './config.json' assert { type: 'json' }
+import serverConfig from '../schemas/config.json' assert { type: 'json' }
 
-const TARGET = 'http://127.0.0.1:8787/v0.1/rpc'
-const logger = debug('example')
+const TARGET = `http://${serverConfig.rpc.host || 'localhost'}:${serverConfig.rpc.port}/v0.1/rpc`
+
+const appLogger = debug('example')
+const userLogger = (userId) => debug(`example:${userId}`)
 
 async function main (config) {
-  logger('### Starting account feed ###')
-  const persitedUserIds = await setupUsers()
+  appLogger('Starting account feed')
+  let persitedUserIds
+  try {
+    persitedUserIds = await setupUsers()
+  } catch (e) {
+    if (e.message.includes('ECONNREFUSED')) {
+      debug('example:error')(`Error: ${TARGET} is not reachable`)
+      return
+    }
+    throw e
+  }
 
-  await new Promise(r => setTimeout(r, config.feedTimer));
-
-  setInterval(async () => {
-    await updateUsers([...persitedUserIds])
-  }, config.feedTimer)
+  setInterval(async () => await updateUsers([...persitedUserIds]), config.feedTimer)
 }
 
 async function setupUsers() {
-  logger('--- Seting up users ---')
+  appLogger('Seting up users')
   let userIds = []
   for (let userId of config.userIds) {
     userIds.push(userId)
@@ -26,18 +34,19 @@ async function setupUsers() {
 
     if (createdFeed.data.error?.message === 'FAILED_TO_CREATE_USER_EXISTS') {
       const retreivedFeed = await getFeed(userId)
-      logger(`User "${userId}" already exists: ${retreivedFeed.data.result.url}`)
+      userLogger(userId)(`already exists: ${retreivedFeed.data.result.url}`)
       continue
     }
 
     if (createdFeed.data.error) throw new Error(createdFeed.data.error)
 
-    logger(`Created feed for "${userId}": ${createdFeed.data.result.url}`)
+    userLogger(userId)(`Created feed: ${createdFeed.data.result.url}`)
   }
   return userIds
 }
 
 async function updateUsers(userIds) {
+  appLogger('Updating user feeds')
   for (let userId of userIds) {
     let update = [
       {
@@ -53,7 +62,7 @@ async function updateUsers(userIds) {
       }
     ]
     await updateFeed(userId, update)
-    logger(`Updated user "${userId}":`, update.map(u => `${u.name}: ${JSON.stringify(u.value)}`))
+    userLogger(userId)(`Updated feed:`, update.map(u => `${u.name}: ${JSON.stringify(u.value)}`))
   }
 }
 

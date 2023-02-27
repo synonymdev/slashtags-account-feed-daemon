@@ -1,6 +1,7 @@
 {
   "rpc":{
-    "port": 8787
+    "port": 8787,
+    "host": "127.0.0.1"
   },
   "slashtags_dir":"./data",
   "db":{
