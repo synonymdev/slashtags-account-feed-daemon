@@ -7,7 +7,7 @@ import { rnd } from '../src/util.js'
 const noop = () => {}
 describe('RPC ', () => {
   const ERROR_NAME = 'RPC_ERROR'
-  const ENDPOINTS = ['createFeed', 'updateFeedBalance', 'deleteUserFeed', 'getFeed']
+  const ENDPOINTS = ['createFeed', 'updateFeed', 'deleteFeed', 'getFeed']
 
   describe('Config', () => {
     it('fails without port', () => assert.throws(

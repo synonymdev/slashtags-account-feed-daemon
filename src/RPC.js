@@ -87,23 +87,23 @@ export default function (config) {
   const endpointList = [
     {
       name: 'createFeed',
-      description: 'Create a user drive',
+      description: 'Create a feed drive',
       svc: 'feeds.createFeed'
     },
     {
-      name: 'updateFeedBalance',
-      description: "Update user's feed balance",
+      name: 'updateFeed',
+      description: "Update feed feed",
       svc: 'feeds.updateFeedBalance'
     },
     {
       name: 'getFeed',
-      description: 'Get a user feed key',
+      description: 'Get a feed key',
       svc: 'feeds.getFeed'
     },
     {
-      name: 'deleteUserFeed',
-      description: 'Delete a user feed',
-      svc: 'feeds.deleteUserFeed'
+      name: 'deleteFeed',
+      description: 'Delete a feed',
+      svc: 'feeds.deleteFeed'
     }
   ]
 
