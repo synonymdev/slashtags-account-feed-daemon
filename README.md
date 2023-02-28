@@ -1,11 +1,17 @@
 # Slashtags Exchange Feeds Daemon
 
-A simple HTTP RPC deamon to enable publishing Slashtags Exchange Feeds.
+A simple HTTP RPC deamon to enable publishing Slashtags Exchange Feeds. Can be used either as a [Library](#import-as-library) or as a [Daemon](#run-as-daemon)
 
 ## Import as Library
+
+Install as a dependency
+
 ```sh
 npm i @synonymdev/feeds-daemon 
 ```
+
+Import to your code and instantiate providing corresponding parameters and start the server
+
 ```js
 const { Feeds } = require('@synonymdev/feeds-daemon')
 const feeds = new Feeds({
@@ -18,16 +24,14 @@ const feeds = new Feeds({
 })
 
 await feeds.start()
-
-// You can now call various functions
-
-let feed = await feeds.getFeed({ user_id: "123123" })
-
 ```
 
+You can now call various functions
+```js
+let feed = await feeds.getFeed({ feed_id: "123123" })
+```
 
-
-## How to run as Daemon
+## Run as Daemon
 
 **1. Setup config**
 Go to `./schema/config.json` Update config items.
@@ -42,15 +46,24 @@ mkdir ./db
 node start.js
 ```
 
-**Enable detailed logs** ``` DEBUG=stfeed:*```
+### *Enable detailed logs specifying env variable**
 
-**Run with PM2** `pm2 start`
+`DEBUG=stfeed:*`
 
+###  *Run with PM2
 
-## README
+*`pm2 start`
+
+## Test & Development
+There are tests for all methods located in `./test` dir. You can run them by `npm run test`
+There examples in `./examples` folder. They require running daemon. Run `npm run start` to start daemon and in separate terminal run `npm run example:account` to start generating account feed. See [examples readme](./example/README.md) for more details
+
+## RPC API
+
 **A Postman collection has been provided.**
+
 ### Create Feed
-Create an exchange feed for a user
+Create a feed request
 ``` sh
 /// Request Body
 curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
@@ -58,12 +71,12 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --data-raw '{
     "method":"createFeed",
     "params":{
-        "user_id":"satoshi123"
+        "feed_id":"satoshi123"
     }
 }'
 ```
+Response
 ``` json
-/// Response
 {
     "jsonrpc": "2.0",
     "id": "925b10c27f4ad350ab3ef7e027605fd83388c999a890cfdd8e6061656b5a5513",
@@ -76,15 +89,15 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 }
 ```
 
-### Update Balance Feed
-Update a wallet's balance for a user's feed.
+### Update Feed
+Update feed request
 ``` sh
 curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "method":"updateFeedBalance",
     "params": {
-        "user_id":"satoshi123",
+        "feed_id":"satoshi123",
         "fields": [
           {
             "name": "Bitcoin",
@@ -94,8 +107,8 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
     }
 }'
 ```
+Response
 ``` json
-/// Response
 {
     "jsonrpc": "2.0",
     "id": "4fefad839fa440cc2a85d8178d1d895fa1044460080b8fe1a26b4942aa86c07f",
@@ -103,17 +116,17 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 }
 ```
 
-### Get Feed key by user id
+### Get Feed
 ``` sh
 curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "method":"getFeed",
-    "params":{ "user_id" : "satoshi123" }
+    "params":{ "feed_id" : "satoshi123" }
 }'
 ```
+Response
 ``` json
-/// Response
 {
     "jsonrpc": "2.0",
     "id": "c6ccd88f842330ab60153b5fb512101d2ab76824189eee5690f9070ebe18cb87",
@@ -124,17 +137,17 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 }
 ```
 
-### Delete User Feed
+### Delete Feed
 ```sh
 curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "method":"deleteUserFeed",
-    "params":{ "user_id" : "satoshi123" }
+    "method":"deleteFeed",
+    "params":{ "feed_id" : "satoshi123" }
 }'
 ```
+Response
 ``` json
-/// Response
 {
     "jsonrpc": "2.0",
     "id": "c6ccd88f842330ab60153b5fb512101d2ab76824189eee5690f9070ebe18cb87",
@@ -144,13 +157,3 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 }
 ```
 
-
-### Test & Development
-
-There is a tests for all methods located in `./test` dir
-
-### Dev Scripts
-You can use the following scripts for dev.
-* `./util/CreateUsers.js` Create Fake users
-* `./util/FakeFeed.js` Broadcast a fake feed for users created in previous step
-* `./util/ListenRemoteFeed.js` Listen to a exchange feed
