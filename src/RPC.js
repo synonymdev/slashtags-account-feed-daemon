@@ -4,10 +4,10 @@ import Endpoints from './Endpoints.js'
 import Schema from '../schemas/slashfeed.json' assert { type: 'json' }
 
 import util from './BaseUtil.js'
-const { Err, log } = util('RPC', __filename())
 
 import Fastify from 'fastify'
 import formBodyPlugin from '@fastify/formbody'
+const { Err, log } = util('RPC', __filename())
 
 function loadFastify () {
   const fastify = Fastify({})
@@ -75,7 +75,6 @@ class RequestContext {
   }
 }
 
-
 export default function (config) {
   if (!config) {
     config = Schema
@@ -92,7 +91,7 @@ export default function (config) {
     },
     {
       name: 'updateFeed',
-      description: "Update feed feed",
+      description: 'Update feed feed',
       svc: 'feeds.updateFeedBalance'
     },
     {

@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import debug from 'debug'
-import axios from 'axios';
+import axios from 'axios'
 import config from './config.json' assert { type: 'json' }
 import serverConfig from '../schemas/config.json' assert { type: 'json' }
 
@@ -15,12 +15,12 @@ async function main (config) {
   setInterval(async () => await updateAccounts(accountIds), config.feedTimer)
 }
 
-async function setupAccounts() {
+async function setupAccounts () {
   appLogger('Seting up accounts')
   appLogger('Config:')
   appLogger(config)
-  let accountIds = []
-  for (let accountId of config.accountIds) {
+  const accountIds = []
+  for (const accountId of config.accountIds) {
     accountIds.push(accountId)
     const createdFeed = await createFeed(accountId)
 
@@ -37,10 +37,10 @@ async function setupAccounts() {
   return accountIds
 }
 
-async function updateAccounts(accountIds) {
+async function updateAccounts (accountIds) {
   appLogger('Updating account feeds')
-  for (let accountId of accountIds) {
-    let update = [
+  for (const accountId of accountIds) {
+    const update = [
       {
         name: 'Bitcoin',
         value: faker.finance.amount(5, 10, 2)
@@ -49,28 +49,28 @@ async function updateAccounts(accountIds) {
         name: 'Bitcoin Change',
         value: {
           value: faker.finance.amount(5, 10, 2),
-          change: faker.finance.amount(0, 100),
+          change: faker.finance.amount(0, 100)
         }
       }
     ]
     await updateFeed(accountId, update)
-    accountLogger(accountId)(`Updated feed:`, update.map(u => `${u.name}: ${JSON.stringify(u.value)}`))
+    accountLogger(accountId)('Updated feed:', update.map(u => `${u.name}: ${JSON.stringify(u.value)}`))
   }
 }
 
-async function createFeed(accountId) {
+async function createFeed (accountId) {
   return await callRPC('createFeed', { feed_id: accountId })
 }
 
-async function updateFeed(accountId, update) {
+async function updateFeed (accountId, update) {
   return await callRPC('updateFeed', { feed_id: accountId, fields: update })
 }
 
-async function getFeed(accountId) {
+async function getFeed (accountId) {
   return await callRPC('getFeed', { feed_id: accountId })
 }
 
-async function callRPC(method, params) {
+async function callRPC (method, params) {
   try {
     return await axios.post(TARGET, { method, params })
   } catch (e) {

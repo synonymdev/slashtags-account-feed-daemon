@@ -1,4 +1,3 @@
-import path from 'path'
 import fs from 'fs'
 import b4a from 'b4a'
 import z32 from 'z32'
@@ -50,7 +49,7 @@ const _err = {
   badFieldType: 'UNSUPPORTED_FIELD_TYPE',
   missingFieldValue: 'MISSING_FIELD_VALUE',
   unknownField: 'UKNOWN_FIELD',
-  invalidFieldValue: 'INVALID_FIELD_VALUE',
+  invalidFieldValue: 'INVALID_FIELD_VALUE'
 }
 
 export default class SlashtagsFeeds {
@@ -61,18 +60,18 @@ export default class SlashtagsFeeds {
   static VALID_TYPES = [
     'number',
     'number-change',
-    'utf-8',
+    'utf-8'
   ]
 
-  static validateSchemaConfig(schemaConfig) {
+  static validateSchemaConfig (schemaConfig) {
     if (!schemaConfig.name) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedName)
     if (!schemaConfig.description) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedDescription)
     if (!schemaConfig.icons) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedIcons)
     if (!schemaConfig.fields) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedFields)
     if (!Array.isArray(schemaConfig.fields)) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invalidFeedFields)
 
-    const imageRX = new RegExp('^data:image\/((svg\\+xml)|(png));base64,.+$')
-    for (let size in schemaConfig.icons) {
+    const imageRX = /^data:image\/((svg\\+xml)|(png));base64,.+$/
+    for (const size in schemaConfig.icons) {
       const icon = schemaConfig.icons[size]
 
       if (typeof icon !== 'string') throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invalidFeedIcon)
@@ -80,15 +79,15 @@ export default class SlashtagsFeeds {
     }
 
     schemaConfig.fields.forEach((field) => {
-      if(!field.name) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFieldName)
-      if(!field.description) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFieldDescription)
+      if (!field.name) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFieldName)
+      if (!field.description) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFieldDescription)
       if (field.type && (field.type !== '') && !SlashtagsFeeds.VALID_TYPES.includes(field.type)) {
         throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.badFieldType)
       }
     })
   }
 
-  static generateSchema(config) {
+  static generateSchema (config) {
     const { schemaConfig } = config
     SlashtagsFeeds.validateSchemaConfig(schemaConfig)
 
@@ -97,10 +96,10 @@ export default class SlashtagsFeeds {
       description: schemaConfig.description,
       type: 'account_feed',
       version: '0.0.1',
-      icons: {},
+      icons: {}
     }
 
-    for (let size in schemaConfig.icons) {
+    for (const size in schemaConfig.icons) {
       schema.icons[size] = schemaConfig.icons[size]
     }
 
@@ -116,11 +115,11 @@ export default class SlashtagsFeeds {
     return schema
   }
 
-  static persistSchema(schema) {
+  static persistSchema (schema) {
     fs.writeFileSync(this.DEFAULT_SCHEMA_PATH, Buffer.from(JSON.stringify(schema, undefined, 2)), 'utf-8')
   }
 
-  static getFileName(field) {
+  static getFileName (field) {
     const regex = /[^a-z0-9]+/gi
     const trailing = /-+$/
 
@@ -135,7 +134,7 @@ export default class SlashtagsFeeds {
    */
   constructor (config) {
     // Either schema needs to provided or its configuration
-    if (config.schemaConfig && !config.feed_schema) throw new Err(_.badConfig)
+    if (config.schemaConfig && !config.feed_schema) throw new Err(_err.badConfig)
     if (!config.slashtags) throw new Err(_err.badConfig)
 
     let feedSchema
@@ -189,7 +188,7 @@ export default class SlashtagsFeeds {
 
     try {
       // NOTE: consider storing balance on db as well
-      for (let field of update.fields) {
+      for (const field of update.fields) {
         await this.slashtags.update(update.feed_id, SlashtagsFeeds.getFileName(field), field.value)
       }
       return { updated: true }
@@ -401,18 +400,18 @@ export default class SlashtagsFeeds {
     }
   }
 
-  validateUpdate(update) {
+  validateUpdate (update) {
     if (!update.feed_id) throw new Err(_err.feedIdMissing)
     if (!update.fields) throw new Err(_err.missingFields)
     if (!Array.isArray(update.fields)) throw new Err(_err.invalidFeedFields)
     if (update.fields.length === 0) throw new Err(_err.invalidFeedFields)
 
-    for (let field of update.fields) {
+    for (const field of update.fields) {
       this.validateFieldUpdate(field)
     }
   }
 
-  validateFieldUpdate(field) {
+  validateFieldUpdate (field) {
     if (!field.name) throw new Err(_err.missingFieldName)
     if (!field.value) throw new Err(_err.missingFieldValue)
 
