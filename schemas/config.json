@@ -5,7 +5,7 @@
   },
   "slashtags_dir":"./data",
   "db":{
-    "name":"user-db",
+    "name": "feed-db",
     "path": "./data"
   }
 }
