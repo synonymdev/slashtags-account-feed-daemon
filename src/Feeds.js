@@ -1,10 +1,12 @@
+import path from 'path'
+import fs from 'fs'
+import b4a from 'b4a'
+import z32 from 'z32'
+import { format } from '@synonymdev/slashtags-url'
+
 import { __filename } from './util.js'
 import Feeds from '@synonymdev/feeds'
 import FeedDb from './FeedDb.js'
-
-import { format } from '@synonymdev/slashtags-url'
-import b4a from 'b4a'
-import z32 from 'z32'
 
 import Log from './Log.js'
 import customErr from './CustomError.js'
@@ -78,12 +80,11 @@ export default class SlashtagsFeeds {
     }
 
     schemaConfig.fields.forEach((field) => {
+      if(!field.name) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFieldName)
+      if(!field.description) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFieldDescription)
       if (field.type && (field.type !== '') && !SlashtagsFeeds.VALID_TYPES.includes(field.type)) {
         throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.badFieldType)
       }
-
-      if(!field.name) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFieldName)
-      if(!field.description) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFieldDescription)
     })
   }
 
@@ -107,14 +108,23 @@ export default class SlashtagsFeeds {
       return {
         name: field.name,
         description: field.description,
-        main: path.join(Feeds.FEED_PREFIX, this.getFileName(field)),
+        main: SlashtagsFeeds.getFileName(field),
         type: field.type || 'utf-8'
       }
     })
 
-    fs.writeFileSync(this.DEFAULT_SCHEMA_PATH, schema, 'utf-8')
-
     return schema
+  }
+
+  static persistSchema(schema) {
+    fs.writeFileSync(this.DEFAULT_SCHEMA_PATH, Buffer.from(JSON.stringify(schema, undefined, 2)), 'utf-8')
+  }
+
+  static getFileName(field) {
+    const regex = /[^a-z0-9]+/gi
+    const trailing = /-+$/
+
+    return `/${field.name.toLowerCase().trim().replace(regex, '-').replace(trailing, '')}/`
   }
 
   /**
@@ -129,11 +139,11 @@ export default class SlashtagsFeeds {
     if (!config.slashtags) throw new Err(_err.badConfig)
 
     let feedSchema
-    if (config.feed_schema) {
-      feedSchema = config.feed_schema
-      SlashtagsFeeds.validateSchemaConfig(feedSchema)
-    } else if (config.schemaConfig) {
+    if (config.schemaConfig) {
       feedSchema = SlashtagsFeeds.generateSchema(config)
+      SlashtagsFeeds.persistSchema(feedSchema)
+    } else if (config.feed_schema) {
+      feedSchema = config.feed_schema
     }
     SlashtagsFeeds.validateSchemaConfig(feedSchema)
 
@@ -180,7 +190,7 @@ export default class SlashtagsFeeds {
     try {
       // NOTE: consider storing balance on db as well
       for (let field of update.fields) {
-        await this.slashtags.update(update.feed_id, this.getFileName(field), field.value)
+        await this.slashtags.update(update.feed_id, SlashtagsFeeds.getFileName(field), field.value)
       }
       return { updated: true }
     } catch (err) {
@@ -288,7 +298,7 @@ export default class SlashtagsFeeds {
         async (field) => {
           await this.slashtags.update(
             args.feed_id,
-            this.getFileName(field),
+            SlashtagsFeeds.getFileName(field),
             args.init_data || null
           )
         }
@@ -412,12 +422,5 @@ export default class SlashtagsFeeds {
     if (schemaField.type === 'number-change') {
       if (!(field.value.value && field.value.change)) throw new Err(_err.invalidFieldValue)
     }
-  }
-
-  getFileName(field) {
-    const regex = /[^a-z0-9]+/gi
-    const trailing = /-+$/
-
-    return `/${field.name.toLowerCase().trim().replace(regex, '-').replace(trailing, '')}/`
   }
 }
