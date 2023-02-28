@@ -7,25 +7,18 @@
   "dependencies": {
     "@fastify/formbody": "^7.0.1",
     "@synonymdev/feeds": "^1.0.0-alpha.2",
-    "@synonymdev/feeds-daemon": "^1.0.0",
-    "@synonymdev/slashtags-sdk": "^1.0.0-alpha.36",
     "@synonymdev/slashtags-url": "^1.0.0-alpha.2",
     "async": "^3.2.4",
-    "axios": "^0.27.2",
     "b4a": "^1.6.1",
     "debug": "^4.3.4",
     "fastify": "^4.3.0",
-    "lodash": "^4.17.21",
     "sqlite3": "^5.0.9",
     "z32": "^1.0.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
-    "corestore": "^6.0.0",
-    "hyperdrive": "github:Nazeh/hyperdrive-next#pass-options",
-    "hyperswarm": "^4.2.0",
-    "mocha": "^10.0.0",
-    "random-access-memory": "^5.0.0"
+    "axios": "^0.27.2",
+    "mocha": "^10.0.0"
   },
   "scripts": {
     "test": "mocha ./test/",
@@ -34,17 +27,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/synonym/slashtags-feeds-integration.git"
+    "url": "git+https://github.com/synonym/slashtags-exchange-account-daemon.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/synonym/slashtags-feeds-integration/issues"
+    "url": "https://github.com/synonym/slashtags-exchange-account-daemon/issues"
   },
   "standard": {
     "ignore": [
       "test"
     ]
   },
-  "homepage": "https://github.com/synonym/slashtags-feeds-integration#readme"
+  "homepage": "https://github.com/synonym/slashtags-exchange-account-daemon#readme"
 }
