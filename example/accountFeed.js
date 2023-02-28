@@ -17,6 +17,8 @@ async function main (config) {
 
 async function setupAccounts() {
   appLogger('Seting up accounts')
+  appLogger('Config:')
+  appLogger(config)
   let accountIds = []
   for (let accountId of config.accountIds) {
     accountIds.push(accountId)
@@ -61,7 +63,7 @@ async function createFeed(accountId) {
 }
 
 async function updateFeed(accountId, update) {
-  return await callRPC('updateFeedBalance', { feed_id: accountId, fields: update })
+  return await callRPC('updateFeed', { feed_id: accountId, fields: update })
 }
 
 async function getFeed(accountId) {
