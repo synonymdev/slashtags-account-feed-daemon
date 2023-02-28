@@ -11,7 +11,7 @@ export default class FeedManager {
     await this.db.start()
     await async.eachSeries([
       `CREATE TABLE IF NOT EXISTS slashtags (
-            user_id VARCHAR(255) NOT NULL,
+            feed_id VARCHAR(255) NOT NULL,
             feed_key TEXT NOT NULL,
             state INT,
             encrypt_key TEXT,
@@ -19,15 +19,15 @@ export default class FeedManager {
             ts_created BIGINT,
             PRIMARY KEY (feed_key)
           )`,
-      'CREATE INDEX IF NOT EXISTS slashtags_ix1 ON slashtags (user_id)'
+      'CREATE INDEX IF NOT EXISTS slashtags_ix1 ON slashtags (feed_id)'
     ], (cmd, next) => {
       this.db.sqlite.run(cmd, next)
     })
   }
 
-  findByUser (userId) {
+  findByFeedId (feedId) {
     return new Promise((resolve, reject) => {
-      this.db.sqlite.get(`SELECT * from slashtags WHERE user_id is "${userId}" and state = 1`, [], (err, data) => {
+      this.db.sqlite.get(`SELECT * from slashtags WHERE feed_id is "${feedId}" and state = 1`, [], (err, data) => {
         if (err) return reject(err)
         if (!data) return resolve(null)
 
@@ -53,7 +53,7 @@ export default class FeedManager {
       this.db.sqlite.run('BEGIN')
       this.db.sqlite.run(`INSERT OR ${data.replace ? 'REPLACE' : 'IGNORE'} INTO slashtags 
           (
-            user_id,
+            feed_id,
             feed_key,
             state,
             encrypt_key,
@@ -61,14 +61,14 @@ export default class FeedManager {
             ts_created
           ) VALUES 
           (
-            $user_id,
+            $feed_id,
             $feed_key,
             $state,
             $encrypt_key,
             $meta,
             $ts_created
           )`, {
-        $user_id: data.user_id,
+        $feed_id: data.feed_id,
         $feed_key: data.feed_key,
         $state: 1,
         $encrypt_key: data.encrypt_key,
@@ -88,12 +88,12 @@ export default class FeedManager {
     })
   }
 
-  removeUser (userId, batch) {
+  removeFeed (feedId, batch) {
     return new Promise((resolve, reject) => {
       // TODO: consider optional force removal instead
       // this.db.sqlite.run(`UPDATE slashtags SET state = 0 WHERE user_id="${userId}" `, [], (err, data) => {
       this.db.sqlite.run('BEGIN')
-      this.db.sqlite.run(`DELETE FROM slashtags WHERE user_id="${userId}" `, [], (err, data) => {
+      this.db.sqlite.run(`DELETE FROM slashtags WHERE feed_id="${feedId}" `, [], (err, data) => {
         if (err) {
           batch?.destroy()
           this.db.sqlite.run('ROLLBACK')
