@@ -28,7 +28,9 @@
     "random-access-memory": "^5.0.0"
   },
   "scripts": {
-    "test": "mocha ./test/ "
+    "test": "mocha ./test/",
+    "start": "DEBUG=stfeed* node start.js",
+    "example:account": "DEBUG=example* node example/accountFeed.js"
   },
   "repository": {
     "type": "git",
