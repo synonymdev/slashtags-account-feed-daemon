@@ -200,7 +200,7 @@ export default class SlashtagsFeeds {
     }
   }
 
-  async deleteFeedFeed (args) {
+  async deleteFeed (args) {
     if (!this.ready) throw new Err(_err.notReady)
     if (!args?.feed_id) throw new Err(_err.feedIdMissing)
     if (typeof args.feed_id !== 'string') throw new Err(_err.feedIdNotString)

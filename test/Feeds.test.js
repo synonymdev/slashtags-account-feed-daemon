@@ -343,7 +343,7 @@ describe('SlashtagsFeeds', () => {
 
         after(async function () {
           this.timeout(5000)
-          await feed.deleteFeedFeed(input)
+          await feed.deleteFeed(input)
         })
 
         it('has slashdrive property', () => assert(res.slashdrive))
@@ -356,7 +356,7 @@ describe('SlashtagsFeeds', () => {
     })
   })
 
-  describe('deleteFeedFeed', () => {
+  describe('deleteFeed', () => {
     const input = { feed_id: 'testDeleteFeed' }
     const success = { deleted: true }
 
@@ -382,22 +382,22 @@ describe('SlashtagsFeeds', () => {
         await feed.start()
       })
 
-      it('fails', async () => assert.rejects(async () => feed.deleteFeedFeed(), error))
+      it('fails', async () => assert.rejects(async () => feed.deleteFeed(), error))
     })
 
     describe('feed_id validation', () => {
       before(() => error.message = SlashtagsFeeds.err.feedIdMissing)
 
-      it('fails with out args', async () => assert.rejects(async () => feed.deleteFeedFeed(), error))
-      it('fails with missing feed_id', async () => assert.rejects(async () => feed.deleteFeedFeed({}), error))
+      it('fails with out args', async () => assert.rejects(async () => feed.deleteFeed(), error))
+      it('fails with missing feed_id', async () => assert.rejects(async () => feed.deleteFeed({}), error))
       it('fails with non string feed_id', async () => assert.rejects(
-        async () => feed.deleteFeedFeed({ feed_id: 1 }),
+        async () => feed.deleteFeed({ feed_id: 1 }),
         { ...error, message: SlashtagsFeeds.err.feedIdNotString }
       ))
     })
 
     describe('Feed does not exist in DB', () => {
-      it('returns success', async () => assert.deepStrictEqual(await feed.deleteFeedFeed(input), success))
+      it('returns success', async () => assert.deepStrictEqual(await feed.deleteFeed(input), success))
     })
 
     describe('Error handling', () => {
@@ -411,7 +411,7 @@ describe('SlashtagsFeeds', () => {
         })
         after(() => feed.getFeedFromDb = getFeedFromDb)
 
-        it('throws an error', async () => assert.rejects(async () => feed.deleteFeedFeed(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.deleteFeed(input), error))
       })
 
       describe('Feed removal from db failed', () => {
@@ -430,7 +430,7 @@ describe('SlashtagsFeeds', () => {
           feed.getFeedFromDb = getFeedFromDb
         })
 
-        it('throws an error', async () => assert.rejects(async () => feed.deleteFeedFeed(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.deleteFeed(input), error))
       })
 
       describe('Feed removal from hypercore failed', () => {
@@ -449,7 +449,7 @@ describe('SlashtagsFeeds', () => {
           feed.getFeedFromDb = getFeedFromDb
         })
 
-        it('throws an error', async () => assert.rejects(async () => feed.deleteFeedFeed(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.deleteFeed(input), error))
       })
     })
 
@@ -458,7 +458,7 @@ describe('SlashtagsFeeds', () => {
       before(async function () {
         this.timeout(5000)
         await feed.createFeed({ ...input, init_data: 11 })
-        res = await feed.deleteFeedFeed(input)
+        res = await feed.deleteFeed(input)
       })
 
       it('returns success', () => assert.deepStrictEqual(res, success))
@@ -551,7 +551,7 @@ describe('SlashtagsFeeds', () => {
         createResult = await feed.createFeed(input)
         readResult = await feed.getFeed(input)
       })
-      after(async () => await feed.deleteFeedFeed(input))
+      after(async () => await feed.deleteFeed(input))
 
       describe('feed_key', () => {
         it('has `feed_key`', () => assert(readResult.feed_key))
@@ -691,7 +691,7 @@ describe('SlashtagsFeeds', () => {
       before(async function() {
         this.timeout(5000)
 
-        await feed.deleteFeedFeed({ feed_id: update.feed_id })
+        await feed.deleteFeed({ feed_id: update.feed_id })
         await feed.createFeed({ feed_id: update.feed_id })
         res = await feed.updateFeedBalance(update)
       })
@@ -711,7 +711,7 @@ describe('SlashtagsFeeds', () => {
         after(async () => {
           await feedReader.close()
           await feed.start()
-          await feed.deleteFeedFeed({ feed_id: update.feed_id })
+          await feed.deleteFeed({ feed_id: update.feed_id })
         })
 
         it('returns correct balance', () => assert.equal(balance, update.fields[0].value))
