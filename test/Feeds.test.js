@@ -1,7 +1,7 @@
 // TODO: consider using sinon for stubs instead of manual replacements
 import { strict as assert } from 'node:assert';
 import SlashtagsFeeds from '../src/Feeds.js'
-import UserDb from '../src/UserDb.js'
+import FeedDb from '../src/FeedDb.js'
 import path from 'path'
 import Schema from '../schemas/slashfeed.json' assert { type: 'json' };
 import Feeds from '@synonymdev/feeds'
@@ -9,7 +9,7 @@ import Feeds from '@synonymdev/feeds'
 describe('SlashtagsFeeds', () => {
   const validConfig = {
     db: {
-      name: 'user-db',
+      name: 'feed-db',
       path: path.resolve('./test-db')
     },
     feed_schema: { ...Schema },
@@ -23,7 +23,7 @@ describe('SlashtagsFeeds', () => {
       before(() => feed = new SlashtagsFeeds(validConfig))
 
       it('has config', () => assert.deepStrictEqual(feed.config, validConfig))
-      it('has db', () => assert.deepStrictEqual(feed.db, new UserDb(validConfig.db)))
+      it('has db', () => assert.deepStrictEqual(feed.db, new FeedDb(validConfig.db)))
       it('has feed_schema', () => assert.deepStrictEqual(feed.feed_schema, validConfig.feed_schema))
       it('has lock', () => assert.deepStrictEqual(feed.lock, new Map()))
       it('has ready flag', () => assert.equal(feed.ready, false))
@@ -33,7 +33,7 @@ describe('SlashtagsFeeds', () => {
     describe('Invalid config', () => {
       const invalidConfig = {
         db: {
-          name: 'user-db',
+          name: 'feed-db',
           path: path.resolve('./test-db')
         },
         feed_schema: { ...Schema },
@@ -103,7 +103,7 @@ describe('SlashtagsFeeds', () => {
   })
 
   describe('CreateFeed', () => {
-    const input = { user_id: 'testCreateUser' }
+    const input = { feed_id: 'testCreateFeed' }
 
     let feed
     before(() => feed = new SlashtagsFeeds(validConfig))
@@ -128,14 +128,14 @@ describe('SlashtagsFeeds', () => {
         await feed.stop()
       })
 
-      describe('user_id validation', () => {
-        before(() => error.message = SlashtagsFeeds.err.userIdMissing)
+      describe('feed_id validation', () => {
+        before(() => error.message = SlashtagsFeeds.err.feedIdMissing)
 
         it('fails with out args', async () => assert.rejects(async () => feed.createFeed(), error))
-        it('fails with missing user_id', async () => assert.rejects(async () => feed.createFeed({}), error))
-        it('fails with non string user_id', async () => assert.rejects(
-          async () => feed.createFeed({ user_id: 1 }),
-          { ...error, message: SlashtagsFeeds.err.useridNotString }
+        it('fails with missing feed_id', async () => assert.rejects(async () => feed.createFeed({}), error))
+        it('fails with non string feed_id', async () => assert.rejects(
+          async () => feed.createFeed({ feed_id: 1 }),
+          { ...error, message: SlashtagsFeeds.err.feedIdNotString }
         ))
       })
 
@@ -155,22 +155,22 @@ describe('SlashtagsFeeds', () => {
         it('fails if slahstags is not ready', async () => assert.rejects(async () => feed.createFeed(input), error))
       })
 
-      describe('User already exist', () => {
+      describe('Feed already exist', () => {
         let getFeedFromDb
         before(() => {
           getFeedFromDb = feed.getFeedFromDb
           feed.getFeedFromDb = () => true
-          error.message = SlashtagsFeeds.err.userExists
+          error.message = SlashtagsFeeds.err.feedExists
         })
         after(() => feed.getFeedFromDb = getFeedFromDb)
 
-        it('fails with non string user_id', async () => assert.rejects(async () => feed.createFeed(input), error))
+        it('fails with non string feed_id', async () => assert.rejects(async () => feed.createFeed(input), error))
       })
 
       describe('Getting feed key', () => {
         let createFeed
         before(() => {
-          error.message = SlashtagsFeeds.err.userNoFeed
+          error.message = SlashtagsFeeds.err.idNoFeed
           createFeed = feed.slashtags.feed
         })
         after(() => feed.slashtags.feed = createFeed)
@@ -229,7 +229,7 @@ describe('SlashtagsFeeds', () => {
 
         after(async function () {
           this.timeout(5000)
-          await feed.deleteUserFeed(input)
+          await feed.deleteFeedFeed(input)
         })
 
         it('has slashdrive property', () => assert(res.slashdrive))
@@ -242,8 +242,8 @@ describe('SlashtagsFeeds', () => {
     })
   })
 
-  describe('deleteUserFeed', () => {
-    const input = { user_id: 'testDeleteUser' }
+  describe('deleteFeedFeed', () => {
+    const input = { feed_id: 'testDeleteFeed' }
     const success = { deleted: true }
 
     let feed
@@ -256,7 +256,7 @@ describe('SlashtagsFeeds', () => {
       await feed.stop()
     })
 
-    describe('Calling delete user before starting feed', () => {
+    describe('Calling delete feed before starting feed', () => {
       before(async function () {
         this.timeout(5000)
         await feed.stop()
@@ -268,28 +268,28 @@ describe('SlashtagsFeeds', () => {
         await feed.start()
       })
 
-      it('fails', async () => assert.rejects(async () => feed.deleteUserFeed(), error))
+      it('fails', async () => assert.rejects(async () => feed.deleteFeedFeed(), error))
     })
 
-    describe('user_id validation', () => {
-      before(() => error.message = SlashtagsFeeds.err.userIdMissing)
+    describe('feed_id validation', () => {
+      before(() => error.message = SlashtagsFeeds.err.feedIdMissing)
 
-      it('fails with out args', async () => assert.rejects(async () => feed.deleteUserFeed(), error))
-      it('fails with missing user_id', async () => assert.rejects(async () => feed.deleteUserFeed({}), error))
-      it('fails with non string user_id', async () => assert.rejects(
-        async () => feed.deleteUserFeed({ user_id: 1 }),
-        { ...error, message: SlashtagsFeeds.err.useridNotString }
+      it('fails with out args', async () => assert.rejects(async () => feed.deleteFeedFeed(), error))
+      it('fails with missing feed_id', async () => assert.rejects(async () => feed.deleteFeedFeed({}), error))
+      it('fails with non string feed_id', async () => assert.rejects(
+        async () => feed.deleteFeedFeed({ feed_id: 1 }),
+        { ...error, message: SlashtagsFeeds.err.feedIdNotString }
       ))
     })
 
-    describe('User does not exist in DB', () => {
-      it('returns success', async () => assert.deepStrictEqual(await feed.deleteUserFeed(input), success))
+    describe('Feed does not exist in DB', () => {
+      it('returns success', async () => assert.deepStrictEqual(await feed.deleteFeedFeed(input), success))
     })
 
     describe('Error handling', () => {
-      before(() => error.message = SlashtagsFeeds.err.failedDeleteUser)
+      before(() => error.message = SlashtagsFeeds.err.failedDeleteFeed)
 
-      describe('User lookup failed', () => {
+      describe('Feed lookup failed', () => {
         let getFeedFromDb
         before(() => {
           getFeedFromDb = feed.getFeedFromDb
@@ -297,29 +297,29 @@ describe('SlashtagsFeeds', () => {
         })
         after(() => feed.getFeedFromDb = getFeedFromDb)
 
-        it('throws an error', async () => assert.rejects(async () => feed.deleteUserFeed(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.deleteFeedFeed(input), error))
       })
 
-      describe('User removal from db failed', () => {
-        let removeUser
+      describe('Feed removal from db failed', () => {
+        let removeFeed
         let getFeedFromDb
 
         before(() => {
           getFeedFromDb = feed.getFeedFromDb
-          removeUser = feed.db.removeUser
+          removeFeed = feed.db.removeFeed
 
-          feed.db.removeUser = () => { throw new Error('test') }
+          feed.db.removeFeed = () => { throw new Error('test') }
           feed.getFeedFromDb = () => true
         })
         after(() => {
-          feed.db.removeUser = removeUser
+          feed.db.removeFeed = removeFeed
           feed.getFeedFromDb = getFeedFromDb
         })
 
-        it('throws an error', async () => assert.rejects(async () => feed.deleteUserFeed(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.deleteFeedFeed(input), error))
       })
 
-      describe('User removal from hypercore failed', () => {
+      describe('Feed removal from hypercore failed', () => {
         let destroy
         let getFeedFromDb
 
@@ -335,7 +335,7 @@ describe('SlashtagsFeeds', () => {
           feed.getFeedFromDb = getFeedFromDb
         })
 
-        it('throws an error', async () => assert.rejects(async () => feed.deleteUserFeed(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.deleteFeedFeed(input), error))
       })
     })
 
@@ -344,11 +344,11 @@ describe('SlashtagsFeeds', () => {
       before(async function () {
         this.timeout(5000)
         await feed.createFeed({ ...input, init_data: 11 })
-        res = await feed.deleteUserFeed(input)
+        res = await feed.deleteFeedFeed(input)
       })
 
       it('returns success', () => assert.deepStrictEqual(res, success))
-      it('removes user from db', async () => assert.equal(await feed.getFeedFromDb(input), null))
+      it('removes feed from db', async () => assert.equal(await feed.getFeedFromDb(input), null))
       describe('entry in hypercore', () => {
         let feedReader
         let res
@@ -356,7 +356,7 @@ describe('SlashtagsFeeds', () => {
           this.timeout(5000)
           await feed.stop()
           feedReader = new Feeds(validConfig.slashtags, validConfig.feed_schema)
-          res = await feedReader.get(input.user_id, `/Bitcoin/main`)
+          res = await feedReader.get(input.feed_id, `/bitcoin/main`)
         })
 
         after(async () => {
@@ -370,7 +370,7 @@ describe('SlashtagsFeeds', () => {
   })
 
   describe('getFeed', () => {
-    const input = { user_id: 'testGetFeed' }
+    const input = { feed_id: 'testGetFeed' }
 
     let feed
     before(async () => {
@@ -397,14 +397,14 @@ describe('SlashtagsFeeds', () => {
       it('fails', async () => assert.rejects(async () => feed.getFeed(input), error))
     })
 
-    describe('user_id validation', () => {
-      before(() => error.message = SlashtagsFeeds.err.userIdMissing)
+    describe('feed_id validation', () => {
+      before(() => error.message = SlashtagsFeeds.err.feedIdMissing)
 
       it('fails with out args', async () => assert.rejects(async () => feed.getFeed(), error))
-      it('fails with missing user_id', async () => assert.rejects(async () => feed.getFeed({}), error))
-      it('fails with non string user_id', async () => assert.rejects(
-        async () => feed.getFeed({ user_id: 1 }),
-        { ...error, message: SlashtagsFeeds.err.useridNotString }
+      it('fails with missing feed_id', async () => assert.rejects(async () => feed.getFeed({}), error))
+      it('fails with non string feed_id', async () => assert.rejects(
+        async () => feed.getFeed({ feed_id: 1 }),
+        { ...error, message: SlashtagsFeeds.err.feedIdNotString }
       ))
     })
 
@@ -412,11 +412,11 @@ describe('SlashtagsFeeds', () => {
     describe('Error handling', () => {
       before(() => error.message = SlashtagsFeeds.err.feedNotFound)
 
-      describe('User does not exist in DB', () => {
+      describe('Feed does not exist in DB', () => {
         it('throws an error', async () => assert.rejects(async () => feed.getFeed(input), error))
       })
 
-      describe('User lookup failed', () => {
+      describe('Feed lookup failed', () => {
         let getFeedFromDb
         before(() => {
           getFeedFromDb = feed.getFeedFromDb
@@ -437,7 +437,7 @@ describe('SlashtagsFeeds', () => {
         createResult = await feed.createFeed(input)
         readResult = await feed.getFeed(input)
       })
-      after(async () => await feed.deleteUserFeed(input))
+      after(async () => await feed.deleteFeedFeed(input))
 
       describe('feed_key', () => {
         it('has `feed_key`', () => assert(readResult.feed_key))
@@ -453,7 +453,7 @@ describe('SlashtagsFeeds', () => {
 
   describe('updateFeedBalance', () => {
     const update = {
-      user_id: 'testUpdateFeed',
+      feed_id: 'testUpdateFeed',
       fields: [
         {
           name: 'Bitcoin',
@@ -489,10 +489,10 @@ describe('SlashtagsFeeds', () => {
     describe('Input handling', () => {
       let input
 
-      describe('user_id is missing', () => {
+      describe('feed_id is missing', () => {
         before(() => {
-          input = { ...update, user_id: undefined }
-          error.message = SlashtagsFeeds.err.userIdMissing
+          input = { ...update, feed_id: undefined }
+          error.message = SlashtagsFeeds.err.feedIdMissing
         })
         it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
       })
@@ -539,34 +539,34 @@ describe('SlashtagsFeeds', () => {
     })
 
     describe('Error handling', () => {
-      describe('User does not exist', () => {
+      describe('Feed does not exist', () => {
         before(() => {
-          error.message = SlashtagsFeeds.err.userNotExists
+          error.message = SlashtagsFeeds.err.feedNotExists
         })
 
         it('throws an error', async () => assert.rejects(
-          async () => feed.updateFeedBalance({...update, user_id: 'do_not_exist' }),
+          async () => feed.updateFeedBalance({...update, feed_id: 'do_not_exist' }),
           error
         ))
       })
 
-      describe('User exists but update faild', () => {
+      describe('Feed exists but update faild', () => {
         let dbFind
         let updateFeed
         before(() => {
           error.message = SlashtagsFeeds.err.updateFeedFailed
-          dbFind = feed.db.findByUser
-          feed.db.findByUser = () => true
+          dbFind = feed.db.findByFeedId
+          feed.db.findByFeedId = () => true
           updateFeed = feed.slashtags.update
           feed.slashtags.update = () => { throw new Error('update faild') }
         })
         after(() => {
-          feed.db.findByUser = dbFind
+          feed.db.findByFeedId = dbFind
           feed.slashtags.update = updateFeed
         })
 
         it('throws an error', async () => assert.rejects(
-          async () => feed.updateFeedBalance({...update, user_id: 'exist' }),
+          async () => feed.updateFeedBalance({...update, feed_id: 'exist' }),
           error
         ))
       })
@@ -577,8 +577,8 @@ describe('SlashtagsFeeds', () => {
       before(async function() {
         this.timeout(5000)
 
-        await feed.deleteUserFeed({ user_id: update.user_id })
-        await feed.createFeed({ user_id: update.user_id })
+        await feed.deleteFeedFeed({ feed_id: update.feed_id })
+        await feed.createFeed({ feed_id: update.feed_id })
         res = await feed.updateFeedBalance(update)
       })
 
@@ -590,14 +590,14 @@ describe('SlashtagsFeeds', () => {
         before(async () => {
           await feed.stop()
           feedReader = new Feeds(validConfig.slashtags, validConfig.feed_schema)
-          balance = await feedReader.get(update.user_id, feed.getFileName(update.fields[0]))
-          balanceChange = await feedReader.get(update.user_id, feed.getFileName(update.fields[1]))
+          balance = await feedReader.get(update.feed_id, feed.getFileName(update.fields[0]))
+          balanceChange = await feedReader.get(update.feed_id, feed.getFileName(update.fields[1]))
         })
 
         after(async () => {
           await feedReader.close()
           await feed.start()
-          await feed.deleteUserFeed({ user_id: update.user_id })
+          await feed.deleteFeedFeed({ feed_id: update.feed_id })
         })
 
         it('returns correct balance', () => assert.equal(balance, update.fields[0].value))

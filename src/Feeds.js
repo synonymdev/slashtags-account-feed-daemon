@@ -1,6 +1,6 @@
 import { __filename } from './util.js'
 import Feeds from '@synonymdev/feeds'
-import UserDb from './UserDb.js'
+import FeedDb from './FeedDb.js'
 
 import { format } from '@synonymdev/slashtags-url'
 import b4a from 'b4a'
@@ -15,25 +15,25 @@ const Err = customErr({ errName: 'Slashtags', fileName: __filename() })
 const _err = {
   notReady: 'SLASHTAGS_NOT_READY',
   dbFailedStart: 'FAILED_TO_START_DB',
-  userIdMissing: 'USER_ID_NOT_PASSED',
-  failedCreateDrive: 'FAILED_TO_CREATE_USER_FEED',
+  feedIdMissing: 'FEED_ID_NOT_PASSED',
+  failedCreateDrive: 'FAILED_TO_CREATE_FEED_FEED',
   failedCreateDriveArgs: 'FAILED_TO_CREATE_FEED_INVALID_RESPONSE',
   failedBalanceCheck: 'FAILED_BALANCE_CHECK',
   badConfig: 'BAD_CONSTRUCTOR_CONFIG',
   badSchemaSetup: 'FEED_SCHEMA_FAILED',
-  badUserDataType: 'BAD_USER_DATA_TYPE',
+  badFeedDataType: 'BAD_FEED_DATA_TYPE',
   invalidSchema: 'INVALID_FEED_SCHEMA',
   badUpdateParam: 'BAD_UPDATE_PARAM',
   updateFeedFailed: 'FAILED_TO_UPDATE_FEED',
-  userNoFeed: 'USER_ID_HAS_NO_FEED',
-  failedDeleteUser: 'FAILED_USER_DELETE',
+  idNoFeed: 'FEED_ID_HAS_NO_FEED',
+  failedDeleteFeed: 'FAILED_FEED_DELETE',
   failedGettingActiveFeeds: 'FAILED_GETTING_ACTIVE_FEEDS',
   failedBroadcast: 'FAILED_BROADCAST',
-  userExists: 'FAILED_TO_CREATE_USER_EXISTS',
-  userNotExists: 'FAILED_TO_CREATE_USER_NOT_EXISTS',
-  useridNotString: 'USER_ID_PARAM_NOT_STRING',
+  feedExists: 'FAILED_TO_CREATE_FEED_EXISTS',
+  feedNotExists: 'FAILED_TO_CREATE_FEED_NOT_EXISTS',
+  feedIdNotString: 'FEED_ID_PARAM_NOT_STRING',
   processAlreadyRunning: 'PROCESS_ALREADY_RUNNING',
-  feedNotFound: 'USER_FEED_NOT_FOUND',
+  feedNotFound: 'FEED_FEED_NOT_FOUND',
 
   missingFeedName: 'MISSING_FEED_NAME',
   missingFeedDescription: 'MISSING_FEED_DESCRIPTION',
@@ -138,7 +138,7 @@ export default class SlashtagsFeeds {
     SlashtagsFeeds.validateSchemaConfig(feedSchema)
 
     this.config = config
-    this.db = new UserDb(config.db)
+    this.db = new FeedDb(config.db)
     this.feed_schema = feedSchema
     this.ready = false
     this.slashtags = null
@@ -164,8 +164,9 @@ export default class SlashtagsFeeds {
   /**
    * @desc Update feed balance
    * @param {Array} updates Array of updates
-   * @param {String} updates[].user_id user id to update
-   * @param {Object} updates[].wallet_name user id to update
+   * @param {String} updates[].feed_id feed id to update
+   * FIXME
+   * @param {Object} updates[].wallet_name feed id to update
    * @param {Object} updates[].amount amount
    */
   async updateFeedBalance (update) {
@@ -173,13 +174,13 @@ export default class SlashtagsFeeds {
 
     this.validateUpdate(update)
 
-    const existingUser = await this.db.findByUser(update.user_id)
-    if (!existingUser) throw new Err(_err.userNotExists)
+    const existingFeed = await this.db.findByFeedId(update.feed_id)
+    if (!existingFeed) throw new Err(_err.feedNotExists)
 
     try {
       // NOTE: consider storing balance on db as well
       for (let field of update.fields) {
-        await this.slashtags.update(update.user_id, this.getFileName(field), field.value)
+        await this.slashtags.update(update.feed_id, this.getFileName(field), field.value)
       }
       return { updated: true }
     } catch (err) {
@@ -189,64 +190,64 @@ export default class SlashtagsFeeds {
     }
   }
 
-  async deleteUserFeed (args) {
+  async deleteFeedFeed (args) {
     if (!this.ready) throw new Err(_err.notReady)
-    if (!args?.user_id) throw new Err(_err.userIdMissing)
-    if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
+    if (!args?.feed_id) throw new Err(_err.feedIdMissing)
+    if (typeof args.feed_id !== 'string') throw new Err(_err.feedIdNotString)
 
-    const userId = args.user_id
+    const feedId = args.feed_id
     try {
-      const existingUser = await this.getFeedFromDb(args)
-      if (!existingUser) {
-        log.info(`Deleting user that does not exist: ${userId}`)
+      const existingFeed = await this.getFeedFromDb(args)
+      if (!existingFeed) {
+        log.info(`Deleting feed that does not exist: ${feedId}`)
         return { deleted: true }
       }
       // XXX: this needs to be atomic to prevent discrepancy between local DB and Hyperdrive
-      await this.db.removeUser(userId)
-      await this.slashtags.destroy(userId)
+      await this.db.removeFeed(feedId)
+      await this.slashtags.destroy(feedId)
     } catch (err) {
       log.err(err)
       if (err instanceof Err) throw err
-      throw new Err(_err.failedDeleteUser)
+      throw new Err(_err.failedDeleteFeed)
     }
 
     return { deleted: true }
   }
 
   /**
-   * @desc get user feed by key
-   * @param {String} userId userId
-   * @returns UserFeed object
+   * @desc get feed by key
+   * @param {String} feedId feedId
+   * @returns FeedFeed object
    */
   async getFeedKey (args) {
     if (!this.ready) throw new Err(_err.notReady)
-    if (!args.user_id) throw new Err(_err.userIdMissing)
-    if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
-    let userFeed
+    if (!args.feed_id) throw new Err(_err.feedIdMissing)
+    if (typeof args.feed_id !== 'string') throw new Err(_err.feedIdNotString)
+    let feed
     try {
-      userFeed = await this.slashtags.feed(args.user_id)
-      if (!userFeed.key) throw new Err(_err.userNoFeed)
+      feed = await this.slashtags.feed(args.feed_id)
+      if (!feed.key) throw new Err(_err.idNoFeed)
     } catch (err) {
       log.err(err)
       if (err instanceof Err) throw err
-      throw new Err(_err.userNoFeed)
+      throw new Err(_err.idNoFeed)
     }
     return {
       // XXX should it be hex or base32
-      key: userFeed.key.toString('hex'),
-      encryption_key: userFeed.encryptionKey.toString('hex')
+      key: feed.key.toString('hex'),
+      encryption_key: feed.encryptionKey.toString('hex')
     }
   }
 
   async getFeed (args) {
     if (!this.ready) throw new Err(_err.notReady)
-    if (!args?.user_id) throw new Err(_err.userIdMissing)
-    if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
+    if (!args?.feed_id) throw new Err(_err.feedIdMissing)
+    if (typeof args.feed_id !== 'string') throw new Err(_err.feedIdNotString)
 
     try {
-      const existingUser = await this.getFeedFromDb(args)
-      if (!existingUser) throw new Err(_err.feedNotFound)
-      return existingUser
+      const existingFeed = await this.getFeedFromDb(args)
+      if (!existingFeed) throw new Err(_err.feedNotFound)
+      return existingFeed
     } catch (err) {
       log.err(err)
       if (err instanceof Err) throw err
@@ -256,10 +257,10 @@ export default class SlashtagsFeeds {
 
   async getFeedFromDb (args) {
     if (!this.ready) throw new Err(_err.notReady)
-    if (!args.user_id) throw new Err(_err.userIdMissing)
-    if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
+    if (!args.feed_id) throw new Err(_err.feedIdMissing)
+    if (typeof args.feed_id !== 'string') throw new Err(_err.feedIdNotString)
 
-    const res = await this.db.findByUser(args.user_id)
+    const res = await this.db.findByFeedId(args.feed_id)
     if (!res) return null
 
     const url = format(
@@ -278,15 +279,15 @@ export default class SlashtagsFeeds {
   }
 
   /**
-   * @desc Setup user's slashdrive with init values
-   * @param {String} userId
+   * @desc Setup feed's slashdrive with init values
+   * @param {String} feedId
    */
   async _initFeed (args) {
     return Promise.all(
       this.feed_schema.fields.map(
         async (field) => {
           await this.slashtags.update(
-            args.user_id,
+            args.feed_id,
             this.getFileName(field),
             args.init_data || null
           )
@@ -297,8 +298,8 @@ export default class SlashtagsFeeds {
 
   async createFeed (args) {
     if (!this.ready) throw new Err(_err.notReady)
-    if (!args?.user_id) throw new Err(_err.userIdMissing)
-    if (typeof args.user_id !== 'string') throw new Err(_err.useridNotString)
+    if (!args?.feed_id) throw new Err(_err.feedIdMissing)
+    if (typeof args.feed_id !== 'string') throw new Err(_err.feedIdNotString)
 
     const key = 'createFeed'
     if (this.lock.has(key)) throw new Err(_err.processAlreadyRunning)
@@ -316,17 +317,17 @@ export default class SlashtagsFeeds {
   }
 
   /**
-   * @desc Create a slashdrive for user. If a slashdrive exists, we just return the existing drive key.
-   * @param {String} args.user_id
+   * @desc Create a slashdrive for feed. If a slashdrive exists, we just return the existing drive key.
+   * @param {String} args.feed_id
    * @returns {Object} feed_key
    */
   async _createDrive (args) {
-    log.info(`Creating Slashdrive for ${args.user_id}`)
+    log.info(`Creating Slashdrive for ${args.feed_id}`)
 
-    const existingUser = await this.getFeedFromDb(args)
-    if (existingUser) throw new Err(_err.userExists)
+    const existingFeed = await this.getFeedFromDb(args)
+    if (existingFeed) throw new Err(_err.feedExists)
 
-    const userFeed = await this.getFeedKey(args) // Find or create the Slashdrive
+    const feed = await this.getFeedKey(args) // Find or create the Slashdrive
 
     // XXX: this needs to be atomic to prevent discrepancy between local DB and Hyperdrive
     try {
@@ -339,9 +340,9 @@ export default class SlashtagsFeeds {
     // Insert into database
     try {
       await this.db.insert({
-        user_id: args.user_id,
-        feed_key: userFeed.key,
-        encrypt_key: userFeed.encryption_key,
+        feed_id: args.feed_id,
+        feed_key: feed.key,
+        encrypt_key: feed.encryption_key,
         meta: {}
       })
     } catch (err) {
@@ -349,19 +350,19 @@ export default class SlashtagsFeeds {
       if (err instanceof Err) throw err
       throw new Err(_err.failedCreateDrive)
     }
-    log.info(`Finished creating new drive for ${args.user_id}`)
+    log.info(`Finished creating new drive for ${args.feed_id}`)
 
     const url = format(
-      b4a.from(userFeed.key, 'hex'),
+      b4a.from(feed.key, 'hex'),
       {
         protocol: 'slashfeed:',
-        fragment: { encryptionKey: z32.encode(b4a.from(userFeed.encryption_key, 'hex')) }
+        fragment: { encryptionKey: z32.encode(b4a.from(feed.encryption_key, 'hex')) }
       }
     )
 
     return {
       url,
-      slashdrive: userFeed
+      slashdrive: feed
     }
   }
 
@@ -377,8 +378,8 @@ export default class SlashtagsFeeds {
 
     let res
     try {
-      res = await Promise.all(feeds.map((user) => {
-        return this.slashtags.feed(user.user_id)
+      res = await Promise.all(feeds.map((feed) => {
+        return this.slashtags.feed(feed.feed_id)
       }))
     } catch (err) {
       log.error(err)
@@ -391,7 +392,7 @@ export default class SlashtagsFeeds {
   }
 
   validateUpdate(update) {
-    if (!update.user_id) throw new Err(_err.userIdMissing)
+    if (!update.feed_id) throw new Err(_err.feedIdMissing)
     if (!update.fields) throw new Err(_err.missingFields)
     if (!Array.isArray(update.fields)) throw new Err(_err.invalidFeedFields)
     if (update.fields.length === 0) throw new Err(_err.invalidFeedFields)
