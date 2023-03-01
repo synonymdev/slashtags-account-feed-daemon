@@ -50,7 +50,6 @@ export default class FeedManager {
 
   insert (data, batch = null) {
     return new Promise((resolve, reject) => {
-      this.db.sqlite.run('BEGIN')
       this.db.sqlite.run(`INSERT OR ${data.replace ? 'REPLACE' : 'IGNORE'} INTO slashtags 
           (
             feed_id,
@@ -75,14 +74,8 @@ export default class FeedManager {
         $meta: JSON.stringify(data.meta),
         $ts_created: Date.now()
       }, (err, data) => {
-        if (err) {
-          batch?.destroy()
-          this.db.sqlite.run('ROLLBACK')
-          return reject(err)
-        }
+        if (err) return reject(err)
 
-        batch?.flush()
-        this.db.sqlite.run('COMMIT')
         return resolve(data || null)
       })
     })
@@ -92,16 +85,9 @@ export default class FeedManager {
     return new Promise((resolve, reject) => {
       // TODO: consider optional force removal instead
       // this.db.sqlite.run(`UPDATE slashtags SET state = 0 WHERE user_id="${userId}" `, [], (err, data) => {
-      this.db.sqlite.run('BEGIN')
       this.db.sqlite.run(`DELETE FROM slashtags WHERE feed_id="${feedId}" `, [], (err, data) => {
-        if (err) {
-          batch?.destroy()
-          this.db.sqlite.run('ROLLBACK')
-          return reject(err)
-        }
+        if (err) return reject(err)
 
-        batch?.flush()
-        this.db.sqlite.run('COMMIT')
         return resolve(data || null)
       })
     })
