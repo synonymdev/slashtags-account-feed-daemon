@@ -27,7 +27,7 @@ describe('SlashtagsFeeds', () => {
       it('has feed_schema', () => assert.deepStrictEqual(feed.feed_schema, validConfig.feed_schema))
       it('has lock', () => assert.deepStrictEqual(feed.lock, new Map()))
       it('has ready flag', () => assert.equal(feed.ready, false))
-      it('has slashtags property', () => assert.equal(feed.slashtags, null))
+      it('has slashtags property', () => assert.equal(feed._slashfeeds, null))
 
       describe('it generates and overwrites slashfeed based on config', () => {
         let conf
@@ -200,7 +200,7 @@ describe('SlashtagsFeeds', () => {
       after(() => feed.db.init = dbInit)
 
       it('fails to start', async () => assert.rejects(async () => feed.start(), error))
-      it('does not create slashtags instance', () => assert.equal(feed.slashtags, null))
+      it('does not create slashtags instance', () => assert.equal(feed._slashfeeds, null))
       it('does not get ready', () => assert.equal(feed.ready, false))
     })
 
@@ -210,8 +210,8 @@ describe('SlashtagsFeeds', () => {
 
       it('inits db', () => assert(feed.db.db.ready, true))
       it('gets ready', () => assert.equal(feed.ready, true))
-      it('creates slashtags instance', () => assert(feed.slashtags))
-      it('uses provided storage', () => assert.deepEqual(feed.slashtags._storage, validConfig.slashtags))
+      it('creates slashtags instance', () => assert(feed._slashfeeds))
+      it('uses provided storage', () => assert.deepEqual(feed._slashfeeds._storage, validConfig.slashtags))
       // TODO Write more slashtag checks
     })
   })
@@ -285,18 +285,18 @@ describe('SlashtagsFeeds', () => {
         let createFeed
         before(() => {
           error.message = SlashtagsFeeds.err.idNoFeed
-          createFeed = feed.slashtags.feed
+          createFeed = feed._slashfeeds.feed
         })
-        after(() => feed.slashtags.feed = createFeed)
+        after(() => feed._slashfeeds.feed = createFeed)
 
         describe('Feed has no key', () => {
-          before(() => feed.slashtags.feed = () => { return {} })
+          before(() => feed._slashfeeds.feed = () => { return {} })
 
           it('fails with no feed error', async () => assert.rejects(async () => feed.createFeed(input), error))
         })
 
         describe('Feed creation fails', () => {
-          before(() => feed.slashtags.feed = () => { throw new Error('test') })
+          before(() => feed._slashfeeds.feed = () => { throw new Error('test') })
 
           it('fails with no feed error', async () => assert.rejects(async () => feed.createFeed(input), error))
         })
@@ -307,10 +307,10 @@ describe('SlashtagsFeeds', () => {
           let updateFeed
           before(() => {
             error.message = SlashtagsFeeds.err.badSchemaSetup
-            updateFeed = feed.slashtags.update
-            feed.slashtags.update = () => { throw new Error('test') }
+            updateFeed = feed._slashfeeds.update
+            feed._slashfeeds.update = () => { throw new Error('test') }
           })
-          after(() => feed.slashtags.update = updateFeed)
+          after(() => feed._slashfeeds.update = updateFeed)
 
           it('fails with no feed error', async function () {
             this.timeout(5000)
@@ -438,14 +438,14 @@ describe('SlashtagsFeeds', () => {
         let getFeedFromDb
 
         before(() => {
-          destroy = feed.slashtags.destroy
+          destroy = feed._slashfeeds.destroy
           getFeedFromDb = feed.getFeedFromDb
 
-          feed.slashtags.destroy = () => { throw new Error('test') }
+          feed._slashfeeds.destroy = () => { throw new Error('test') }
           feed.getFeedFromDb = () => true
         })
         after(() => {
-          feed.slashtags.destroy = destroy
+          feed._slashfeeds.destroy = destroy
           feed.getFeedFromDb = getFeedFromDb
         })
 
@@ -671,12 +671,12 @@ describe('SlashtagsFeeds', () => {
           error.message = SlashtagsFeeds.err.updateFeedFailed
           dbFind = feed.db.findByFeedId
           feed.db.findByFeedId = () => true
-          updateFeed = feed.slashtags.update
-          feed.slashtags.update = () => { throw new Error('update faild') }
+          updateFeed = feed._slashfeeds.update
+          feed._slashfeeds.update = () => { throw new Error('update faild') }
         })
         after(() => {
           feed.db.findByFeedId = dbFind
-          feed.slashtags.update = updateFeed
+          feed._slashfeeds.update = updateFeed
         })
 
         it('throws an error', async () => assert.rejects(

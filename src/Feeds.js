@@ -70,7 +70,7 @@ export default class SlashtagsFeeds {
     if (!schemaConfig.fields) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFeedFields)
     if (!Array.isArray(schemaConfig.fields)) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.invalidFeedFields)
 
-    const imageRX = /^data:image\/((svg\\+xml)|(png));base64,.+$/
+    const imageRX = /^data:image\/((svg\+xml)|(png));base64,.+$/
     for (const size in schemaConfig.icons) {
       const icon = schemaConfig.icons[size]
 
@@ -150,7 +150,7 @@ export default class SlashtagsFeeds {
     this.db = new FeedDb(config.db)
     this.feed_schema = feedSchema
     this.ready = false
-    this.slashtags = null
+    this._slashfeeds = null
     this.lock = new Map()
   }
 
@@ -161,12 +161,12 @@ export default class SlashtagsFeeds {
       log.err(err)
       throw new Err(_err.dbFailedStart)
     }
-    this.slashtags = new Feeds(this.config.slashtags, this.feed_schema)
+    this._slashfeeds = new Feeds(this.config.slashtags, this.feed_schema)
     this.ready = true
   }
 
   async stop () {
-    await this.slashtags.close()
+    await this._slashfeeds.close()
     this.ready = false
   }
 
@@ -189,7 +189,7 @@ export default class SlashtagsFeeds {
     try {
       // NOTE: consider storing balance on db as well
       for (const field of update.fields) {
-        await this.slashtags.update(update.feed_id, SlashtagsFeeds.getFileName(field), field.value)
+        await this._slashfeeds.update(update.feed_id, SlashtagsFeeds.getFileName(field), field.value)
       }
       return { updated: true }
     } catch (err) {
@@ -213,7 +213,7 @@ export default class SlashtagsFeeds {
       }
       // XXX: this needs to be atomic to prevent discrepancy between local DB and Hyperdrive
       await this.db.removeFeed(feedId)
-      await this.slashtags.destroy(feedId)
+      await this._slashfeeds.destroy(feedId)
     } catch (err) {
       log.err(err)
       if (err instanceof Err) throw err
@@ -234,7 +234,7 @@ export default class SlashtagsFeeds {
     if (typeof args.feed_id !== 'string') throw new Err(_err.feedIdNotString)
     let feed
     try {
-      feed = await this.slashtags.feed(args.feed_id)
+      feed = await this._slashfeeds.feed(args.feed_id)
       if (!feed.key) throw new Err(_err.idNoFeed)
     } catch (err) {
       log.err(err)
@@ -295,7 +295,7 @@ export default class SlashtagsFeeds {
     return Promise.all(
       this.feed_schema.fields.map(
         async (field) => {
-          await this.slashtags.update(
+          await this._slashfeeds.update(
             args.feed_id,
             SlashtagsFeeds.getFileName(field),
             args.init_data || null
@@ -388,7 +388,7 @@ export default class SlashtagsFeeds {
     let res
     try {
       res = await Promise.all(feeds.map((feed) => {
-        return this.slashtags.feed(feed.feed_id)
+        return this._slashfeeds.feed(feed.feed_id)
       }))
     } catch (err) {
       log.error(err)
