@@ -13,7 +13,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"method\":\"createFeed\",\n    \"params\":{\n        \"user_id\":\"satoshi123\"\n    }\n}",
+					"raw": "{\n    \"method\":\"createFeed\",\n    \"params\":{\n        \"feed_id\":\"satoshi\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -42,7 +42,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"method\":\"deleteUserFeed\",\n    \"params\":{\n        \"user_id\":\"satoshi125\"\n    }\n}",
+					"raw": "{\n    \"method\":\"deleteFeed\",\n    \"params\":{\n        \"feed_id\":\"satoshi\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -71,7 +71,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"method\":\"getFeed\",\n    \"params\":{\n        \"user_id\":\"satoshi123\"\n    }\n}\n",
+					"raw": "{\n    \"method\":\"getFeed\",\n    \"params\":{\n        \"feed_id\":\"satoshi\"\n    }\n}\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -100,7 +100,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"method\":\"updateFeedBalance\",\n    \"params\":[\n        {\n            \"user_id\":\"satoshi123\",\n            \"wallet_name\":\"Bitcoin\",\n            \"amount\":1.442\n        }\n    ]\n}",
+					"raw": "{\n    \"method\":\"updateFeed\",\n    \"params\": {\n        \"feed_id\":\"satoshi\",\n        \"fields\": [\n            {\n                \"name\": \"Bitcoin\",\n                \"value\": 1.243\n            }\n        ]\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"

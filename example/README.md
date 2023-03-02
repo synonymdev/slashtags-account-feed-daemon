@@ -64,17 +64,8 @@ You can now convert it to QR code and scan with your [bitkit wallet](https://bit
 
 ```sh
 example Updating account feeds +5s
-example:abcde123 Updated feed: [
-'Bitcoin: "7.03"',
-'Bitcoin Change: {"value":"8.13","change":"10.82"}'
-] +0ms
-example:satoshi9191 Updated feed: [
-'Bitcoin: "5.98"',
-'Bitcoin Change: {"value":"8.30","change":"48.22"}'
-] +0ms
-example:synonymxyz Updated feed: [
-'Bitcoin: "8.97"',
-'Bitcoin Change: {"value":"9.40","change":"84.46"}'
-] +0ms
+example:abcde123 Updated feed: [ 'Bitcoin: "7.40"', 'Bitcoin P/L: "-99.27"' ] +0ms
+example:satoshi9191 Updated feed: [ 'Bitcoin: "9.73"', 'Bitcoin P/L: "-51.02"' ] +0ms
+example:synonymxyz Updated feed: [ 'Bitcoin: "8.52"', 'Bitcoin P/L: "54.86"' ] +0ms
 ...
 ```

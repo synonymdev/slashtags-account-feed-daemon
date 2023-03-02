@@ -46,11 +46,8 @@ async function updateAccounts (accountIds) {
         value: faker.finance.amount(5, 10, 2)
       },
       {
-        name: 'Bitcoin Change',
-        value: {
-          value: faker.finance.amount(5, 10, 2),
-          change: faker.finance.amount(0, 100)
-        }
+        name: 'Bitcoin P/L',
+        value: faker.finance.amount(-100, 100, 2)
       }
     ]
     await updateFeed(accountId, update)
