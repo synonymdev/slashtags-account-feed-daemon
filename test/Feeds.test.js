@@ -574,8 +574,8 @@ describe('SlashtagsFeeds', () => {
           value: 12,
         },
         {
-          name: 'Bitcoin Change',
-          value: { value: 13, change: 1 },
+          name: 'Bitcoin P/L',
+          value: 1,
         }
       ]
     }

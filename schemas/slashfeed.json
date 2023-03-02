@@ -11,13 +11,15 @@
       "name": "Bitcoin",
       "description": "Bitcoin balance",
       "main": "/bitcoin/",
-      "type": "number"
+      "type": "currency",
+      "units": "btc"
     },
     {
-      "name": "Bitcoin Change",
-      "description": "Bitcoin balance change",
-      "main": "/bitcoin-change/",
-      "type": "number-change"
+      "name": "Bitcoin P/L",
+      "description": "Bitcoin relative balance change",
+      "main": "/bitcoin-p-l/",
+      "type": "delta",
+      "units": "%"
     }
   ]
 }

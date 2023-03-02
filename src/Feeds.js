@@ -46,6 +46,7 @@ const _err = {
   invalidFeedFields: 'INVALID_FEED_FIELDS',
   missingFieldName: 'MISSING_FIELD_NAME',
   missingFieldDescription: 'MISSING_FIELD_DESCRIPTION',
+  missingFieldUnits: 'MISSING_FIELD_UNITS',
   badFieldType: 'UNSUPPORTED_FIELD_TYPE',
   missingFieldValue: 'MISSING_FIELD_VALUE',
   unknownField: 'UKNOWN_FIELD',
@@ -57,10 +58,17 @@ export default class SlashtagsFeeds {
   static Error = Err
 
   static DEFAULT_SCHEMA_PATH = './schemas/slashfeed.json'
-  static VALID_TYPES = [
+  static DEFAULT_TYPES = [
     'number',
-    'number-change',
     'utf-8'
+  ]
+  static MEASURED_TYPES = [
+    'currency',
+    'delta'
+  ]
+  static VALID_TYPES = [
+    ...this.DEFAULT_TYPES,
+    ...this.MEASURED_TYPES,
   ]
 
   static validateSchemaConfig (schemaConfig) {
@@ -83,6 +91,10 @@ export default class SlashtagsFeeds {
       if (!field.description) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFieldDescription)
       if (field.type && (field.type !== '') && !SlashtagsFeeds.VALID_TYPES.includes(field.type)) {
         throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.badFieldType)
+      }
+
+      if (this.MEASURED_TYPES.includes(field.type)) {
+        if (!field.units) throw new SlashtagsFeeds.Error(SlashtagsFeeds.err.missingFieldUnits)
       }
     })
   }
@@ -108,7 +120,8 @@ export default class SlashtagsFeeds {
         name: field.name,
         description: field.description,
         main: SlashtagsFeeds.getFileName(field),
-        type: field.type || 'utf-8'
+        type: field.type || 'utf-8',
+        units: field.units
       }
     })
 
@@ -417,9 +430,5 @@ export default class SlashtagsFeeds {
 
     const schemaField = this.feed_schema.fields.find((sF) => sF.name === field.name)
     if (!schemaField) throw new Err(_err.unknownField)
-
-    if (schemaField.type === 'number-change') {
-      if (!(field.value.value && field.value.change)) throw new Err(_err.invalidFieldValue)
-    }
   }
 }
