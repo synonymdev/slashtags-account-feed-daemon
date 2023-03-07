@@ -43,7 +43,7 @@ describe('SlashtagsFeeds', () => {
           }
         })
 
-        describe('invalid schamaConfig', () => {
+        describe('invalid schemaConfig', () => {
           describe('missing name', () => {
             beforeEach(() => {
               delete conf.schemaConfig.name
