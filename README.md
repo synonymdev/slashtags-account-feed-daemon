@@ -63,7 +63,7 @@ const feeds = new Feeds({
         path: "./data"
     },
     slashtags: "./",
-    feed_schema: "<feed schema json file>"
+    schemaConfig: "<representation config>"
 })
 
 await feeds.start()
