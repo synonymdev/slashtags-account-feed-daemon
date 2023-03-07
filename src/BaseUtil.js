@@ -1,7 +1,7 @@
-const customErr = require('./CustomError')
-const Log = require('./Log')
+import customErr from './CustomError.js'
+import Log from './Log.js'
 
-module.exports = (name, fileName) => {
+export default (name, fileName) => {
   if (!name) {
     console.log('FAILED_SETTING_UP_UTIL', name, fileName)
     throw new Error('FAILED_SETTING_UP_UTIL')

@@ -1,106 +1,97 @@
-/* eslint-env mocha */
-'use strict'
-const assert = require('assert')
-const rpc = require('../src/RPC')
-const axios = require('axios').default
+import assert from 'assert'
+import axios from 'axios'
+
+import rpc from '../src/RPC.js'
+import { rnd } from '../src/util.js'
 
 const noop = () => {}
 describe('RPC ', () => {
-  it('should fail when port is not passed', async function () {
-    try {
-      const server = rpc({
-        handler: noop
-      })
-    } catch (err) {
-      assert(err.message === 'RPC_PORT_NOT_PASSED')
-    }
+  const ERROR_NAME = 'RPC_ERROR'
+  const ENDPOINTS = ['createFeed', 'updateFeed', 'deleteFeed', 'getFeed']
+
+  describe('Config', () => {
+    it('fails without port', () => assert.throws(
+      () => rpc({ handler: noop }),
+      { name: ERROR_NAME, message: 'RPC_PORT_NOT_PASSED' }
+    ))
+    it('fails wthout handler', () => assert.throws(
+      () => rpc({ port: 9191 }),
+      { name: ERROR_NAME, message: 'RPC_HANDLER_NOT_PASSED' }
+    ))
   })
 
-  it('endpoint object should be created', async function () {
-    const server = rpc({
-      handler: noop,
-      port: 9191
-    })
-    assert(server.endpoints.length >= 0)
-    assert(server.endpoints.getByName('createFeed'))
-  })
-
-  it('should start listening to port and close', function (cb) {
-    const server = rpc({
-      port: 9199,
-      handler: noop
-    })
-    server.start((err) => {
-      assert(!err)
-      server.stop(() => {
-        cb()
-      })
-    })
-  })
-
-  describe('Endpoints', () => {
+  describe('Instance', () => {
     let server
+    const port = 9191
+    const handler = noop
+    beforeEach(() => server = rpc({ port, handler }))
 
-    afterEach((cb) => {
-      server.stop(() => {
-        cb()
+    describe('Endpoints', () => {
+      it('has endpoints', () => assert(server.endpoints.length >= 0))
+      describe('geting endpoint by name', () => {
+        ENDPOINTS.forEach(epName => it(`gets ${epName}`, () => assert(server.endpoints.getByName(epName))))
+
+        it('returns "undefined" for unregisterd endpoint', () => assert.equal(server.endpoints.getByName('unknowEndpoint'), undefined))
       })
     })
-    it('should start listening to port and call endpoint. Verify response', function (cb) {
-      this.timeout(5000)
-      const respData = ['world']
-      server = rpc({
-        port: 9199,
-        handler: (ctx) => {
-          ctx.respond(respData)
-        }
+
+    describe('Start/Stop', () => {
+      describe('Idle server', () => {
+        afterEach(async () => server.stop())
+
+        it('stops idle server', async () => server.stop())
+        it('starts server', async () => server.start())
+        it('stops server', async () => server.stop())
       })
-      server.start(async (err) => {
-        assert(!err)
-        const ep = server.endpoints.getByName('createFeed')
-        let res
-        const reqid = 111
-        try {
-          res = await axios.post(server.endpoints.full_route, {
-            id: reqid,
-            method: 'createFeed'
-          })
-        } catch (err) {
-          throw err.message
-        }
-        assert(res.data.jsonrpc === '2.0')
-        assert(JSON.stringify(res.data.result) === JSON.stringify(respData))
-        assert(res.data.id === reqid)
-        assert(Object.keys(res.data).length === 3)
-        cb()
+
+      describe('Running server', () => {
+        beforeEach(async () => server.start())
+        afterEach(async () => server.stop())
+
+        it('stops server', async () => server.stop())
+        it('fails to start server', async () => assert.rejects(
+          async () => server.start(),
+          { name: ERROR_NAME, message: 'FAILED_RPC_LISTEN' }
+        ))
       })
     })
-    it('should start listening to port and call endpoint and fail with bad method', function (cb) {
-      this.timeout(5000)
-      const respData = ['world']
-      server = rpc({
-        port: 9199,
-        handler: (ctx) => {
-          ctx.respond(respData)
-        }
+  })
+
+  describe('Request/Response', () => {
+    const port = 9191
+    const handler = (ctx) => ctx.respond(['test'])
+    const server = rpc({ handler, port })
+
+    before(async () => server.start())
+    after(async () => server.stop())
+
+    ENDPOINTS.forEach((ep) => {
+      let res
+      const reqId = rnd()
+      before(async () => {
+        res = await axios.post(server.endpoints.full_route, { id: reqId, method: ep })
       })
-      server.start(async (err) => {
-        assert(!err)
-        const ep = server.endpoints.getByName('createFeed')
-        let res
-        const reqid = 111
-        try {
-          res = await axios.post(server.endpoints.full_route, {
-            id: reqid,
-            method: 'bad method '
-          })
-        } catch (err) {
-          throw err.message
-        }
-        assert(res.data.error.code == -32601, 'code invalid')
-        assert(res.data.error.message === 'Invalid method', 'bad method')
-        assert(res.data.id === reqid)
-        cb()
+
+      describe(`${ep} response`, () => {
+        it('returns jsonrpc version', () => assert.equal(res.data.jsonrpc, '2.0'))
+        it('returns response data', () => assert.deepStrictEqual(res.data.result, ['test']))
+        it('returns request Id', () => assert.deepStrictEqual(res.data.id, reqId))
+        it('does not return addtional props', () => assert.equal(Object.keys(res.data).length, 3))
+      })
+    })
+
+    describe('Unregisterd endpoint', () => {
+      let res
+      const reqId = rnd()
+      before(async () => {
+        res = await axios.post(server.endpoints.full_route, { id: reqId, method: 'undefined' })
+      })
+
+      describe('unregistered method respone', () => {
+        it('returns error code', () => assert.equal(res.data.error.code, -32601))
+        it('returns error message', () => assert.equal(res.data.error.message, 'Invalid method'))
+        it('returns request Id', () => assert.deepStrictEqual(res.data.id, reqId))
+        it('does not return addtional props', () => assert.equal(Object.keys(res.data).length, 3))
       })
     })
   })

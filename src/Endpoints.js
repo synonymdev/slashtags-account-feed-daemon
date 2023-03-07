@@ -1,12 +1,13 @@
-'use strict'
+import { __filename } from './util.js'
+import util from './BaseUtil.js'
+const { Err, log } = util('RPC', __filename())
 
-class Endpoints {
+export default class Endpoints {
   constructor ({ endpointList, version, host, route, method }) {
     this.data = endpointList.map((ep) => {
-      if (!ep.name ||
-          !ep.svc
-      ) throw new Error('INVALID_RPC_ENDPOINT_' + JSON.stringify(ep))
+      if (!ep.name || !ep.svc) throw new Err('INVALID_RPC_ENDPOINT_' + JSON.stringify(ep))
 
+      log.info(`Method: ${ep.name} - ${ep.description}`)
       return ep
     })
     this.route = `/${version}/${route || 'rpc'}`
@@ -26,5 +27,3 @@ class Endpoints {
     return this.data.filter(({ name }) => name === k).pop()
   }
 }
-
-module.exports = Endpoints

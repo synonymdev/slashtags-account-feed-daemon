@@ -1,40 +1,64 @@
-/* eslint-env mocha */
 'use strict'
-const assert = require('assert')
-const path = require('path')
-const Sqlite = require('../src/Sqlite')
-const util = require('../src/util')
+import { strict as assert } from 'node:assert';
+import path from 'path'
+import Sqlite from '../src/Sqlite.js'
+import { rnd, mkdir } from '../src/util.js'
 
 describe('Sqlite', () => {
-  it('Should create instance sqlite db and delete it', async () => {
-    const dbpath = path.resolve("./test-db")
-    await util.mkdir(dbpath)
-    const sqlite = new Sqlite({
-      path: dbpath,
-      name: `test-${util.rnd()}-db`
+  const ERROR_NAME = 'SQLITE_ERROR:'
+
+  describe('Constructor', () => {
+    it('fails to init db without config', () => assert.throws(
+      () => new Sqlite(),
+      { name: ERROR_NAME, message: Sqlite.err.configMissing }
+    ))
+    it('fails to init db without config.name', () => assert.throws(
+      () => new Sqlite({}),
+      { name: ERROR_NAME, message: Sqlite.err.dbNameMissing }
+    ))
+    it('fails to init db without config.path', () => assert.throws(
+      () => new Sqlite({ name: `test-${rnd()}-db` }),
+      { name: ERROR_NAME, message: Sqlite.err.dbPathMissing }
+    ))
+  })
+
+  describe('Instance', () => {
+    let config
+
+    before(async () => {
+      let dbPath = path.resolve("./test-db")
+      await mkdir(dbPath)
+      config = {
+        path: dbPath,
+        name: `test-${rnd()}-db`
+      }
     })
-    assert(sqlite.ready === false)
-    await sqlite.start()
-    assert(sqlite.ready === true)
-    await sqlite.deleteSqlite()
-  })
 
-  it('Should fail to init db when name is missing', async () => {
-    try {
-      const sqlite = new Sqlite({})
-    } catch (err) {
-      assert(err instanceof Sqlite.Error)
-      assert(Sqlite.err.dbNameMissing)
-    }
-  })
+    describe('new instance', () => {
+      let sqlite
+      before(() => sqlite = new Sqlite(config))
 
-  it('Should fail to delete db if not ready', async () => {
-    try {
-      const sqlite = new Sqlite({})
-      sqlite.deleteSqlite()
-    } catch (err) {
-      assert(err instanceof Sqlite.Error)
-      assert(Sqlite.err.notReady)
-    }
+      describe('properties', () => {
+        it('has config property', () => assert.deepEqual(sqlite.config, config))
+        it('has default version', () => assert.equal(sqlite.version, '0.0.1'))
+        it('is not ready', () => assert.equal(sqlite.ready, false))
+        it('is has path', () => assert(sqlite.dbPath.includes(config.path.toString())))
+        it('accepts custom version', () => assert.equal((new Sqlite({ ...config, version: 'xxx'})).version, 'xxx'))
+      })
+
+      describe('not ready db', () => {
+        it('is not ready', () => assert.equal(sqlite.ready, false))
+        it('fails to delete db if not ready', () => assert.throws(
+          () => sqlite.deleteSqlite(),
+          { name: ERROR_NAME, message: Sqlite.err.notReady }
+        ))
+      })
+
+      describe('ready db', () => {
+        before(async () => await sqlite.start())
+        it('is ready', () => assert(sqlite.ready))
+        it('deletes db', async () => sqlite.deleteSqlite())
+      })
+    })
   })
 })

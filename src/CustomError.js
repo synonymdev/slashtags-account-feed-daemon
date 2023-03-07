@@ -1,5 +1,4 @@
-
-module.exports = function (config) {
+export default function (config) {
   if (!config.errName) throw new TypeError('ERR_NAME_MISSING')
   if (!config.fileName) throw new TypeError('FILE_NAME_MISSING')
   return class CustomError extends Error {

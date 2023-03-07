@@ -1,15 +1,12 @@
+import { randomBytes } from 'crypto'
+import { __filename } from './util.js'
 
-'use strict'
-const {
-  Err, log
-} = require('./BaseUtil')('RPC_RESP', __filename)
-const { randomBytes } = require('crypto')
+import util from './BaseUtil.js'
+const { Err, log } = util('RPC', __filename())
 
-class RPCResponse {
+export default class RPCResponse {
   constructor ({ result, error, id }) {
-    this.response = {
-      jsonrpc: '2.0'
-    }
+    this.response = { jsonrpc: '2.0' }
     if (!id) {
       id = randomBytes(32).toString('hex')
     }
@@ -19,7 +16,6 @@ class RPCResponse {
     } else if (error) {
       this.response.error = this._createErr(error)
     } else {
-      console.trace('aaa')
       log.error('INVALID_RPC_RESPONSE:', error, result)
       throw new Err('INVALID_RPC_PARAMS')
     }
@@ -62,5 +58,3 @@ class RPCResponse {
     return RPCResponse.fromError(RPCResponse.error.rpcErr, id)
   }
 }
-
-module.exports = RPCResponse

@@ -1,18 +1,19 @@
 {
 	"info": {
-		"_postman_id": "7b52b965-e07f-480b-aef9-049db170b14e",
+		"_postman_id": "ea4f7e42-4b6e-4040-9464-d58d02793e3d",
 		"name": "Feeds Daemon",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25849674"
 	},
 	"item": [
 		{
-			"name": "Create User",
+			"name": "Create Feed",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"method\":\"createFeed\",\n    \"params\":{\n        \"user_id\":\"satoshi123\"\n    }\n}",
+					"raw": "{\n    \"method\":\"createFeed\",\n    \"params\":{\n        \"feed_id\":\"satoshi\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -35,13 +36,13 @@
 			"response": []
 		},
 		{
-			"name": "Delete User Feed",
+			"name": "Delete Feed",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"method\":\"createFeed\",\n    \"params\":{\n        \"user_id\":\"satoshi123\"\n    }\n}",
+					"raw": "{\n    \"method\":\"deleteFeed\",\n    \"params\":{\n        \"feed_id\":\"satoshi\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -64,13 +65,42 @@
 			"response": []
 		},
 		{
-			"name": "Get Feed By ID",
+			"name": "Get Feed",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"method\":\"createFeed\",\n    \"params\":{\n        \"user_id\":\"satoshi123\"\n    }\n}",
+					"raw": "{\n    \"method\":\"getFeed\",\n    \"params\":{\n        \"feed_id\":\"satoshi\"\n    }\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8787/v0.1/rpc",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8787",
+					"path": [
+						"v0.1",
+						"rpc"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Feed",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"method\":\"updateFeed\",\n    \"params\": {\n        \"feed_id\":\"satoshi\",\n        \"fields\": [\n            {\n                \"name\": \"Bitcoin\",\n                \"value\": 1.243\n            }\n        ]\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"

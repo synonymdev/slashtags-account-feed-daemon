@@ -1,18 +1,22 @@
-'use strict'
-const RPCResponse = require('./RPCResponse')
-const {
-  Err, log
-} = require('./BaseUtil')('RPC', __filename)
-const Endpoints = require('./Endpoints')
+import { __filename } from './util.js'
+import RPCResponse from './RPCResponse.js'
+import Endpoints from './Endpoints.js'
+import Schema from '../schemas/slashfeed.json' assert { type: 'json' }
+
+import util from './BaseUtil.js'
+
+import Fastify from 'fastify'
+import formBodyPlugin from '@fastify/formbody'
+const { Err, log } = util('RPC', __filename())
 
 function loadFastify () {
-  const fastify = require('fastify')({ })
-  fastify.register(require('@fastify/formbody'))
+  const fastify = Fastify({})
+  fastify.register(formBodyPlugin)
   return fastify
 }
 
 class RequestContext {
-  constructor ({ req, endpoints, serverConfig, handler, reply }) {
+  constructor ({ req, endpoints, handler, reply }) {
     this.data = req.body
     this.meta = req.headers
     this.req = req
@@ -51,7 +55,10 @@ class RequestContext {
   async runRequest () {
     if (!this.rpcsvc) {
       log.error(`Invalid RPC method called: ${this.data?.method}`)
-      return this.reply.send(RPCResponse.fromError({ code: RPCResponse.error.badMethod, message: 'Invalid method' }, this.data?.id))
+      return this.reply.send(RPCResponse.fromError({
+        code: RPCResponse.error.badMethod,
+        message: 'Invalid method'
+      }, this.data?.id))
     }
 
     let res
@@ -68,9 +75,9 @@ class RequestContext {
   }
 }
 
-function server (config) {
+export default function (config) {
   if (!config) {
-    config = require('../schemas/config.json')
+    config = Schema
   }
   if (!config?.port) throw new Err('RPC_PORT_NOT_PASSED')
   if (!config?.handler) throw new Err('RPC_HANDLER_NOT_PASSED')
@@ -79,29 +86,27 @@ function server (config) {
   const endpointList = [
     {
       name: 'createFeed',
-      description: 'Create a user drive',
-      svc: 'feeds.extCreateDrive'
+      description: 'Create a feed drive',
+      svc: 'feeds.createFeed'
     },
     {
-      name: 'updateFeedBalance',
-      description: "Update user's feed balance",
+      name: 'updateFeed',
+      description: 'Update feed feed',
       svc: 'feeds.updateFeedBalance'
     },
     {
       name: 'getFeed',
-      description: 'Get a user feed key',
+      description: 'Get a feed key',
       svc: 'feeds.getFeed'
     },
     {
-      name: 'deleteUserFeed',
-      description: 'Delete a user feed',
-      svc: 'feeds.deleteUserFeed'
+      name: 'deleteFeed',
+      description: 'Delete a feed',
+      svc: 'feeds.deleteFeed'
     }
   ]
 
-  const endpoints = new Endpoints({
-    endpointList, version: 'v0.1', host: `http://${config.host}:${config.port}`
-  })
+  const endpoints = new Endpoints({ endpointList, version: 'v0.1', host: `http://${config.host}:${config.port}` })
 
   const fastify = loadFastify()
 
@@ -117,30 +122,29 @@ function server (config) {
       })
       return ctx.runRequest()
     } catch (err) {
+      log.err('ERROR_RCTX', err)
       req.send(500)
     }
   })
 
-  function start (cb) {
+  async function start () {
     log.info(`Listening: ${config.host} Port: ${config.port}`)
-    fastify.listen(config.port, config.host, (err) => {
-      if (err) {
-        log.err('FAILED_RPC_LISTEN', err)
-        throw new Err('FAILED_RPC_LISTEN')
-      }
-      cb(null)
-    })
+    try {
+      await fastify.listen({ port: config.port, host: config.host })
+    } catch (err) {
+      log.err('FAILED_RPC_LISTEN', err)
+      throw new Err('FAILED_RPC_LISTEN')
+    }
   }
 
-  function stop (cb) {
-    fastify.close((err) => {
+  async function stop () {
+    try {
+      await fastify.close()
       log.info('Stopped RPC server')
-      if (err) {
-        log.err('ERROR_STOPPING', err)
-        throw new Err('FAILED_RPC_STOPPING')
-      }
-      cb(null)
-    })
+    } catch (err) {
+      log.err('ERROR_STOPPING', err)
+      throw new Err('FAILED_RPC_STOPPING')
+    }
   }
 
   return {
@@ -149,5 +153,3 @@ function server (config) {
     endpoints
   }
 }
-
-module.exports = server
