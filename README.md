@@ -2,6 +2,49 @@
 
 A simple HTTP RPC deamon to enable publishing Slashtags Exchange Feeds. Can be used either as a [Library](#import-as-library) or as a [Daemon](#run-as-daemon)
 
+## Configuration
+
+### Default
+
+Default configuration file can be found in `./schemas/config.json`
+Default data representation configuration cab be found in `./schemas/slashfeed.json`
+
+### Representation config
+
+Providing `schemaConfig` as a part of configuration enables customization for representation logic. This is sufficient to provide this part of config once only as it will be persisted for future runs inside of `./schemas/slashfeed.json`. The basic configuration looks like this:
+
+```
+  schemaConfig: {
+    name: "Name of you service",
+    description: "Descrition of you widget",
+    icons: {
+      48: 'data:image/png;base64,...' // <size>: <base64 image string>
+      96: 'data:image/png;base64,...'
+    },
+    fields: [
+      {
+        "name": "Name of you the field to be shown as a part of the widget",
+        "description": "This field is shows relative change of some value",
+        "type": "delta", // type of field used by widget for application of representation logic
+        "units": "%" // it is required for some types (see below)
+      },
+      ...
+    ]
+  }
+```
+
+**Notes on Fields**: There can be arbitrary number of fields. Each field must have `name` and `description`. Default field type is `utf8` string. Property `units` will be prepended to the value before rendering it to end user. Supported field types are:
+Basic:
+* `utf8 (default)` - we suggest it to be used for passing basic string values
+* `number` - we suggest it to be used for passing general numeric values 
+Measured (types that require `units` being specified):
+* `currency` - we suggest it to be used for passing currency values, in combination with `units` (e.g. `100.00 $`)
+* `delta` - we suggest it to be used for passing change values, in combination with `units` (e.g. `+5 %`)
+
+#### Updating configured values
+
+After changing/specifying representation configuration, one can start feeding values into the data feed by providing objects with `{ name: "<name of field from schemaConfig.field[i].name>", value: "<value for this field>"}`. See [Update Field](#update-feed) below
+
 ## Import as Library
 
 Install as a dependency
@@ -50,7 +93,7 @@ node start.js
 
 `DEBUG=stfeed:*`
 
-###  *Run with PM2
+### *Run with PM2
 
 *`pm2 start`
 
