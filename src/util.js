@@ -1,31 +1,23 @@
-import { randomBytes } from 'crypto'
-import { unlink, rm, mkdir as fsMkdir } from 'node:fs/promises'
-import path from 'path'
-import { fileURLToPath } from 'url'
+const { randomBytes } = require('crypto')
+const { unlink, rm, mkdir: fsMkdir } = require('node:fs/promises')
 
-export function delFile (file) {
-  return unlink(file)
-}
+module.exports = {
+  delFile: function (file) {
+    return unlink(file)
+  },
 
-export function delFolder (f) {
-  return rm(f, {
-    recursive: true,
-    force: true
-  })
-}
+  delFolder: function (f) {
+    return rm(f, {
+      recursive: true,
+      force: true
+    })
+  },
 
-export function mkdir (f) {
-  return fsMkdir(f, { recursive: true })
-}
+  mkdir: function (f) {
+    return fsMkdir(f, { recursive: true })
+  },
 
-export function rnd () {
-  return randomBytes(32).toString('hex')
-}
-
-export const __filename = () => {
-  return fileURLToPath(import.meta.url)
-}
-
-export const __dirname = (fileName) => {
-  return path.dirname(fileName)
+  rnd: function () {
+    return randomBytes(32).toString('hex')
+  }
 }

@@ -1,17 +1,15 @@
-import fs from 'fs'
-import b4a from 'b4a'
-import z32 from 'z32'
-import { format } from '@synonymdev/slashtags-url'
+const fs = require('fs')
+const b4a = require('b4a')
+const z32 = require('z32')
 
-import { __filename } from './util.js'
-import Feeds from '@synonymdev/feeds'
-import FeedDb from './FeedDb.js'
+const Feeds = require('@synonymdev/feeds')
+const FeedDb = require('./FeedDb.js')
 
-import Log from './Log.js'
-import customErr from './CustomError.js'
+const Log = require('./Log.js')
+const customErr = require('./CustomError.js')
 
 const log = Log('core')
-const Err = customErr({ errName: 'Slashtags', fileName: __filename() })
+const Err = customErr({ errName: 'Slashtags', fileName: __filename })
 
 const _err = {
   notReady: 'SLASHTAGS_NOT_READY',
@@ -53,7 +51,7 @@ const _err = {
   invalidFieldValue: 'INVALID_FIELD_VALUE'
 }
 
-export default class SlashtagsFeeds {
+module.exports = class SlashtagsFeeds {
   static err = _err
   static Error = Err
 
@@ -62,13 +60,15 @@ export default class SlashtagsFeeds {
     'number',
     'utf-8'
   ]
+
   static MEASURED_TYPES = [
     'currency',
     'delta'
   ]
+
   static VALID_TYPES = [
     ...this.DEFAULT_TYPES,
-    ...this.MEASURED_TYPES,
+    ...this.MEASURED_TYPES
   ]
 
   static validateSchemaConfig (schemaConfig) {
@@ -285,6 +285,7 @@ export default class SlashtagsFeeds {
     const res = await this.db.findByFeedId(args.feed_id)
     if (!res) return null
 
+    const { format } = await import('@synonymdev/slashtags-url')
     const url = format(
       b4a.from(res.feed_key, 'hex'),
       {
@@ -374,6 +375,7 @@ export default class SlashtagsFeeds {
     }
     log.info(`Finished creating new drive for ${args.feed_id}`)
 
+    const { format } = await import('@synonymdev/slashtags-url')
     const url = format(
       b4a.from(feed.key, 'hex'),
       {

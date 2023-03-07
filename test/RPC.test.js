@@ -1,8 +1,8 @@
-import assert from 'assert'
-import axios from 'axios'
+const assert = require('assert')
+const axios = require('axios')
 
-import rpc from '../src/RPC.js'
-import { rnd } from '../src/util.js'
+const rpc = require('../src/RPC.js')
+const { rnd } = require('../src/util.js')
 
 const noop = () => {}
 describe('RPC ', () => {

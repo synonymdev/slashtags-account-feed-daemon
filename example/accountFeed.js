@@ -1,8 +1,8 @@
-import { faker } from '@faker-js/faker'
-import debug from 'debug'
-import axios from 'axios'
-import config from './config.json' assert { type: 'json' }
-import serverConfig from '../schemas/config.json' assert { type: 'json' }
+const { faker } = require('@faker-js/faker')
+const debug = require('debug')
+const axios = require('axios')
+const config = require('./config.json')
+const serverConfig = require('../schemas/config.json')
 
 const TARGET = `http://${serverConfig.rpc.host || 'localhost'}:${serverConfig.rpc.port}/v0.1/rpc`
 

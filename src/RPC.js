@@ -1,13 +1,12 @@
-import { __filename } from './util.js'
-import RPCResponse from './RPCResponse.js'
-import Endpoints from './Endpoints.js'
-import Schema from '../schemas/slashfeed.json' assert { type: 'json' }
+const RPCResponse = require('./RPCResponse.js')
+const Endpoints = require('./Endpoints.js')
+const Schema = require('../schemas/slashfeed.json')
 
-import util from './BaseUtil.js'
+const util = require('./BaseUtil.js')
 
-import Fastify from 'fastify'
-import formBodyPlugin from '@fastify/formbody'
-const { Err, log } = util('RPC', __filename())
+const Fastify = require('fastify')
+const formBodyPlugin = require('@fastify/formbody')
+const { Err, log } = util('RPC', __filename)
 
 function loadFastify () {
   const fastify = Fastify({})
@@ -75,7 +74,7 @@ class RequestContext {
   }
 }
 
-export default function (config) {
+module.exports = function (config) {
   if (!config) {
     config = Schema
   }

@@ -1,8 +1,8 @@
-import async from 'async'
+const async = require('async')
 
-import Sqlite from './Sqlite.js'
+const Sqlite = require('./Sqlite.js')
 
-export default class FeedManager {
+module.exports = class FeedManager {
   constructor (config) {
     this.db = new Sqlite(config)
   }

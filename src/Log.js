@@ -1,4 +1,4 @@
-import debug from 'debug'
+const debug = require('debug')
 
 const base = 'stfeed'
 class Log {
@@ -9,6 +9,6 @@ class Log {
   }
 }
 
-export default (name) => {
+module.exports = (name) => {
   return new Log(name)
 }
