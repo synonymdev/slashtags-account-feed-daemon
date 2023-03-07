@@ -1,15 +1,15 @@
-import { promisify } from 'node:util'
-import RPC from './src/RPC.js'
-import path from 'path'
-import Feeds from './src/Feeds.js'
-import config from './schemas/config.json' assert { type: 'json' }
-import schema from './schemas/slashfeed.json' assert { type: 'json' }
-import { __filename, mkdir } from './src/util.js'
+const { promisify } = require('node:util')
+const RPC = require('./src/RPC.js')
+const path = require('path')
+const Feeds = require('./src/Feeds.js')
+const config = require('./schemas/config.json')
+const schema = require('./schemas/slashfeed.json')
+const { mkdir } = require('./src/util.js')
 
-import Log from './src/Log.js'
-import customErr from './src/CustomError.js'
+const Log = require('./src/Log.js')
+const customErr = require('./src/CustomError.js')
 const log = Log('Main')
-const Err = customErr({ errName: 'Slashtags', fileName: __filename() })
+const Err = customErr({ errName: 'Slashtags', fileName: __filename })
 
 const _err = {
   badConfig: 'BAD_CONFIG'

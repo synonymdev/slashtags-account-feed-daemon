@@ -3,7 +3,6 @@
   "version": "1.0.1",
   "description": "",
   "main": "index.js",
-  "type": "module",
   "dependencies": {
     "@fastify/formbody": "^7.0.1",
     "@synonymdev/feeds": "^1.0.0-alpha.2",

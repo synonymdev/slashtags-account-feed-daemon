@@ -1,8 +1,7 @@
-import { __filename } from './util.js'
-import util from './BaseUtil.js'
-const { Err, log } = util('RPC', __filename())
+const util = require('./BaseUtil.js')
+const { Err, log } = util('RPC', __filename)
 
-export default class Endpoints {
+module.exports = class Endpoints {
   constructor ({ endpointList, version, host, route, method }) {
     this.data = endpointList.map((ep) => {
       if (!ep.name || !ep.svc) throw new Err('INVALID_RPC_ENDPOINT_' + JSON.stringify(ep))

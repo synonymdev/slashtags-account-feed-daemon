@@ -1,10 +1,10 @@
-import { strict as assert } from 'node:assert';
-import SlashtagsFeeds from '../src/Feeds.js'
-import FeedDb from '../src/FeedDb.js'
-import path from 'path'
-import fs from 'fs'
-import Schema from '../schemas/slashfeed.json' assert { type: 'json' };
-import Feeds from '@synonymdev/feeds'
+const { strict: assert } = require('node:assert')
+const SlashtagsFeeds = require('../src/Feeds.js')
+const FeedDb = require('../src/FeedDb.js')
+const path = require('path')
+const fs = require('fs')
+const Schema = require('../schemas/slashfeed.json')
+const Feeds = require('@synonymdev/feeds')
 
 describe('SlashtagsFeeds', () => {
   const validConfig = {

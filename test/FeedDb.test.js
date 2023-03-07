@@ -1,6 +1,6 @@
-import { strict as assert } from 'node:assert';
-import FeedDb from '../src/FeedDb.js'
-import { rnd } from '../src/util.js'
+const { strict: assert } = require('node:assert')
+const FeedDb = require('../src/FeedDb.js')
+const { rnd } = require('../src/util.js')
 
 async function getDb () {
   let udb = new FeedDb({

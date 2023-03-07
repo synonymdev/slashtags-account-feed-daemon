@@ -1,10 +1,9 @@
-import { randomBytes } from 'crypto'
-import { __filename } from './util.js'
+const { randomBytes } = require('crypto')
 
-import util from './BaseUtil.js'
-const { Err, log } = util('RPC', __filename())
+const util = require('./BaseUtil.js')
+const { Err, log } = util('RPC', __filename)
 
-export default class RPCResponse {
+module.exports = class RPCResponse {
   constructor ({ result, error, id }) {
     this.response = { jsonrpc: '2.0' }
     if (!id) {

@@ -1,8 +1,7 @@
-'use strict'
-import { strict as assert } from 'node:assert';
-import path from 'path'
-import Sqlite from '../src/Sqlite.js'
-import { rnd, mkdir } from '../src/util.js'
+const { strict: assert } = require('node:assert')
+const path = require('path')
+const Sqlite = require('../src/Sqlite.js')
+const { rnd, mkdir } = require('../src/util.js')
 
 describe('Sqlite', () => {
   const ERROR_NAME = 'SQLITE_ERROR:'
