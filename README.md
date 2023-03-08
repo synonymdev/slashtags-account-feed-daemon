@@ -34,9 +34,11 @@ Providing `schemaConfig` as a part of configuration enables customization for re
 ```
 
 **Notes on Fields**: There can be arbitrary number of fields. Each field must have `name` and `description`. Default field type is `utf8` string. Property `units` will be prepended to the value before rendering it to end user. Supported field types are:
+
 Basic:
 * `utf8 (default)` - we suggest it to be used for passing basic string values
 * `number` - we suggest it to be used for passing general numeric values 
+
 Measured (types that require `units` being specified):
 * `currency` - we suggest it to be used for passing currency values, in combination with `units` (e.g. `100.00 $`)
 * `delta` - we suggest it to be used for passing change values, in combination with `units` (e.g. `+5 %`)
