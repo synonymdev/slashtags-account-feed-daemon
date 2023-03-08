@@ -1,4 +1,4 @@
-# Slashtags Exchange Feeds Daemon
+# Slashtags Exchange Feeds Daemon (BETA)
 
 A simple HTTP RPC deamon to enable publishing Slashtags Exchange Feeds. Can be used either as a [Library](#import-as-library) or as a [Daemon](#run-as-daemon)
 
