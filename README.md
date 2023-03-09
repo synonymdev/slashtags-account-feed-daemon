@@ -12,7 +12,7 @@ With this code service providers can offer external client applications a way to
 The daemon can store one or more of a customer's account parameters into a slashtags. The data is encrypted. The customer's client application can, then, retrieve the encrypted data pertaining to the customer's account(s) with the slashtag's feed key.
 This retrieval occurs in a peer to peer fashion over a slashtags. The client application can decipher the data with the corresponding decryption key. (For further background on Slashtags, see [website](https://slashtags.to/), [github](https://www.github.com/synonymdev/slashtags)).
 
-As the customer's data is encrypted, and seeded by other servers for assuring availability and redundancy. Customer privacy requires securing the discovery key and the decryption key which accompany the feed (shared together via a [slashfeed url string](https://github.com/synonymdev/slashtags/tree/master/packages/url)). Compromise of both the decryption keys only entails a loss of customer privacy, not access to funds.
+As the customer's data is encrypted, and seeded by other servers for assuring availability and redundancy. Customer privacy requires securing the discovery key and the decryption key which accompany the feed (shared together via a [slashfeed url string](https://github.com/synonymdev/slashtags/tree/master/packages/url)). Compromise of the decryption key only entails a loss of customer privacy, not access to funds.
 
 The rendering of Slashtags account feeds is currently supported by Bitkit [website](https://bitkit.to/), [github](https://github.com/synonymdev/bitkit).
 
