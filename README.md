@@ -159,7 +159,7 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 }'
 ```
 
-Response to a successful request. 
+Successful response: 
 
 ``` json
 {
@@ -195,7 +195,7 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 }'
 ```
 
-Response to a successful request.
+Successful response:
 
 ``` json
 {
@@ -218,7 +218,7 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 }'
 ```
 
-Response to a successful request.
+Successful response:
 
 ``` json
 {
@@ -244,7 +244,7 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 }'
 ```
 
-Response to a successful request.
+Successful response:
 
 ``` json
 {
