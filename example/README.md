@@ -1,14 +1,16 @@
-## Account Feed Example
+# Account feeds example
 
-### Feed Daemon
 
-From the root directory run `npm run start` to start daemon.
-It will present you with: 
-1. Its current configuration
-2. List of available RPC methods
-3. Route under which they are available
+## Start account feeds daemon
 
-In case of the first run with default configuration it will create `data` directory for both internal state management database (SQLite) and feed data folder (for more details see [holepunch corestore docs](https://docs.holepunch.to/building-blocks/corestore)).
+From the root directory, execute `npm run start` to start the daemon.
+
+You will be presented with:
+1. The current configuration of the daemon
+2. A list of available RPC methods
+3. The IP:Port for using the RPC methods
+
+Running the example for the first time, it will create `data` directory for the internal SQLite state management database ("feed-db") and the shared feeds to serve the account data for different clients. 
 
 ```sh
 $ npm run start
@@ -41,12 +43,11 @@ $ npm run start
   stfeed:RPC:info Listening: 127.0.0.1 Port: 8787 +12ms
 ```
 
-### Feed generation
-In separate terminal run `npm run example:account` to start generating account feed.
-It will create three [hyperdrive](https://docs.holepunch.to/building-blocks/hyperdrive) accessible under `slashfeed:<id>#encryptionKey=<key>` [slashfeed URL](https://github.com/synonymdev/slashtags/tree/master/packages/url).
+## Feed generation
+
+Open a separate terminal window and execute `npm run example:account` from the root directory. This will create three shared encrypted feeds. Each feed contains the data for a particular customer account. The feed contents are accessible by the discovery key and the encryption key and their combination in URL. This information can be shared by [slashfeed URL](https://github.com/synonymdev/slashtags/tree/master/packages/url), which has the following format: `slashfeed:<id>#encryptionKey=<key>`.
 
 ```sh
-
 example Starting account feed +0ms
 example Seting up accounts +0ms
 example Config: +0ms
@@ -57,10 +58,9 @@ example } +0ms
 example:abcde123 Created feed: slashfeed:sx9uxfw5zdxuqb5ty7ox4zfe8hhffoa139na787kg94gzx1mrs3y#encryptionKey=ttium34uzwqkztg39t419bqgoaih5h4o3pwymyrd1f4qjdgoarmy +0ms
 example:satoshi9191 Created feed: slashfeed:oi5do85a6sa4fnhdqogkh6n7wogaiftnoxbdkhm897ymtsc3fbgy#encryptionKey=qyy9d8zurx5nqjqh4z7rb5ndihimmf84mzozsrmtpuf17kued73o +0ms
 example:synonymxyz Created feed: slashfeed:7fgcnreg8cmqom8yhjeqkhbyybdi5jyjf3f7oswkdnoj66kar31y#encryptionKey=9qg1a3cthjf69e3regqqduyfs95fkuaq18ddtasq9ih5cdrb7qey +0ms
-
 ```
 
-You can now convert it to QR code and scan with your [bitkit wallet](https://bitkit.to/) and see corresponding feed updates in a widget appearing with delay specified as a `feedTimer`
+The data will update periodically.
 
 ```sh
 example Updating account feeds +5s
@@ -69,3 +69,5 @@ example:satoshi9191 Updated feed: [ 'Bitcoin: "9.73"', 'Bitcoin P/L: "-51.02"' ]
 example:synonymxyz Updated feed: [ 'Bitcoin: "8.52"', 'Bitcoin P/L: "54.86"' ] +0ms
 ...
 ```
+
+The slashfeed urls can be converted to a QR code and scanned with the client application. [Bitkit wallet](https://bitkit.to/) supports the rendering of account feeds. Scanning one of the urls with Bitkit will display the feed's data within a widget.

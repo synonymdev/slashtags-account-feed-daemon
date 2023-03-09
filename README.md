@@ -1,61 +1,81 @@
-# Slashtags Exchange Feeds Daemon (BETA)
+# Slashtags account feeds daemon
 
-A simple HTTP RPC deamon to enable publishing Slashtags Exchange Feeds. Can be used either as a [Library](#import-as-library) or as a [Daemon](#run-as-daemon)
+---
+**⚠️ This daemon is still in beta. Please use at your own risk.⚠️**
+
+---
+
+## Overview 
+
+With this code service providers can offer external client applications a way to read the data in a customer's account(s) populated over slashtags.
+
+The daemon can store one or more of a customer's account parameters into a slashtags. The data is encrypted. The customer's client application can, then, retrieve the encrypted data pertaining to the customer's account(s) with the slashtag's feed key.
+This retrieval occurs in a peer to peer fashion over a slashtags. The client application can decipher the data with the corresponding decryption key. (For further background on Slashtags, see [website](https://slashtags.to/), [github](https://www.github.com/synonymdev/slashtags)).
+
+As the customer's data is encrypted, and seeded by other servers for assuring availability and redundancy. Customer privacy requires securing the discovery key and the decryption key which accompany the feed (shared together via a [slashfeed url string](https://github.com/synonymdev/slashtags/tree/master/packages/url)). Compromise of both the decryption keys only entails a loss of customer privacy, not access to funds.
+
+The rendering of Slashtags account feeds is currently supported by Bitkit [website](https://bitkit.to/) [github](https://github.com/synonymdev/bitkit).
+
+To create and manage account feeds, you can either be run as a [daemon](#run-as-a-daemon) or import the code as a [npm dependency](#import-as-a-library).
 
 ## Configuration
 
-### Default
+### Defaults
 
-Default configuration file can be found in `./schemas/config.json`
-Default data representation configuration cab be found in `./schemas/slashfeed.json`
+A default configuration file for running the daemon is located in `./schemas/config.json`. A default configuration file to express the data available in the feed can be found in `./schemas/slashfeed.json`. All client account feeds will require the same available data configuration (unless you run multiple instances of the daemon or create multiple instances from the library).
 
-### Representation config
+### Customization
 
-Providing `schemaConfig` as a part of configuration enables customization for representation logic. This is sufficient to provide this part of config once only as it will be persisted for future runs inside of `./schemas/slashfeed.json`. The basic configuration looks like this:
+The configuration file for expressing the available data can be customized using the `schemaConfig` object. Running the daemon, you can pass `schemaConfig` as a property to `./schemas/config.json`. Importing as a library, you can insert `schemaConfig` as an argument in the creation of a Feeds instance (see the ["Import as a library"](#import-as-a-library) section).
+
+You only need to set the custom configuration once and it will persist in the `./schemas/slashfeed.json` file. The configurable options for the slashfeed file are listed below. Each key-value pair is required when passing the `schemaConfig` object. 
 
 ```
-  schemaConfig: {
-    name: "Name of you service",
-    description: "Descrition of you widget",
-    icons: {
-      48: 'data:image/png;base64,...' // <size>: <base64 image string>
-      96: 'data:image/png;base64,...'
+schemaConfig: {
+  name: "Name of your service",
+  description: "Description of your account feed",
+  icons: {
+    48: 'data:image/png;base64,...' // <size>: <base64 image string>
+    ...
+  },
+  fields: [
+    {
+      "name": "Name of the field to be shown as a part of the widget",
+      "description": "Description of what the field displays",
+      "type": "field type"
+      "units": "The units for the field"
     },
-    fields: [
-      {
-        "name": "Name of you the field to be shown as a part of the widget",
-        "description": "This field is shows relative change of some value",
-        "type": "delta", // type of field used by widget for application of representation logic
-        "units": "%" // it is required for some types (see below)
-      },
-      ...
-    ]
-  }
+    ...
+  ]
+}
 ```
 
-**Notes on Fields**: There can be arbitrary number of fields. Each field must have `name` and `description`. Default field type is `utf8` string. Property `units` will be prepended to the value before rendering it to end user. Supported field types are:
+Your client account feeds can support an arbitrary number of data fields. Each field in `schemaConfig` consists of a `name`, `description`, `type`, and `units`.
 
-Basic:
-* `utf8 (default)` - we suggest it to be used for passing basic string values
-* `number` - we suggest it to be used for passing general numeric values 
+There are two main categories of data fields: basic and measurement. Only the measurement category requires a specific value for the `units` specification. Both the basic and measurement categories each have two field types.
 
-Measured (types that require `units` being specified):
-* `currency` - we suggest it to be used for passing currency values, in combination with `units` (e.g. `100.00 $`)
-* `delta` - we suggest it to be used for passing change values, in combination with `units` (e.g. `+5 %`)
+**Basic**
+* `utf8` (default): Intended for passing basic string values
+* `number`: Intended for passing general numeric values 
 
-#### Updating configured values
+**Measurement**
+* `currency`: Intended for passing currency values in combination with a unit (e.g. `100.00 $`)
+* `delta`: Intended for passing profit/loss measurements in combination with a unit (e.g. `+5 %`)
 
-After changing/specifying representation configuration, one can start feeding values into the data feed by providing objects with `{ name: "<name of field from schemaConfig.field[i].name>", value: "<value for this field>"}`. See [Update Field](#update-feed) below
+### Updating field values
 
-## Import as Library
+After setting the available data configuration, you can start feeding values for each data field by passing objects with the following format: `{ name: "<name of field from schemaConfig.field[i].name>", value: "<value for this field>"}`. See [Update Field](#update-feed) below. 
 
-Install as a dependency
+
+## Import as a library
+
+Install the library as a dependency:
 
 ```sh
 npm i @synonymdev/feeds-daemon 
 ```
 
-Import to your code and instantiate providing corresponding parameters and start the server
+Import the library into your codebase and create a Feeds instance. The Feeds instance will allow you to create individual account feeds for clients. The database stores key data about the account feeds you have created for your clients. For the schemaConfig property, you can pass in the object as described [above](#customization). 
 
 ```js
 const { Feeds } = require('@synonymdev/feeds-daemon')
@@ -65,50 +85,68 @@ const feeds = new Feeds({
         path: "./data"
     },
     slashtags: "./",
-    schemaConfig: "<representation config>"
+    schemaConfig: "<data representation config>"
 })
+```
 
+Start the Feeds instance. 
+
+```js
 await feeds.start()
 ```
 
-You can now call various functions
+You can now call various functions on the Feeds instance. In creating a feed, you can use a customer identification number, e-mail address, username, or some other appropriate variable. The `feed_id` is not exposed to the client application.    
+
 ```js
-let feed = await feeds.getFeed({ feed_id: "123123" })
+await feeds.createFeed({ feed_id: "55642289" }) // Creates an account feed
+await feeds.updateFeedBalance({ feed_id: "55642289", fields: [{name:"bitcoin", value: 1.422},{name:"dollar", value: 482}]}) // Updates the balance of the account feed
+let feed_55642289 = await feeds.getFeed({ feed_id: "55642289" }) // Retrieves the data of an account feed
+await feeds.deleteFeed( { feed_id: "55642289" } ) // Deletes an account feed 
 ```
 
-## Run as Daemon
+## Run as a daemon
 
-**1. Setup config**
-Go to `./schema/config.json` Update config items.
+Clone the repository and install the dependencies.
 
-**2. Update your feeds slashfeed.json file**
-This schema file allows feed consumers to parse the feed.
-
-```
+```sh
 git clone
 npm install
-mkdir ./db
-node start.js
 ```
 
-### *Enable detailed logs specifying env variable**
+Set up the configuration for the daemon in `./schema/config.json`. As explained [above](#configuration), the configuration file should include a schemaConfig object. This customizes your `./schema/slashfeed.json` file, which determines the data available in your account feeds.
 
-`DEBUG=stfeed:*`
+Start the daemon.
 
-### *Run with PM2
+``` sh
+npm run start # or node start.js
+```
 
-*`pm2 start`
+### Enable detailed logs
 
-## Test & Development
-There are tests for all methods located in `./test` dir. You can run them by `npm run test`
-There examples in `./examples` folder. They require running daemon. Run `npm run start` to start daemon and in separate terminal run `npm run example:account` to start generating account feed. See [examples readme](./example/README.md) for more details
+To show detailed logs, start your daemon as follows:
+
+`DEBUG=stfeed:* node start.js`
+
+### Run with PM2
+
+`pm2 start`
+
+
+## Testing & Development
+
+There are tests for all methods located in the `./test` directory. You can run them executing `npm run test` in the root directory.
+
+There is an example located in the `./examples` directory. It instantiates three account feeds and updates their data fields periodically. See the [README](./example/README.md) located in the directory for more details.
+
 
 ## RPC API
 
 **A Postman collection has been provided.**
 
-### Create Feed
-Create a feed request
+### Create a feed
+
+Request creation of a new account feed (the `feed_id` is never exposed to the client application.)
+
 ``` sh
 /// Request Body
 curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
@@ -116,11 +154,13 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --data-raw '{
     "method":"createFeed",
     "params":{
-        "feed_id":"satoshi123"
+        "feed_id":"55642289"
     }
 }'
 ```
-Response
+
+Response to a successful request. 
+
 ``` json
 {
     "jsonrpc": "2.0",
@@ -134,15 +174,17 @@ Response
 }
 ```
 
-### Update Feed
-Update feed request
+### Update a feed
+
+Request to update an account feed.
+
 ``` sh
 curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "method":"updateFeedBalance",
     "params": {
-        "feed_id":"satoshi123",
+        "feed_id":"55642289",
         "fields": [
           {
             "name": "Bitcoin",
@@ -152,7 +194,9 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
     }
 }'
 ```
-Response
+
+Response to a successful request.
+
 ``` json
 {
     "jsonrpc": "2.0",
@@ -161,16 +205,21 @@ Response
 }
 ```
 
-### Get Feed
+### Get a feed
+
+Request the details of an account feed.
+
 ``` sh
 curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "method":"getFeed",
-    "params":{ "feed_id" : "satoshi123" }
+    "params":{ "feed_id" : "55642289" }
 }'
 ```
-Response
+
+Response to a successful request.
+
 ``` json
 {
     "jsonrpc": "2.0",
@@ -182,16 +231,21 @@ Response
 }
 ```
 
-### Delete Feed
+### Delete a feed
+
+Delete an account feed.
+
 ```sh
 curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "method":"deleteFeed",
-    "params":{ "feed_id" : "satoshi123" }
+    "params":{ "feed_id" : "55642289" }
 }'
 ```
-Response
+
+Response to a successful request.
+
 ``` json
 {
     "jsonrpc": "2.0",
@@ -201,4 +255,3 @@ Response
     }
 }
 ```
-
