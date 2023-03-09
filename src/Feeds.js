@@ -1,6 +1,7 @@
 const fs = require('fs')
 const b4a = require('b4a')
 const z32 = require('z32')
+const path = require('path')
 
 const Feeds = require('@synonymdev/feeds')
 const FeedDb = require('./FeedDb.js')
@@ -119,7 +120,7 @@ module.exports = class SlashtagsFeeds {
       return {
         name: field.name,
         description: field.description,
-        main: SlashtagsFeeds.getFileName(field),
+        main: path.join(Feeds.FEED_PREFIX, SlashtagsFeeds.getFileName(field)),
         type: field.type || 'utf-8',
         units: field.units
       }
