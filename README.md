@@ -14,7 +14,7 @@ This retrieval occurs in a peer to peer fashion over a slashtags. The client app
 
 As the customer's data is encrypted, and seeded by other servers for assuring availability and redundancy. Customer privacy requires securing the discovery key and the decryption key which accompany the feed (shared together via a [slashfeed url string](https://github.com/synonymdev/slashtags/tree/master/packages/url)). Compromise of both the decryption keys only entails a loss of customer privacy, not access to funds.
 
-The rendering of Slashtags account feeds is currently supported by Bitkit [website](https://bitkit.to/) [github](https://github.com/synonymdev/bitkit).
+The rendering of Slashtags account feeds is currently supported by Bitkit [website](https://bitkit.to/), [github](https://github.com/synonymdev/bitkit).
 
 To create and manage account feeds, you can either be run as a [daemon](#run-as-a-daemon) or import the code as a [npm dependency](#import-as-a-library).
 
