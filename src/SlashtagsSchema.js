@@ -1,6 +1,4 @@
-const path = require('path')
 const fs = require('fs')
-const Feeds = require('@synonymdev/feeds')
 
 const customErr = require('./CustomError.js')
 const Err = customErr({ errName: 'Slashtags', fileName: __filename })
@@ -17,6 +15,9 @@ const _err = {
   missingFieldDescription: 'MISSING_FIELD_DESCRIPTION',
   missingFieldUnits: 'MISSING_FIELD_UNITS',
   badFieldType: 'UNSUPPORTED_FIELD_TYPE',
+
+  invalidField: 'INVALID_FIELD',
+  invalidFieldValue: 'INVALID_FIELD_VALUE'
 }
 
 module.exports = class SlashtagsSchema {
@@ -25,29 +26,11 @@ module.exports = class SlashtagsSchema {
 
   static DEFAULT_SCHEMA_PATH = './schemas/slashfeed.json'
 
-  static DEFAULT_TYPES = [
-    'number',
-    'utf-8'
-  ]
-
-  static MEASURED_TYPES = [
-    'currency',
-    'delta'
-  ]
-
-  static VALID_TYPES = [
-    ...this.DEFAULT_TYPES,
-    ...this.MEASURED_TYPES
-  ]
-
   static validateSchemaConfig (schemaConfig) {
     if (!schemaConfig.name) throw new SlashtagsSchema.Error(SlashtagsSchema.err.missingFeedName)
     if (!schemaConfig.description) throw new SlashtagsSchema.Error(SlashtagsSchema.err.missingFeedDescription)
     if (!schemaConfig.icons) throw new SlashtagsSchema.Error(SlashtagsSchema.err.missingFeedIcons)
     if (!schemaConfig.fields) throw new SlashtagsSchema.Error(SlashtagsSchema.err.missingFeedFields)
-
-    // FIXME: this is type dependent
-    if (!Array.isArray(schemaConfig.fields)) throw new SlashtagsSchema.Error(SlashtagsSchema.err.invalidFeedFields)
 
     const imageRX = /^data:image\/((svg\+xml)|(png));base64,.+$/
     for (const size in schemaConfig.icons) {
@@ -57,28 +40,25 @@ module.exports = class SlashtagsSchema {
       if (!imageRX.test(icon)) throw new SlashtagsSchema.Error(SlashtagsSchema.err.invalidFeedIcon)
     }
 
-    // FIXME: this is type dependent
-    schemaConfig.fields.forEach((field) => {
-      if (!field.name) throw new SlashtagsSchema.Error(SlashtagsSchema.err.missingFieldName)
-      if (!field.description) throw new SlashtagsSchema.Error(SlashtagsSchema.err.missingFieldDescription)
-      if (field.type && (field.type !== '') && !SlashtagsSchema.VALID_TYPES.includes(field.type)) {
-        throw new SlashtagsSchema.Error(SlashtagsSchema.err.badFieldType)
-      }
-
-      if (this.MEASURED_TYPES.includes(field.type)) {
-        if (!field.units) throw new SlashtagsSchema.Error(SlashtagsSchema.err.missingFieldUnits)
-      }
-    })
+    const { validateSchemaFields, validateSchemaValues } = require(
+      `${__dirname}/schemaTypes/${this.snakeToCamel(schemaConfig.type || 'exchange_account_feed')}.js`
+    )
+    validateSchemaFields(schemaConfig.fields, SlashtagsSchema.err.invalidField)
+    validateSchemaValues(schemaConfig.fields, SlashtagsSchema.err.invalidFieldValue)
   }
 
   static generateSchema (schemaConfig) {
     SlashtagsSchema.validateSchemaConfig(schemaConfig)
 
+    const { generateSchemaFields } = require(
+      `${__dirname}/schemaTypes/${this.snakeToCamel(schemaConfig.type || 'exchange_account_feed')}.js`
+    )
+
     const schema = {
       name: schemaConfig.name,
       description: schemaConfig.description,
-      type: 'account_feed', // this must be passed?
-      version: '0.0.1',
+      type: schemaConfig.type || 'exchange_account_feed',
+      version: schemaConfig.version || '0.0.1',
       icons: {}
     }
 
@@ -86,16 +66,7 @@ module.exports = class SlashtagsSchema {
       schema.icons[size] = schemaConfig.icons[size]
     }
 
-    // FIXME: this is type dependent
-    schema.fields = schemaConfig.fields.map((field) => {
-      return {
-        name: field.name,
-        description: field.description,
-        main: path.join(Feeds.FEED_PREFIX, SlashtagsSchema.getFileName(field)),
-        type: field.type || 'utf-8',
-        units: field.units
-      }
-    })
+    schema.fields = generateSchemaFields(schemaConfig.fields)
 
     return schema
   }
@@ -104,10 +75,13 @@ module.exports = class SlashtagsSchema {
     fs.writeFileSync(this.DEFAULT_SCHEMA_PATH, Buffer.from(JSON.stringify(schema, undefined, 2)), 'utf-8')
   }
 
-  static getFileName (field) {
+  static getFileName (fieldName) {
     const regex = /[^a-z0-9]+/gi
     const trailing = /-+$/
 
-    return `/${field.name.toLowerCase().trim().replace(regex, '-').replace(trailing, '')}/`
+    return `/${fieldName.toLowerCase().trim().replace(regex, '-').replace(trailing, '')}/`
+  }
+  static snakeToCamel (str) {
+    return str.toLowerCase().replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''))
   }
 }
