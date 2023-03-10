@@ -45,6 +45,8 @@ module.exports = class SlashtagsSchema {
     if (!schemaConfig.description) throw new SlashtagsSchema.Error(SlashtagsSchema.err.missingFeedDescription)
     if (!schemaConfig.icons) throw new SlashtagsSchema.Error(SlashtagsSchema.err.missingFeedIcons)
     if (!schemaConfig.fields) throw new SlashtagsSchema.Error(SlashtagsSchema.err.missingFeedFields)
+
+    // FIXME: this is type dependent
     if (!Array.isArray(schemaConfig.fields)) throw new SlashtagsSchema.Error(SlashtagsSchema.err.invalidFeedFields)
 
     const imageRX = /^data:image\/((svg\+xml)|(png));base64,.+$/
@@ -55,6 +57,7 @@ module.exports = class SlashtagsSchema {
       if (!imageRX.test(icon)) throw new SlashtagsSchema.Error(SlashtagsSchema.err.invalidFeedIcon)
     }
 
+    // FIXME: this is type dependent
     schemaConfig.fields.forEach((field) => {
       if (!field.name) throw new SlashtagsSchema.Error(SlashtagsSchema.err.missingFieldName)
       if (!field.description) throw new SlashtagsSchema.Error(SlashtagsSchema.err.missingFieldDescription)
@@ -74,7 +77,7 @@ module.exports = class SlashtagsSchema {
     const schema = {
       name: schemaConfig.name,
       description: schemaConfig.description,
-      type: 'account_feed',
+      type: 'account_feed', // this must be passed?
       version: '0.0.1',
       icons: {}
     }
@@ -83,6 +86,7 @@ module.exports = class SlashtagsSchema {
       schema.icons[size] = schemaConfig.icons[size]
     }
 
+    // FIXME: this is type dependent
     schema.fields = schemaConfig.fields.map((field) => {
       return {
         name: field.name,

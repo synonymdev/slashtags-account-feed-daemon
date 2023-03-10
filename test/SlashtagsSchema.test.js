@@ -1,6 +1,5 @@
 const { strict: assert } = require('node:assert')
 const SlashtagsSchema = require('../src/SlashtagsSchema.js')
-const fs = require('fs')
 const Schema = require('../schemas/slashfeed.json')
 
 describe('SlashtagsSchema', () => {
