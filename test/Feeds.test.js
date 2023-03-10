@@ -28,7 +28,7 @@ describe('SlashtagsFeeds', () => {
           name: Schema.name,
           description: Schema.description,
           icons: JSON.parse(JSON.stringify(Schema.icons)),
-          fields: Schema.fields.map(f => JSON.parse(JSON.stringify(f)))
+          fields: JSON.parse(JSON.stringify(Schema.fields))
         }
       })
 
@@ -215,7 +215,6 @@ describe('SlashtagsFeeds', () => {
           after(() => feed.db.insert = insertFeed)
 
           it('fails with no feed error', async function () {
-            this.timeout(5000)
             await assert.rejects(async () => feed.createFeed(input), error)
           })
         })
@@ -452,18 +451,34 @@ describe('SlashtagsFeeds', () => {
     })
   })
 
-  describe('updateFeedBalance', () => {
+  describe('updateFeed', () => {
     const update = {
       feed_id: 'testUpdateFeed',
       fields: [
         {
-          name: 'Bitcoin',
+          name: 'bitcoin futures balance',
+          value: 11,
+        },
+        {
+          name: 'bitcoin options balance',
           value: 12,
         },
         {
-          name: 'Bitcoin P/L',
-          value: 1,
-        }
+          name: 'bitcoin futures pnl',
+          value: { absolute: 1, relative: 10 },
+        },
+        {
+          name: 'bitcoin options pnl',
+          value: { absolute: 2, relative: 20 },
+        },
+        {
+          name: 'bitcoin futures pnl and balance',
+          value: { balance: 10, absolute_pnl: 1, relative_pnl: 10 },
+        },
+        {
+          name: 'bitcoin options pnl and balance',
+          value: { balance: 10, absolute_pnl: 1, relative_pnl: 10 },
+        },
       ]
     }
 
@@ -484,7 +499,7 @@ describe('SlashtagsFeeds', () => {
       })
       after(() => feed.ready = true)
 
-      it('fails if slahstags is not ready', async () => assert.rejects(async () => feed.updateFeedBalance(update), error))
+      it('fails if slahstags is not ready', async () => assert.rejects(async () => feed.updateFeed(update), error))
     })
 
     describe('Input handling', () => {
@@ -495,7 +510,7 @@ describe('SlashtagsFeeds', () => {
           input = { ...update, feed_id: undefined }
           error.message = SlashtagsFeeds.err.feedIdMissing
         })
-        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeed(input), error))
       })
 
       describe('fields is missing', () => {
@@ -503,7 +518,7 @@ describe('SlashtagsFeeds', () => {
           input = { ...update, fields: undefined }
           error.message = SlashtagsFeeds.err.missingFields
         })
-        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeed(input), error))
       })
 
       describe('fields is not an array', () => {
@@ -511,7 +526,7 @@ describe('SlashtagsFeeds', () => {
           input = { ...update, fields: 'fields' }
           error.message = SlashtagsFeeds.err.invalidFeedFields
         })
-        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeed(input), error))
       })
 
       describe('fields is empty array', () => {
@@ -519,7 +534,7 @@ describe('SlashtagsFeeds', () => {
           input = { ...update, fields: [] }
           error.message = SlashtagsFeeds.err.invalidFeedFields
         })
-        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeed(input), error))
       })
 
       describe('field is missing name', () => {
@@ -527,7 +542,7 @@ describe('SlashtagsFeeds', () => {
           input = { ...update, fields: [{ value: 1 }]}
           error.message = SlashtagsFeeds.err.missingFieldName
         })
-        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeed(input), error))
       })
 
       describe('field is missing value', () => {
@@ -535,7 +550,7 @@ describe('SlashtagsFeeds', () => {
           input = { ...update, fields: [{ name: 1 }]}
           error.message = SlashtagsFeeds.err.missingFieldValue
         })
-        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeed(input), error))
       })
     })
 
@@ -546,7 +561,7 @@ describe('SlashtagsFeeds', () => {
         })
 
         it('throws an error', async () => assert.rejects(
-          async () => feed.updateFeedBalance({...update, feed_id: 'do_not_exist' }),
+          async () => feed.updateFeed({...update, feed_id: 'do_not_exist' }),
           error
         ))
       })
@@ -567,7 +582,7 @@ describe('SlashtagsFeeds', () => {
         })
 
         it('throws an error', async () => assert.rejects(
-          async () => feed.updateFeedBalance({...update, feed_id: 'exist' }),
+          async () => feed.updateFeed({...update, feed_id: 'exist' }),
           error
         ))
       })
@@ -580,7 +595,7 @@ describe('SlashtagsFeeds', () => {
 
         await feed.deleteFeed({ feed_id: update.feed_id })
         await feed.createFeed({ feed_id: update.feed_id })
-        res = await feed.updateFeedBalance(update)
+        res = await feed.updateFeed(update)
       })
 
       it('returns true', () => assert.deepStrictEqual(res, { updated: true }))
@@ -591,8 +606,8 @@ describe('SlashtagsFeeds', () => {
         before(async () => {
           await feed.stop()
           feedReader = new Feeds(validConfig.slashtags, validConfig.feed_schema)
-          balance = await feedReader.get(update.feed_id, SlashtagsSchema.getFileName(update.fields[0]))
-          balanceChange = await feedReader.get(update.feed_id, SlashtagsSchema.getFileName(update.fields[1]))
+          balance = await feedReader.get(update.feed_id, SlashtagsSchema.getFileName(update.fields[0].name))
+          balanceChange = await feedReader.get(update.feed_id, SlashtagsSchema.getFileName(update.fields[1].name))
         })
 
         after(async () => {

@@ -92,7 +92,7 @@ module.exports = class SlashtagsFeeds {
    * @param {Object} updates[].wallet_name feed id to update
    * @param {Object} updates[].amount amount
    */
-  async updateFeedBalance (update) {
+  async updateFeed (update) {
     if (!this.ready) throw new Err(_err.notReady)
 
     this.validateUpdate(update)
@@ -103,7 +103,7 @@ module.exports = class SlashtagsFeeds {
     try {
       // NOTE: consider storing balance on db as well
       for (const field of update.fields) {
-        await this._slashfeeds.update(update.feed_id, SlashtagsSchema.getFileName(field), field.value)
+        await this._slashfeeds.update(update.feed_id, SlashtagsSchema.getFileName(field.name), field.value)
       }
       return { updated: true }
     } catch (err) {
@@ -207,17 +207,15 @@ module.exports = class SlashtagsFeeds {
    * @param {String} feedId
    */
   async _initFeed (args) {
-    return Promise.all(
-      this.feed_schema.fields.map(
-        async (field) => {
-          await this._slashfeeds.update(
-            args.feed_id,
-            SlashtagsSchema.getFileName(field),
-            args.init_data || null
-          )
-        }
-      )
-    )
+    for (let field in this.feed_schema.fields) {
+      for (let fieldName in this.feed_schema.fields[field]) {
+        await this._slashfeeds.update(
+          args.feed_id,
+          SlashtagsSchema.getFileName(fieldName),
+          args.init_data || null
+        )
+      }
+    }
   }
 
   async createFeed (args) {
@@ -322,16 +320,22 @@ module.exports = class SlashtagsFeeds {
     if (!Array.isArray(update.fields)) throw new Err(_err.invalidFeedFields)
     if (update.fields.length === 0) throw new Err(_err.invalidFeedFields)
 
-    for (const field of update.fields) {
-      this.validateFieldUpdate(field)
+    const { validateFieldsValues } = require(
+      `${__dirname}/schemaTypes/${this.snakeToCamel(this._slashfeeds.type || 'exchange_account_feed')}.js`
+    )
+
+    for (let field of update.fields) {
+      if (!field.name) throw new Err(_err.missingFieldName)
     }
+
+    for (let field of update.fields) {
+      if (!field.value) throw new Err(_err.missingFieldValue)
+    }
+
+    validateFieldsValues(update.fields, this.feed_schema.fields)
   }
 
-  validateFieldUpdate (field) {
-    if (!field.name) throw new Err(_err.missingFieldName)
-    if (!field.value) throw new Err(_err.missingFieldValue)
-
-    const schemaField = this.feed_schema.fields.find((sF) => sF.name === field.name)
-    if (!schemaField) throw new Err(_err.unknownField)
+  snakeToCamel (str) {
+    return str.toLowerCase().replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''))
   }
 }
