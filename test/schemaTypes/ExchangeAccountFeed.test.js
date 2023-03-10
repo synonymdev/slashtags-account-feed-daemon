@@ -54,7 +54,7 @@ describe('ExchangeAccountFeed', () => {
         invalidFields = JSON.parse(JSON.stringify(validExchangeAccountSchemaFields))
         invalidFields.balance['btc balance'].denomination_type = 'wrong' 
       })
-      it('fails', () => assert.throws(() => ExchangeAccountFeed.validateValues(invalidFields), {
+      it('fails', () => assert.throws(() => ExchangeAccountFeed.validateSchemaValues(invalidFields), {
         message: 'balance denomination_type must be "main" or "base"'
       }))
     })
@@ -66,7 +66,7 @@ describe('ExchangeAccountFeed', () => {
         invalidFields.pnl_and_balance['spot pnl and balance'].denomination_ratio = 'wrong'
       })
       it('fails', () => {
-        assert.throws(() => ExchangeAccountFeed.validateValues(invalidFields), {
+        assert.throws(() => ExchangeAccountFeed.validateSchemaValues(invalidFields), {
           message: 'pnl_and_balance denomination_ratio must be natural number more or equal 1'
         })
       })

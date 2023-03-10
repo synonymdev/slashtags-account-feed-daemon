@@ -31,48 +31,85 @@ module.exports = class ExchangeAccountFeed {
 
   static generateSchemaFields(schemaFields) {
     return {
-      balance: this._generateBalanceFields(schemaFields.balance),
-      pnl: this._generatePNLFields(schemaFields.pnl),
-      pnl_and_balance: this._generatePNLandBalanceFields(schemaFields.pnl_and_balance),
+      balance: ExchangeAccountFeed._generateBalanceFields(schemaFields.balance),
+      pnl: ExchangeAccountFeed._generatePNLFields(schemaFields.pnl),
+      pnl_and_balance: ExchangeAccountFeed._generatePNLandBalanceFields(schemaFields.pnl_and_balance),
     }
   }
 
 
-  static validateFields(fields) {
-    this.REQUIRED_FIELDS.forEach((field) => {
-      if (!fields[field]) throw new Error(`missing ${field}`)
+  static validateSchemaFields(fields, err) {
+    ExchangeAccountFeed.REQUIRED_FIELDS.forEach((field) => {
+      if (!fields[field]) throw err || new Error(`missing ${field}`)
     })
 
-    for (let fieldType in this.REQUIRED_PROPS_FOR_FIELDS) {
+    for (let fieldType in ExchangeAccountFeed.REQUIRED_PROPS_FOR_FIELDS) {
       for (let fieldName in fields[fieldType]) {
-        for (let fieldProp of this.REQUIRED_PROPS_FOR_FIELDS[fieldType]) {
+        for (let fieldProp of ExchangeAccountFeed.REQUIRED_PROPS_FOR_FIELDS[fieldType]) {
           if (!fields[fieldType][fieldName][fieldProp])
-            throw new Error(`${fieldType} for ${fieldName} is missing ${fieldProp}`)
+            throw err || new Error(`${fieldType} for ${fieldName} is missing ${fieldProp}`)
         }
       }
     }
   }
 
-  static validateValues(fields) {
-    this._validateBalanceValues(fields)
-    this._validatePNLandBalanceValues(fields)
+  static validateSchemaValues(fields, err) {
+    ExchangeAccountFeed._validateSchemaBalanceValues(fields, err)
+    ExchangeAccountFeed._validateSchemaPNLandBalanceValues(fields, err)
   }
 
-  static _validateBalanceValues(fields) {
-    for (let fieldName in fields.balance) {
-      if (!['main', 'base'].includes(fields.balance[fieldName].denomination_type))
-        throw new Error('balance denomination_type must be "main" or "base"')
-      if (!/[1-9]+/.test(fields.balance[fieldName].denomination_ratio.toString()))
-        throw new Error('balance denomination_ratio must be natural number more or equal 1')
+  static validateFieldsValues(updates, fields) {
+    for (let balanceField in fields.balance) {
+      updates.forEach((field) => {
+        if (field.name === balanceField) ExchangeAccountFeed.validateBalanceValue(field.value)
+      })
+    }
+
+    for (let pnlField in fields.pnl) {
+      updates.forEach((field) => {
+        if (field.name === pnlField) ExchangeAccountFeed.validatePNLValue(field.value)
+      })
+    }
+
+    for (let pnlAndBalanceField in fields.pnl_and_balance) {
+      updates.forEach((field) => {
+        if (field.name === pnlAndBalanceField) ExchangeAccountFeed.validatePNLandBalanceValue(field.value)
+      })
     }
   }
 
-  static _validatePNLandBalanceValues(fields) {
+  static validateBalanceValue(value) {
+    if (isNaN(parseFloat(value))) throw new Error('invalid balance')
+  }
+
+  static validatePNLValue(value) {
+    const { absolute, relative } = value
+    if (isNaN(parseFloat(absolute))) throw new Error('invalid absolute')
+    if (isNaN(parseFloat(relative))) throw new Error('invalid relative')
+  }
+
+  static validatePNLandBalanceValue(value) {
+    const { absolute_pnl, relative_pnl, balance } = value
+    if (isNaN(parseFloat(balance))) throw new Error('invalid balance')
+    if (isNaN(parseFloat(absolute_pnl))) throw new Error('invalid absolute')
+    if (isNaN(parseFloat(relative_pnl))) throw new Error('invalid relative')
+  }
+
+  static _validateSchemaBalanceValues(fields, err) {
+    for (let fieldName in fields.balance) {
+      if (!['main', 'base'].includes(fields.balance[fieldName].denomination_type))
+        throw err || new Error('balance denomination_type must be "main" or "base"')
+      if (!/[1-9]+/.test(fields.balance[fieldName].denomination_ratio.toString()))
+        throw err || new Error('balance denomination_ratio must be natural number more or equal 1')
+    }
+  }
+
+  static _validateSchemaPNLandBalanceValues(fields, err) {
     for (let fieldName in fields.pnl_and_balance) {
       if (!['main', 'base'].includes(fields.pnl_and_balance[fieldName].denomination_type))
-        throw new Error('pnl_and_balance denomination_type must be "main" or "base"')
+        throw err || new Error('pnl_and_balance denomination_type must be "main" or "base"')
       if (!/[1-9]+/.test(fields.pnl_and_balance[fieldName].denomination_ratio.toString()))
-        throw new Error('pnl_and_balance denomination_ratio must be natural number more or equal 1')
+        throw err || new Error('pnl_and_balance denomination_ratio must be natural number more or equal 1')
     }
   }
 
@@ -84,7 +121,7 @@ module.exports = class ExchangeAccountFeed {
         denomination_type: balanceFields[balanceName].denomination_type,
         denomination_ratio: balanceFields[balanceName].denomination_ratio,
         units: balanceFields[balanceName].units,
-        main: path.join(Feeds.FEED_PREFIX, this._getFileName(balanceName)),
+        main: path.join(Feeds.FEED_PREFIX, ExchangeAccountFeed._getFileName(balanceName)),
       }
     }
 
@@ -97,7 +134,7 @@ module.exports = class ExchangeAccountFeed {
       res[pnlName] = {
         label: pnlFields[pnlName].label,
         units: pnlFields[pnlName].units,
-        main: path.join(Feeds.FEED_PREFIX, this._getFileName(pnlName)),
+        main: path.join(Feeds.FEED_PREFIX, ExchangeAccountFeed._getFileName(pnlName)),
       }
     }
 
@@ -112,7 +149,7 @@ module.exports = class ExchangeAccountFeed {
         denomination_type: pnlBalanceFields[pnlBalanceName].denomination_type,
         denomination_ratio: pnlBalanceFields[pnlBalanceName].denomination_ratio,
         units: pnlBalanceFields[pnlBalanceName].units,
-        main: path.join(Feeds.FEED_PREFIX, this._getFileName(pnlBalanceName)),
+        main: path.join(Feeds.FEED_PREFIX, ExchangeAccountFeed._getFileName(pnlBalanceName)),
       }
     }
 
