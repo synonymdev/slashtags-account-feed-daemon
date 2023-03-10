@@ -1,5 +1,6 @@
 const { strict: assert } = require('node:assert')
 const SlashtagsFeeds = require('../src/Feeds.js')
+const SlashtagsSchema = require('../src/SlashtagsSchema.js')
 const FeedDb = require('../src/FeedDb.js')
 const path = require('path')
 const fs = require('fs')
@@ -20,7 +21,16 @@ describe('SlashtagsFeeds', () => {
   describe('Constructor', () => {
     describe('Valid config', () => {
       let feed
-      before(() => feed = new SlashtagsFeeds(validConfig))
+      let conf
+      before(() => {
+        feed = new SlashtagsFeeds(validConfig)
+        conf = {
+          name: Schema.name,
+          description: Schema.description,
+          icons: JSON.parse(JSON.stringify(Schema.icons)),
+          fields: Schema.fields.map(f => JSON.parse(JSON.stringify(f)))
+        }
+      })
 
       it('has config', () => assert.deepStrictEqual(feed.config, validConfig))
       it('has db', () => assert.deepStrictEqual(feed.db, new FeedDb(validConfig.db)))
@@ -28,120 +38,14 @@ describe('SlashtagsFeeds', () => {
       it('has lock', () => assert.deepStrictEqual(feed.lock, new Map()))
       it('has ready flag', () => assert.equal(feed.ready, false))
       it('has slashtags property', () => assert.equal(feed._slashfeeds, null))
-
-      describe('it generates and overwrites slashfeed based on config', () => {
-        let conf
-        beforeEach(() => {
-          conf = {
-            ...JSON.parse(JSON.stringify(validConfig)),
-            schemaConfig: {
-              name: Schema.name,
-              description: Schema.description,
-              icons: JSON.parse(JSON.stringify(Schema.icons)),
-              fields: Schema.fields.map(f => JSON.parse(JSON.stringify(f)))
-            }
-          }
-        })
-
-        describe('invalid schamaConfig', () => {
-          describe('missing name', () => {
-            beforeEach(() => {
-              delete conf.schemaConfig.name
-              error.message = SlashtagsFeeds.err.missingFeedName
-            })
-
-            it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-          })
-
-          describe('missing description', () => {
-            beforeEach(() => {
-              delete conf.schemaConfig.description
-              error.message = SlashtagsFeeds.err.missingFeedDescription
-            })
-
-            it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-          })
-
-          describe('missing icons', () => {
-            beforeEach(() => {
-              delete conf.schemaConfig.icons
-              error.message = SlashtagsFeeds.err.missingFeedIcons
-            })
-
-            it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-          })
-
-          describe('missing fields', () => {
-            beforeEach(() => {
-              delete conf.schemaConfig.fields
-              error.message = SlashtagsFeeds.err.missingFeedFields
-            })
-
-            it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-          })
-
-          describe('fields are not array', () => {
-            beforeEach(() => {
-              conf.schemaConfig.fields = 'fields'
-              error.message = SlashtagsFeeds.err.invalidFeedFields
-            })
-
-            it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-          })
-
-          describe('invalid icon', () => {
-            beforeEach(() => {
-              conf.schemaConfig.icons['48'] = 'not an image'
-              error.message = SlashtagsFeeds.err.invalidFeedIcon
-            })
-
-            it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-          })
-
-          describe('invalid field', () => {
-            describe('missing name', () => {
-              beforeEach(() => {
-                delete conf.schemaConfig.fields[0].name
-                error.message = SlashtagsFeeds.err.missingFieldName
-              })
-
-              it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-            })
-
-            describe('missing description', () => {
-              beforeEach(() => {
-                delete conf.schemaConfig.fields[1].description
-                error.message = SlashtagsFeeds.err.missingFieldDescription
-              })
-
-              it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-            })
-
-            describe('invalid type', () => {
-              beforeEach(() => {
-                conf.schemaConfig.fields[1].type = 'unsupported type'
-                error.message = SlashtagsFeeds.err.badFieldType
-              })
-
-              it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-            })
-          })
-        })
-
-        describe('valid config', () => {
-          let instance
-          beforeEach(() => instance = new SlashtagsFeeds(conf))
-
-          it('uses new schema', () => assert.deepStrictEqual(
-            instance.feed_schema,
-            SlashtagsFeeds.generateSchema(conf)
-          ))
-          it('persists generated schema', () => assert.deepStrictEqual(
-            instance.feed_schema,
-            JSON.parse(fs.readFileSync(SlashtagsFeeds.DEFAULT_SCHEMA_PATH).toString('utf8'))
-          ))
-        })
-      })
+      it('uses new schema', () => assert.deepStrictEqual(
+        feed.feed_schema,
+        SlashtagsSchema.generateSchema(conf)
+      ))
+      it('persists generated schema', () => assert.deepStrictEqual(
+        feed.feed_schema,
+        JSON.parse(fs.readFileSync(SlashtagsSchema.DEFAULT_SCHEMA_PATH).toString('utf8'))
+        ))
     })
 
     describe('Invalid config', () => {
@@ -153,23 +57,6 @@ describe('SlashtagsFeeds', () => {
         feed_schema: { ...Schema },
         slashtags: path.resolve('./test-data/storage'),
       }
-
-      //      TODO:
-//      describe('Invalid feed schema', () => {
-//        before(() => error.message = SlashtagsFeeds.err.invalidSchema)
-//
-//        const keys = [ 'image', 'name', 'feed_type', 'version' ]
-//        keys.forEach((k) => {
-//          let tmp
-//          beforeEach(() => {
-//            tmp = invalidConfig.feed_schema[k]
-//            invalidConfig.feed_schema[k] = null
-//          })
-//          afterEach(() => invalidConfig.feed_schema[k] = tmp)
-//
-//          it(`fails without ${k}`, () => assert.throws(() => new SlashtagsFeeds(invalidConfig), error))
-//        })
-//      })
 
       describe('Missing slashtags', () => {
         before(() => error.message = SlashtagsFeeds.err.badConfig)
@@ -704,8 +591,8 @@ describe('SlashtagsFeeds', () => {
         before(async () => {
           await feed.stop()
           feedReader = new Feeds(validConfig.slashtags, validConfig.feed_schema)
-          balance = await feedReader.get(update.feed_id, SlashtagsFeeds.getFileName(update.fields[0]))
-          balanceChange = await feedReader.get(update.feed_id, SlashtagsFeeds.getFileName(update.fields[1]))
+          balance = await feedReader.get(update.feed_id, SlashtagsSchema.getFileName(update.fields[0]))
+          balanceChange = await feedReader.get(update.feed_id, SlashtagsSchema.getFileName(update.fields[1]))
         })
 
         after(async () => {
