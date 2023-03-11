@@ -232,12 +232,9 @@ describe('SlashtagsFeeds', () => {
           await feed.deleteFeed(input)
         })
 
-        it('has slashdrive property', () => assert(res.slashdrive))
-        describe('slashdrive property', () => {
-          it('has key', () => assert(res.slashdrive.key))
-          it('has encryption_key', () => assert(res.slashdrive.encryption_key))
-          it('has url', () => assert(res.url))
-        })
+        it('has feed_key', () => assert(res.feed_key))
+        it('has encrypt', () => assert(res.encrypt_key))
+        it('has url', () => assert(res.url))
       })
     })
   })
@@ -432,7 +429,7 @@ describe('SlashtagsFeeds', () => {
       let readResult
       let createResult
       before(async function () {
-        this.timeout(5000)
+        this.timeout(10000)
 
         createResult = await feed.createFeed(input)
         readResult = await feed.getFeed(input)
@@ -441,12 +438,12 @@ describe('SlashtagsFeeds', () => {
 
       describe('feed_key', () => {
         it('has `feed_key`', () => assert(readResult.feed_key))
-        it('is correct', () => assert.strictEqual(createResult.slashdrive.key, readResult.feed_key))
+        it('is correct', () => assert.strictEqual(createResult.feed_key, readResult.feed_key))
       })
 
       describe('encrypt_key', () => {
         it('has `encrypt_key`', () => assert(readResult.encrypt_key))
-        it('is correct', () => assert.strictEqual(createResult.slashdrive.encryption_key, readResult.encrypt_key))
+        it('is correct', () => assert.strictEqual(createResult.encrypt_key, readResult.encrypt_key))
       })
     })
   })

@@ -157,8 +157,8 @@ module.exports = class SlashtagsFeeds {
     }
     return {
       // XXX should it be hex or base32
-      key: feed.key.toString('hex'),
-      encryption_key: feed.encryptionKey.toString('hex')
+      feed_key: feed.key.toString('hex'),
+      encrypt_key: feed.encryptionKey.toString('hex')
     }
   }
 
@@ -263,8 +263,8 @@ module.exports = class SlashtagsFeeds {
     try {
       await this.db.insert({
         feed_id: args.feed_id,
-        feed_key: feed.key,
-        encrypt_key: feed.encryption_key,
+        feed_key: feed.feed_key,
+        encrypt_key: feed.encrypt_key,
         meta: {}
       })
     } catch (err) {
@@ -276,16 +276,17 @@ module.exports = class SlashtagsFeeds {
 
     const { format } = await import('@synonymdev/slashtags-url')
     const url = format(
-      b4a.from(feed.key, 'hex'),
+      b4a.from(feed.feed_key, 'hex'),
       {
         protocol: 'slashfeed:',
-        fragment: { encryptionKey: z32.encode(b4a.from(feed.encryption_key, 'hex')) }
+        fragment: { encryptionKey: z32.encode(b4a.from(feed.encrypt_key, 'hex')) }
       }
     )
 
     return {
       url,
-      slashdrive: feed
+      feed_key: feed.feed_key,
+      encrypt_key: feed.encrypt_key
     }
   }
 
