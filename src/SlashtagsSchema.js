@@ -1,6 +1,7 @@
 const fs = require('fs')
 
 const customErr = require('./CustomError.js')
+const { snakeToCamel } = require('./util.js')
 const Err = customErr({ errName: 'Slashtags', fileName: __filename })
 
 const _err = {
@@ -41,7 +42,7 @@ module.exports = class SlashtagsSchema {
     }
 
     const { validateSchemaFields, validateSchemaValues } = require(
-      `${__dirname}/schemaTypes/${this.snakeToCamel(schemaConfig.type || 'exchange_account_feed')}.js`
+      `${__dirname}/schemaTypes/${snakeToCamel(schemaConfig.type || 'exchange_account_feed')}.js`
     )
     validateSchemaFields(schemaConfig.fields, SlashtagsSchema.err.invalidField)
     validateSchemaValues(schemaConfig.fields, SlashtagsSchema.err.invalidFieldValue)
@@ -51,7 +52,7 @@ module.exports = class SlashtagsSchema {
     SlashtagsSchema.validateSchemaConfig(schemaConfig)
 
     const { generateSchemaFields } = require(
-      `${__dirname}/schemaTypes/${this.snakeToCamel(schemaConfig.type || 'exchange_account_feed')}.js`
+      `${__dirname}/schemaTypes/${snakeToCamel(schemaConfig.type || 'exchange_account_feed')}.js`
     )
 
     const schema = {
@@ -73,15 +74,5 @@ module.exports = class SlashtagsSchema {
 
   static persistSchema (schema) {
     fs.writeFileSync(this.DEFAULT_SCHEMA_PATH, Buffer.from(JSON.stringify(schema, undefined, 2)), 'utf-8')
-  }
-
-  static getFileName (fieldName) {
-    const regex = /[^a-z0-9]+/gi
-    const trailing = /-+$/
-
-    return `/${fieldName.toLowerCase().trim().replace(regex, '-').replace(trailing, '')}/`
-  }
-  static snakeToCamel (str) {
-    return str.toLowerCase().replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''))
   }
 }

@@ -1,5 +1,6 @@
 const Feeds = require('@synonymdev/feeds')
 const path = require('path')
+const { getFileName } = require('../util.js')
 
 module.exports = class ExchangeAccountFeed {
   static REQUIRED_FIELDS = [
@@ -121,7 +122,7 @@ module.exports = class ExchangeAccountFeed {
         denomination_type: balanceFields[balanceName].denomination_type,
         denomination_ratio: balanceFields[balanceName].denomination_ratio,
         units: balanceFields[balanceName].units,
-        main: path.join(Feeds.FEED_PREFIX, ExchangeAccountFeed._getFileName(balanceName)),
+        main: path.join(Feeds.FEED_PREFIX, getFileName(balanceName)),
       }
     }
 
@@ -134,7 +135,7 @@ module.exports = class ExchangeAccountFeed {
       res[pnlName] = {
         label: pnlFields[pnlName].label,
         units: pnlFields[pnlName].units,
-        main: path.join(Feeds.FEED_PREFIX, ExchangeAccountFeed._getFileName(pnlName)),
+        main: path.join(Feeds.FEED_PREFIX, getFileName(pnlName)),
       }
     }
 
@@ -149,17 +150,10 @@ module.exports = class ExchangeAccountFeed {
         denomination_type: pnlBalanceFields[pnlBalanceName].denomination_type,
         denomination_ratio: pnlBalanceFields[pnlBalanceName].denomination_ratio,
         units: pnlBalanceFields[pnlBalanceName].units,
-        main: path.join(Feeds.FEED_PREFIX, ExchangeAccountFeed._getFileName(pnlBalanceName)),
+        main: path.join(Feeds.FEED_PREFIX, getFileName(pnlBalanceName)),
       }
     }
 
     return res
-  }
-
-  static _getFileName (fieldName) {
-    const regex = /[^a-z0-9]+/gi
-    const trailing = /-+$/
-
-    return `/${fieldName.toLowerCase().trim().replace(regex, '-').replace(trailing, '')}/`
   }
 }

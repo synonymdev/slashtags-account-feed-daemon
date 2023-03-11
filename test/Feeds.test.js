@@ -1,5 +1,6 @@
 const { strict: assert } = require('node:assert')
 const SlashtagsFeeds = require('../src/Feeds.js')
+const { getFileName } = require('../src/util.js')
 const SlashtagsSchema = require('../src/SlashtagsSchema.js')
 const FeedDb = require('../src/FeedDb.js')
 const path = require('path')
@@ -603,8 +604,8 @@ describe('SlashtagsFeeds', () => {
         before(async () => {
           await feed.stop()
           feedReader = new Feeds(validConfig.slashtags, validConfig.feed_schema)
-          balance = await feedReader.get(update.feed_id, SlashtagsSchema.getFileName(update.fields[0].name))
-          balanceChange = await feedReader.get(update.feed_id, SlashtagsSchema.getFileName(update.fields[1].name))
+          balance = await feedReader.get(update.feed_id, getFileName(update.fields[0].name))
+          balanceChange = await feedReader.get(update.feed_id, getFileName(update.fields[1].name))
         })
 
         after(async () => {

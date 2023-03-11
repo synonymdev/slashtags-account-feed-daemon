@@ -11,6 +11,15 @@ module.exports = (name, fileName) => {
       errName: `${name}_ERROR`,
       fileName
     }),
-    log: Log(name)
+    log: Log(name),
+    getFileName: (fieldName)  => {
+      const regex = /[^a-z0-9]+/gi
+      const trailing = /-+$/
+
+      return `/${fieldName.toLowerCase().trim().replace(regex, '-').replace(trailing, '')}/`
+    },
+    snakeToCamel: (str) => {
+      return str.toLowerCase().replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''))
+    }
   }
 }

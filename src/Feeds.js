@@ -5,6 +5,7 @@ const Feeds = require('@synonymdev/feeds')
 const FeedDb = require('./FeedDb.js')
 
 const SlashtagsSchema = require('./SlashtagsSchema.js')
+const { snakeToCamel, getFileName } = require('./util.js')
 const Log = require('./Log.js')
 const customErr = require('./CustomError.js')
 
@@ -103,7 +104,7 @@ module.exports = class SlashtagsFeeds {
     try {
       // NOTE: consider storing balance on db as well
       for (const field of update.fields) {
-        await this._slashfeeds.update(update.feed_id, SlashtagsSchema.getFileName(field.name), field.value)
+        await this._slashfeeds.update(update.feed_id, getFileName(field.name), field.value)
       }
       return { updated: true }
     } catch (err) {
@@ -211,7 +212,7 @@ module.exports = class SlashtagsFeeds {
       for (let fieldName in this.feed_schema.fields[field]) {
         await this._slashfeeds.update(
           args.feed_id,
-          SlashtagsSchema.getFileName(fieldName),
+          getFileName(fieldName),
           args.init_data || null
         )
       }
@@ -322,7 +323,7 @@ module.exports = class SlashtagsFeeds {
     if (update.fields.length === 0) throw new Err(_err.invalidFeedFields)
 
     const { validateFieldsValues } = require(
-      `${__dirname}/schemaTypes/${this.snakeToCamel(this._slashfeeds.type || 'exchange_account_feed')}.js`
+      `${__dirname}/schemaTypes/${snakeToCamel(this._slashfeeds.type || 'exchange_account_feed')}.js`
     )
 
     for (let field of update.fields) {
@@ -334,9 +335,5 @@ module.exports = class SlashtagsFeeds {
     }
 
     validateFieldsValues(update.fields, this.feed_schema.fields)
-  }
-
-  snakeToCamel (str) {
-    return str.toLowerCase().replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''))
   }
 }
