@@ -78,14 +78,13 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 Response
 ``` json
 {
-    "jsonrpc": "2.0",
-    "id": "925b10c27f4ad350ab3ef7e027605fd83388c999a890cfdd8e6061656b5a5513",
-    "result": {
-        "slashdrive": {
-            "key": "<string>",
-            "encryption_key": "<string>"
-        }
-    }
+  "jsonrpc": "2.0",
+  "id": "<call id>",
+  "result": {
+    "url": ":<slashfeed url>",
+    "feed_key": "<public key>",
+    "encrypt_key": "<private key>"
+  }
 }
 ```
 
@@ -95,14 +94,34 @@ Update feed request
 curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "method":"updateFeedBalance",
+    "method":"updateFeed",
     "params": {
         "feed_id":"satoshi123",
         "fields": [
-          {
-            "name": "Bitcoin",
-            "value": 1.442
-          }
+            {
+              "name": "bitcoin futures balance",
+              "value": 11
+            },
+            {
+              "name": "bitcoin options balance",
+              "value": 12
+            },
+            {
+              "name": "bitcoin futures pnl",
+              "value": { "absolute": 1, "relative": 10 }
+            },
+            {
+              "name": "bitcoin options pnl",
+              "value": { "absolute": 2, "relative": 20 }
+            },
+            {
+              "name": "bitcoin futures pnl and balance",
+              "value": { "balance": 10, "absolute_pnl": 1, "relative_pnl": 10 }
+            },
+            {
+              "name": "bitcoin options pnl and balance",
+              "value": { "balance": 10, "absolute_pnl": 1, "relative_pnl": 10 }
+            }
         ]
     }
 }'
@@ -111,8 +130,10 @@ Response
 ``` json
 {
     "jsonrpc": "2.0",
-    "id": "4fefad839fa440cc2a85d8178d1d895fa1044460080b8fe1a26b4942aa86c07f",
-    "result": true
+    "id": "<call id>",
+    "result": {
+      "updated": true
+    }
 }
 ```
 
@@ -129,10 +150,11 @@ Response
 ``` json
 {
     "jsonrpc": "2.0",
-    "id": "c6ccd88f842330ab60153b5fb512101d2ab76824189eee5690f9070ebe18cb87",
+    "id": "call id",
     "result": {
-        "feed_key": "<string>",
-        "encrypt_key": "<string>"
+        "url": ":<slashfeed url>",
+        "feed_key": "<public key>",
+        "encrypt_key": "<private key>"
     }
 }
 ```
