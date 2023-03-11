@@ -1,4 +1,4 @@
-<h3 align="center">Account feeds example</h3>
+<h3 align="center">Exchange account feeds example</h3>
 
 
 ## Start account feeds daemon
@@ -45,7 +45,7 @@ $ npm run start
 
 ## Feed generation
 
-Open a separate terminal window and execute `npm run example:account` from the root directory. This will create three hyperdrives. Each hyperdrive feeds the data for a particular customer account. The drive contents are accessible by knowing the discovery key and the encryption key. This information can be shared by [slashfeed URL](https://github.com/synonymdev/slashtags/tree/master/packages/url), which has the following format: `slashfeed:<id>#encryptionKey=<key>`. 
+Open a separate terminal window and execute `npm run example:exchange:account` from the root directory. This will create three hyperdrives. Each hyperdrive feeds the data for a particular customer account. The drive contents are accessible by knowing the discovery key and the encryption key. This information can be shared by [slashfeed URL](https://github.com/synonymdev/slashtags/tree/master/packages/url), which has the following format: `slashfeed:<id>#encryptionKey=<key>`. 
 
 ```sh
 example Starting account feed +0ms

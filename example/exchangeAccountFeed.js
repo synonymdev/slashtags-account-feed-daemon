@@ -42,13 +42,43 @@ async function updateAccounts (accountIds) {
   for (const accountId of accountIds) {
     const update = [
       {
-        name: 'Bitcoin',
-        value: faker.finance.amount(5, 10, 2)
+        name: 'bitcoin futures balance',
+        value: faker.finance.amount(-10000000, 10000000, 8),
       },
       {
-        name: 'Bitcoin P/L',
-        value: faker.finance.amount(-100, 100, 2)
-      }
+        name: 'bitcoin options balance',
+        value: faker.finance.amount(-10000000, 10000000, 8),
+      },
+      {
+        name: 'bitcoin futures pnl',
+        value: {
+          absolute: faker.finance.amount(-10000000, 10000000, 8),
+          relative: faker.finance.amount(-100, 100, 2)
+        },
+      },
+      {
+        name: 'bitcoin options pnl',
+        value: {
+          absolute: faker.finance.amount(-10000000, 10000000, 8),
+          relative: faker.finance.amount(-100, 100, 2)
+        },
+      },
+      {
+        name: 'bitcoin futures pnl and balance',
+        value: {
+          balance: faker.finance.amount(-10000000, 10000000, 8),
+          absolute_pnl: faker.finance.amount(-10000000, 10000000, 8),
+          relative_pnl: faker.finance.amount(-100, 100, 2)
+        },
+      },
+      {
+        name: 'bitcoin options pnl and balance',
+        value: {
+          balance: faker.finance.amount(-10000000, 10000000, 8),
+          absolute_pnl: faker.finance.amount(-10000000, 10000000, 8),
+          relative_pnl: faker.finance.amount(-100, 100, 2)
+        },
+      },
     ]
     await updateFeed(accountId, update)
     accountLogger(accountId)('Updated feed:', update.map(u => `${u.name}: ${JSON.stringify(u.value)}`))

@@ -56,7 +56,7 @@ node start.js
 
 ## Test & Development
 There are tests for all methods located in `./test` dir. You can run them by `npm run test`
-There examples in `./examples` folder. They require running daemon. Run `npm run start` to start daemon and in separate terminal run `npm run example:account` to start generating account feed. See [examples readme](./example/README.md) for more details
+There examples in `./examples` folder. They require running daemon. Run `npm run start` to start daemon and in separate terminal run `npm run example:exchange:account` to start generating account feed. See [examples readme](./example/README.md) for more details
 
 ## RPC API
 

@@ -22,7 +22,7 @@
   "scripts": {
     "test": "mocha ./test/",
     "start": "DEBUG=stfeed* node start.js",
-    "example:account": "DEBUG=example* node example/accountFeed.js"
+    "example:exchange:account": "DEBUG=example* node example/exchangeAccountFeed.js"
   },
   "repository": {
     "type": "git",
