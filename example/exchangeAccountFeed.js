@@ -42,43 +42,60 @@ async function updateAccounts (accountIds) {
   for (const accountId of accountIds) {
     const update = [
       {
-        name: 'bitcoin futures balance',
+        name: 'total net value',
         value: faker.finance.amount(-10000000, 10000000, 8),
       },
       {
-        name: 'bitcoin options balance',
+        name: "btc balance",
         value: faker.finance.amount(-10000000, 10000000, 8),
       },
       {
-        name: 'bitcoin futures pnl',
+        name: "usd balance",
+        value: faker.finance.amount(-10000000, 10000000, 2),
+      },
+      {
+        name: "margin used",
+        value: faker.finance.amount(-10000000, 10000000, 8),
+      },
+      {
+        name: "pnl",
         value: {
           absolute: faker.finance.amount(-10000000, 10000000, 8),
           relative: faker.finance.amount(-100, 100, 2)
         },
       },
       {
-        name: 'bitcoin options pnl',
+        name: "bitcoin futures pnl",
         value: {
           absolute: faker.finance.amount(-10000000, 10000000, 8),
           relative: faker.finance.amount(-100, 100, 2)
         },
       },
       {
-        name: 'bitcoin futures pnl and balance',
+        name: "bitcoin futures balance",
+        value: faker.finance.amount(-10000000, 10000000, 8),
+      },
+      {
+        name: "bitcoin options pnl",
         value: {
-          balance: faker.finance.amount(-10000000, 10000000, 8),
-          absolute_pnl: faker.finance.amount(-10000000, 10000000, 8),
-          relative_pnl: faker.finance.amount(-100, 100, 2)
+          absolute: faker.finance.amount(-10000000, 10000000, 8),
+          relative: faker.finance.amount(-100, 100, 2)
         },
       },
       {
-        name: 'bitcoin options pnl and balance',
+        name: "bitcoin options balance",
+        value: faker.finance.amount(-10000000, 10000000, 8),
+      },
+      {
+        name: "bitcoin pnl and balance",
         value: {
-          balance: faker.finance.amount(-10000000, 10000000, 8),
+          value: faker.finance.amount(-10000000, 10000000, 8),
           absolute_pnl: faker.finance.amount(-10000000, 10000000, 8),
           relative_pnl: faker.finance.amount(-100, 100, 2)
         },
       },
+
+
     ]
     await updateFeed(accountId, update)
     accountLogger(accountId)('Updated feed:', update.map(u => `${u.name}: ${JSON.stringify(u.value)}`))

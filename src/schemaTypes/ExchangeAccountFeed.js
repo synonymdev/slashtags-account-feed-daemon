@@ -3,13 +3,13 @@ const path = require('path')
 const { getFileName } = require('../util.js')
 
 module.exports = class ExchangeAccountFeed {
-  static REQUIRED_FIELDS = [
+  static SUPPORTED_TYPES = [
     'balance',
     'pnl',
     'pnl_and_balance'
   ]
 
-  static REQUIRED_PROPS_FOR_FIELDS = {
+  static REQUIRED_PROPS_FOR_TYPE = {
     balance: [
       'label',
       'denomination_type',
@@ -31,32 +31,33 @@ module.exports = class ExchangeAccountFeed {
   }
 
   static generateSchemaFields(schemaFields) {
-    return {
-      balance: ExchangeAccountFeed._generateBalanceFields(schemaFields.balance),
-      pnl: ExchangeAccountFeed._generatePNLFields(schemaFields.pnl),
-      pnl_and_balance: ExchangeAccountFeed._generatePNLandBalanceFields(schemaFields.pnl_and_balance),
-    }
+    return schemaFields.map((field) => {
+      return {
+        ...field,
+        main: path.join(Feeds.FEED_PREFIX, getFileName(field.name)),
+      }
+    })
   }
 
-
   static validateSchemaFields(fields, err) {
-    ExchangeAccountFeed.REQUIRED_FIELDS.forEach((field) => {
-      if (!fields[field]) throw err || new Error(`missing ${field}`)
-    })
+    fields.forEach((field) => {
+      if (!ExchangeAccountFeed.SUPPORTED_TYPES.includes(field.type)) throw err || new Error(`Wrong type ${field.type}`)
 
-    for (let fieldType in ExchangeAccountFeed.REQUIRED_PROPS_FOR_FIELDS) {
-      for (let fieldName in fields[fieldType]) {
-        for (let fieldProp of ExchangeAccountFeed.REQUIRED_PROPS_FOR_FIELDS[fieldType]) {
-          if (!fields[fieldType][fieldName][fieldProp])
-            throw err || new Error(`${fieldType} for ${fieldName} is missing ${fieldProp}`)
-        }
-      }
-    }
+      ExchangeAccountFeed.REQUIRED_PROPS_FOR_TYPE[field.type].forEach((prop) => {
+        if(!field[prop]) throw err || new Error(`${field.type} for ${field.name} is missing ${prop}`)
+      })
+    })
   }
 
   static validateSchemaValues(fields, err) {
-    ExchangeAccountFeed._validateSchemaBalanceValues(fields, err)
-    ExchangeAccountFeed._validateSchemaPNLandBalanceValues(fields, err)
+    fields.forEach((field) => {
+      if (['balance', 'pnl_and_balance'].includes(field.type)) {
+        if (!['main', 'base'].includes(field.denomination_type))
+          throw err || new Error(`${field.type} denomination_type must be "main" or "base"`)
+        if (!/[1-9]+/.test(field.denomination_ratio.toString()))
+          throw err || new Error(`${field.type} denomination_ratio must be natural number more or equal 1`)
+      }
+    })
   }
 
   static validateFieldsValues(updates, fields) {
@@ -94,66 +95,5 @@ module.exports = class ExchangeAccountFeed {
     if (isNaN(parseFloat(balance))) throw new Error('invalid balance')
     if (isNaN(parseFloat(absolute_pnl))) throw new Error('invalid absolute')
     if (isNaN(parseFloat(relative_pnl))) throw new Error('invalid relative')
-  }
-
-  static _validateSchemaBalanceValues(fields, err) {
-    for (let fieldName in fields.balance) {
-      if (!['main', 'base'].includes(fields.balance[fieldName].denomination_type))
-        throw err || new Error('balance denomination_type must be "main" or "base"')
-      if (!/[1-9]+/.test(fields.balance[fieldName].denomination_ratio.toString()))
-        throw err || new Error('balance denomination_ratio must be natural number more or equal 1')
-    }
-  }
-
-  static _validateSchemaPNLandBalanceValues(fields, err) {
-    for (let fieldName in fields.pnl_and_balance) {
-      if (!['main', 'base'].includes(fields.pnl_and_balance[fieldName].denomination_type))
-        throw err || new Error('pnl_and_balance denomination_type must be "main" or "base"')
-      if (!/[1-9]+/.test(fields.pnl_and_balance[fieldName].denomination_ratio.toString()))
-        throw err || new Error('pnl_and_balance denomination_ratio must be natural number more or equal 1')
-    }
-  }
-
-  static _generateBalanceFields(balanceFields) {
-    let res = {}
-    for (let balanceName in balanceFields) {
-      res[balanceName] = {
-        label: balanceFields[balanceName].label,
-        denomination_type: balanceFields[balanceName].denomination_type,
-        denomination_ratio: balanceFields[balanceName].denomination_ratio,
-        units: balanceFields[balanceName].units,
-        main: path.join(Feeds.FEED_PREFIX, getFileName(balanceName)),
-      }
-    }
-
-    return res
-  }
-
-  static _generatePNLFields(pnlFields) {
-    let res = {}
-    for (let pnlName in pnlFields) {
-      res[pnlName] = {
-        label: pnlFields[pnlName].label,
-        units: pnlFields[pnlName].units,
-        main: path.join(Feeds.FEED_PREFIX, getFileName(pnlName)),
-      }
-    }
-
-    return res
-  }
-
-  static _generatePNLandBalanceFields(pnlBalanceFields) {
-    let res = {}
-    for (let pnlBalanceName in pnlBalanceFields) {
-      res[pnlBalanceName] = {
-        label: pnlBalanceFields[pnlBalanceName].label,
-        denomination_type: pnlBalanceFields[pnlBalanceName].denomination_type,
-        denomination_ratio: pnlBalanceFields[pnlBalanceName].denomination_ratio,
-        units: pnlBalanceFields[pnlBalanceName].units,
-        main: path.join(Feeds.FEED_PREFIX, getFileName(pnlBalanceName)),
-      }
-    }
-
-    return res
   }
 }
