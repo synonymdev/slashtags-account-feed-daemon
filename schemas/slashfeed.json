@@ -10,7 +10,7 @@
     {
       "type": "balance",
       "name": "total balance",
-      "label": "Total balance",
+      "description": "Total balance",
       "main": "/feed/total-balance/",
       "denomination_type": "base",
       "denomination_ratio": "8",
@@ -19,7 +19,7 @@
     {
       "type": "pnl",
       "name": "total open pnl",
-      "label": "Total open Profit and Loss",
+      "description": "Total open Profit and Loss",
       "main": "/feed/total-open-pnl/",
       "denomination_type": "base",
       "denomination_ratio": "8",
@@ -28,7 +28,7 @@
     {
       "type": "pnl_and_balance",
       "name": "total open pnl and total balance",
-      "label": "Bitcoin open Profit and Loss and Total balance",
+      "description": "Bitcoin open Profit and Loss and Total balance",
       "main": "/feed/total-open-pnl-and-total-balance/",
       "denomination_type": "base",
       "denomination_ratio": "8",

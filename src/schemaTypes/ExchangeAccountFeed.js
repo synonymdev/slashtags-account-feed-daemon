@@ -11,19 +11,19 @@ module.exports = class ExchangeAccountFeed {
 
   static REQUIRED_PROPS_FOR_TYPE = {
     balance: [
-      'label',
+      'description',
       'denomination_type',
       'denomination_ratio',
       'units',
     ],
 
     pnl: [
-      'label',
+      'description',
       'units',
     ],
 
     pnl_and_balance:[
-      'label',
+      'description',
       'denomination_type',
       'denomination_ratio',
       'units',

@@ -6,7 +6,7 @@ describe('ExchangeAccountFeed', () => {
     {
       "type": "balance",
       "name": "btc balance",
-      "label": "description or label",
+      "description": "description",
       "denomination_type": "main",
       "denomination_ratio": 8,
       "main": "path to value in slashdrive",
@@ -16,13 +16,13 @@ describe('ExchangeAccountFeed', () => {
       "type": "pnl",
       "name": "spot pnl",
       "main": "path to value on slashdrive, the value example is { absolute: 75, relative: 12 }",
-      "label": "description or label",
+      "description": "description",
       "units": "sign to be shown next to absolute value, relative value always shown with % sign",
     },
     {
       "type": "pnl_and_balance",
       "name": "spot pnl and balance",
-      "label": "description or label",
+      "description": "description",
       "main": "path to value on slashdrive, the value example is { balance: 100, absolute_pnl: 75, relative_pnl: 300 }",
       "denomination_type": "base",
       "denomination_ratio": 8,
@@ -76,9 +76,9 @@ describe('ExchangeAccountFeed', () => {
     before(() => res = ExchangeAccountFeed.generateSchemaFields(validExchangeAccountSchemaFields))
 
     describe('balance', () => {
-      it('contains label', () => assert.equal(
-        res[0].label,
-        validExchangeAccountSchemaFields[0].label
+      it('contains description', () => assert.equal(
+        res[0].description,
+        validExchangeAccountSchemaFields[0].description
       ))
 
       it('contains denomination_type', () => assert.equal(
@@ -103,9 +103,9 @@ describe('ExchangeAccountFeed', () => {
     })
 
     describe('pnl', () => {
-      it('contains label', () => assert.equal(
-        res[1].label,
-        validExchangeAccountSchemaFields[1].label
+      it('contains description', () => assert.equal(
+        res[1].description,
+        validExchangeAccountSchemaFields[1].description
       ))
 
       it('contains main', () => assert.equal(
@@ -120,9 +120,9 @@ describe('ExchangeAccountFeed', () => {
     })
 
     describe('pnl_and_balance', () => {
-      it('contains label', () => assert.equal(
-        res[2].label,
-        validExchangeAccountSchemaFields[2].label
+      it('contains description', () => assert.equal(
+        res[2].description,
+        validExchangeAccountSchemaFields[2].description
       ))
 
       it('contains denomination_type', () => assert.equal(
