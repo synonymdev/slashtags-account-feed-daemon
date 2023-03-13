@@ -9,86 +9,27 @@
   "fields": [
     {
       "type": "balance",
-      "name": "total net value",
-      "label": "Total net value",
-      "main": "/feed/total-net-value/",
+      "name": "total balance",
+      "label": "Total balance",
+      "main": "/feed/total-balance/",
       "denomination_type": "base",
       "denomination_ratio": "8",
       "units": "sats"
     },
     {
-      "type": "balance",
-      "name": "btc balance",
-      "label": "btc balance",
-      "main": "/feed/btc-balance/",
+      "type": "pnl",
+      "name": "total open pnl",
+      "label": "Total open Profit and Loss",
+      "main": "/feed/total-open-pnl/",
       "denomination_type": "base",
       "denomination_ratio": "8",
-      "units": "sats"
-    },
-    {
-      "type": "balance",
-      "name": "usd balance",
-      "label": "usd balance",
-       "main": "/feed/usd-balance/",
-      "denomination_type": "base",
-      "denomination_ratio": "2",
-      "units": "sats"
-    },
-    {
-      "type": "balance",
-      "name": "margin used",
-      "label": "total used margin",
-      "main": "/feed/margin-used/",
-      "denomination_type": "main",
-      "denomination_ratio": "2",
-      "units": "usd"
-    },
-    {
-      "type": "pnl",
-      "name": "pnl",
-      "label": "total profit loss",
-      "main": "/feed/pnl/",
-      "denomination_type": "base",
-      "denomination_ratio": "2",
-      "units": "sats"
-    },
-    {
-      "type": "pnl",
-      "name": "bitcoin futures pnl",
-      "label": "bitcoin futures pnl",
-      "main": "/feed/bitcoin-futures-pnl/",
-      "units": "sats"
-    },
-    {
-      "type": "balance",
-      "name": "bitcoin futures balance",
-      "label": "bitcoin futures balance",
-      "main": "/feed/bitcoin-futures-balance/",
-      "denomination_type": "main",
-      "denomination_ratio": "2",
-      "units": "sats"
-    },
-    {
-      "type": "pnl",
-      "name": "bitcoin options pnl",
-      "label": "bitcoin options pnl",
-      "main": "/feed/bitcoin-options-pnl/",
-      "units": "sats"
-    },
-    {
-      "type": "balance",
-      "name": "bitcoin options balance",
-      "label": "bitcoin options balance",
-      "main": "/feed/bitcoin-options-balance/",
-      "denomination_type": "main",
-      "denomination_ratio": "2",
       "units": "sats"
     },
     {
       "type": "pnl_and_balance",
-      "name": "bitcoin pnl and balance",
-      "label": "bitcoin total pnl and balance",
-      "main": "/feed/bitcoin-pnl-and-balance/",
+      "name": "total open pnl and total balance",
+      "label": "Bitcoin open Profit and Loss and Total balance",
+      "main": "/feed/total-open-pnl-and-total-balance/",
       "denomination_type": "base",
       "denomination_ratio": "8",
       "units": "sats"

@@ -42,52 +42,18 @@ async function updateAccounts (accountIds) {
   for (const accountId of accountIds) {
     const update = [
       {
-        name: 'total net value',
+        name: 'total balance',
         value: faker.finance.amount(-10000000, 10000000, 8),
       },
       {
-        name: "btc balance",
-        value: faker.finance.amount(-10000000, 10000000, 8),
-      },
-      {
-        name: "usd balance",
-        value: faker.finance.amount(-10000000, 10000000, 2),
-      },
-      {
-        name: "margin used",
-        value: faker.finance.amount(-10000000, 10000000, 8),
-      },
-      {
-        name: "pnl",
+        name: "total open pnl",
         value: {
           absolute: faker.finance.amount(-10000000, 10000000, 8),
           relative: faker.finance.amount(-100, 100, 2)
         },
       },
       {
-        name: "bitcoin futures pnl",
-        value: {
-          absolute: faker.finance.amount(-10000000, 10000000, 8),
-          relative: faker.finance.amount(-100, 100, 2)
-        },
-      },
-      {
-        name: "bitcoin futures balance",
-        value: faker.finance.amount(-10000000, 10000000, 8),
-      },
-      {
-        name: "bitcoin options pnl",
-        value: {
-          absolute: faker.finance.amount(-10000000, 10000000, 8),
-          relative: faker.finance.amount(-100, 100, 2)
-        },
-      },
-      {
-        name: "bitcoin options balance",
-        value: faker.finance.amount(-10000000, 10000000, 8),
-      },
-      {
-        name: "bitcoin pnl and balance",
+        name: "total open pnl and total balance",
         value: {
           value: faker.finance.amount(-10000000, 10000000, 8),
           absolute_pnl: faker.finance.amount(-10000000, 10000000, 8),

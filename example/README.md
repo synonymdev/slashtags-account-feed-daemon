@@ -63,42 +63,21 @@ example:synonymxyz Created feed: slashfeed:7fgcnreg8cmqom8yhjeqkhbyybdi5jyjf3f7o
 The data will update periodically. 
 
 ```sh
-  example Updating account feeds +5s
-  example:abcde123 Updated feed: [
-  'total net value: "-540041.33678973"',
-  'btc balance: "-8856777.19488740"',
-  'usd balance: "-658412.61"',
-  'margin used: "-3144281.20851517"',
-  'pnl: {"absolute":"-6144114.17860538","relative":"60.91"}',
-  'bitcoin futures pnl: {"absolute":"-8351435.58215350","relative":"-20.92"}',
-  'bitcoin futures balance: "-6480275.58345348"',
-  'bitcoin options pnl: {"absolute":"7494553.67680640","relative":"28.39"}',
-  'bitcoin options balance: "6678712.46114374"',
-  'bitcoin pnl and balance: {"value":"1671238.87222260","absolute_pnl":"-3901669.66244578","relative_pnl":"10.82"}'
+example Updating account feeds +5s
+example:abcde123 Updated feed: [
+  'total balance: "-5443472.07061947"',
+  'total open pnl: {"absolute":"-9039929.42534387","relative":"11.30"}',
+  'total open pnl and total balance: {"value":"8112571.67253644","absolute_pnl":"2471980.91819883","relative_pnl":"-26.32"}'
 ] +0ms
-  example:satoshi9191 Updated feed: [
-  'total net value: "3082602.53630579"',
-  'btc balance: "-4622066.03493542"',
-  'usd balance: "4061698.67"',
-  'margin used: "-728434.17525291"',
-  'pnl: {"absolute":"-826597.13923931","relative":"90.69"}',
-  'bitcoin futures pnl: {"absolute":"-5438805.26907742","relative":"58.63"}',
-  'bitcoin futures balance: "-458402.74076909"',
-  'bitcoin options pnl: {"absolute":"-2772833.66769552","relative":"38.64"}',
-  'bitcoin options balance: "9011384.84477997"',
-  'bitcoin pnl and balance: {"value":"4379805.63379825","absolute_pnl":"7014897.92205394","relative_pnl":"-90.72"}'
+example:satoshi9191 Updated feed: [
+  'total balance: "-719298.06843400"',
+  'total open pnl: {"absolute":"-331530.44059873","relative":"-61.52"}',
+  'total open pnl and total balance: {"value":"-7741750.18537790","absolute_pnl":"-9805918.76897961","relative_pnl":"-17.91"}'
 ] +0ms
-  example:synonymxyz Updated feed: [
-  'total net value: "-5312686.59047783"',
-  'btc balance: "5488227.16344148"',
-  'usd balance: "5969599.78"',
-  'margin used: "7940113.55843396"',
-  'pnl: {"absolute":"9615660.69163383","relative":"-71.20"}',
-  'bitcoin futures pnl: {"absolute":"-8700234.18217898","relative":"59.86"}',
-  'bitcoin futures balance: "6294792.03838855"',
-  'bitcoin options pnl: {"absolute":"1224181.76382780","relative":"57.59"}',
-  'bitcoin options balance: "-8294838.71348203"',
-  'bitcoin pnl and balance: {"value":"-7941445.28917969","absolute_pnl":"8669050.75032265","relative_pnl":"-6.00"}'
+example:synonymxyz Updated feed: [
+  'total balance: "9146804.61864919"',
+  'total open pnl: {"absolute":"1281327.62853056","relative":"-70.31"}',
+  'total open pnl and total balance: {"value":"-797822.55459577","absolute_pnl":"6331277.87150443","relative_pnl":"10.34"}'
 ] +0ms
 ...
 ```
