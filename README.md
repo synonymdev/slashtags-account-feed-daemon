@@ -99,27 +99,15 @@ curl --location --request POST 'http://localhost:8787/v0.1/rpc' \
         "feed_id":"satoshi123",
         "fields": [
             {
-              "name": "bitcoin futures balance",
+              "name": "total balance",
               "value": 11
             },
             {
-              "name": "bitcoin options balance",
+              "name": "total open pnl",
               "value": 12
             },
             {
-              "name": "bitcoin futures pnl",
-              "value": { "absolute": 1, "relative": 10 }
-            },
-            {
-              "name": "bitcoin options pnl",
-              "value": { "absolute": 2, "relative": 20 }
-            },
-            {
-              "name": "bitcoin futures pnl and balance",
-              "value": { "balance": 10, "absolute_pnl": 1, "relative_pnl": 10 }
-            },
-            {
-              "name": "bitcoin options pnl and balance",
+              "name": "total open pnl and total balance",
               "value": { "balance": 10, "absolute_pnl": 1, "relative_pnl": 10 }
             }
         ]
