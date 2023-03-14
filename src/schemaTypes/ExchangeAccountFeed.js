@@ -12,8 +12,6 @@ module.exports = class ExchangeAccountFeed {
   static REQUIRED_PROPS_FOR_TYPE = {
     balance: [
       'description',
-      'denomination_type',
-      'denomination_ratio',
       'units',
     ],
 
@@ -24,8 +22,6 @@ module.exports = class ExchangeAccountFeed {
 
     pnl_and_balance:[
       'description',
-      'denomination_type',
-      'denomination_ratio',
       'units',
     ]
   }
@@ -50,14 +46,7 @@ module.exports = class ExchangeAccountFeed {
   }
 
   static validateSchemaValues(fields, err) {
-    fields.forEach((field) => {
-      if (['balance', 'pnl_and_balance'].includes(field.type)) {
-        if (!['main', 'base'].includes(field.denomination_type))
-          throw err || new Error(`${field.type} denomination_type must be "main" or "base"`)
-        if (!/[1-9]+/.test(field.denomination_ratio.toString()))
-          throw err || new Error(`${field.type} denomination_ratio must be natural number more or equal 1`)
-      }
-    })
+    return
   }
 
   static validateFieldsValues(updates, fields) {

@@ -12,8 +12,6 @@
       "name": "total balance",
       "description": "Total balance",
       "main": "/feed/total-balance/",
-      "denomination_type": "base",
-      "denomination_ratio": "8",
       "units": "sats"
     },
     {
@@ -21,8 +19,6 @@
       "name": "total open pnl",
       "description": "Total open Profit and Loss",
       "main": "/feed/total-open-pnl/",
-      "denomination_type": "base",
-      "denomination_ratio": "8",
       "units": "sats"
     },
     {
@@ -30,8 +26,6 @@
       "name": "total open pnl and total balance",
       "description": "Bitcoin open Profit and Loss and Total balance",
       "main": "/feed/total-open-pnl-and-total-balance/",
-      "denomination_type": "base",
-      "denomination_ratio": "8",
       "units": "sats"
     }
   ]

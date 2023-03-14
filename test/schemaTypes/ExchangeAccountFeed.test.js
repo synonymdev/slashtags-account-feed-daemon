@@ -7,8 +7,6 @@ describe('ExchangeAccountFeed', () => {
       "type": "balance",
       "name": "btc balance",
       "description": "description",
-      "denomination_type": "main",
-      "denomination_ratio": 8,
       "main": "path to value in slashdrive",
       "units": "sign to be shown next to value",
     },
@@ -24,8 +22,6 @@ describe('ExchangeAccountFeed', () => {
       "name": "spot pnl and balance",
       "description": "description",
       "main": "path to value on slashdrive, the value example is { balance: 100, absolute_pnl: 75, relative_pnl: 300 }",
-      "denomination_type": "base",
-      "denomination_ratio": 8,
       "units": "sign to be shown next to absolute value, relative value always shown with % sign",
     }
   ]
@@ -45,32 +41,6 @@ describe('ExchangeAccountFeed', () => {
 //    }
 //  })
 
-  describe('Invalid field values', () => {
-    describe('Invalid denomination_type', () => {
-      let invalidFields
-      beforeEach(() => {
-        invalidFields = JSON.parse(JSON.stringify(validExchangeAccountSchemaFields))
-        invalidFields[0].denomination_type = 'wrong' 
-      })
-      it('fails', () => assert.throws(() => ExchangeAccountFeed.validateSchemaValues(invalidFields), {
-        message: 'balance denomination_type must be "main" or "base"'
-      }))
-    })
-
-    describe('Invalid denomination_ratio', () => {
-      let invalidFields
-      beforeEach(() => {
-        invalidFields = JSON.parse(JSON.stringify(validExchangeAccountSchemaFields))
-        invalidFields[2].denomination_ratio = 'wrong'
-      })
-      it('fails', () => {
-        assert.throws(() => ExchangeAccountFeed.validateSchemaValues(invalidFields), {
-          message: 'pnl_and_balance denomination_ratio must be natural number more or equal 1'
-        })
-      })
-    })
-  })
-
   describe('Generated scheam', () => {
     let res
     before(() => res = ExchangeAccountFeed.generateSchemaFields(validExchangeAccountSchemaFields))
@@ -79,16 +49,6 @@ describe('ExchangeAccountFeed', () => {
       it('contains description', () => assert.equal(
         res[0].description,
         validExchangeAccountSchemaFields[0].description
-      ))
-
-      it('contains denomination_type', () => assert.equal(
-        res[0].denomination_type,
-        validExchangeAccountSchemaFields[0].denomination_type
-      ))
-
-      it('contains denomination_ratio', () => assert.equal(
-        res[0].denomination_ratio,
-        validExchangeAccountSchemaFields[0].denomination_ratio
       ))
 
       it('contains main', () => assert.equal(
@@ -123,16 +83,6 @@ describe('ExchangeAccountFeed', () => {
       it('contains description', () => assert.equal(
         res[2].description,
         validExchangeAccountSchemaFields[2].description
-      ))
-
-      it('contains denomination_type', () => assert.equal(
-        res[2].denomination_type,
-        validExchangeAccountSchemaFields[2].denomination_type
-      ))
-
-      it('contains denomination_ratio', () => assert.equal(
-        res[2].denomination_ratio,
-        validExchangeAccountSchemaFields[2].denomination_ratio
       ))
 
       it('contains main', () => assert.equal(
