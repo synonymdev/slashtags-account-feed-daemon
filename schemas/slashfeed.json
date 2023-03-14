@@ -1,25 +1,32 @@
 {
   "name": "Bitfinex",
   "description": "Bitfinex account feed",
-  "type": "account_feed",
+  "type": "exchange_account_feed",
   "version": "0.0.1",
   "icons": {
     "48": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAyNHB4IiBoZWlnaHQ9IjEwMjRweCIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgPGNpcmNsZSBjeD0iNTEyIiBjeT0iNTEyIiByPSI1MTIiIHN0eWxlPSJmaWxsOiMwM2NhOWIiLz4KICAgPHBhdGggZD0iTTczMi44MSAyNzVjLTEuNjctLjczLTE3My41MS0yNC42LTM0My4zOSA4Ni44OEMyODQgNDMxLjIyIDI3MCA1MzIuNjggMjc0LjgxIDYwMC4zNmMyNDcuMDgtMjcuODkgNDUyLjQxLTMxNy4yOSA0NTgtMzI1LjM2ek0yOTEuNTcgNjc1LjUzYzIxLjI0IDM4LjE0IDE4MS43NyAxMjQuNiAzMjMuODcgNS4zNVM3NDUuNjIgMzQ0LjY2IDczMi44MSAyNzVjLTQuNDcgMTAuMTEtMTU5LjYyIDM1Ni44OS00NDEuMjQgNDAwLjUxIiBzdHlsZT0iZmlsbDojZmZmIi8+Cjwvc3ZnPgo="
   },
   "fields": [
     {
-      "name": "Bitcoin",
-      "description": "Bitcoin balance",
-      "main": "/feed/bitcoin/",
-      "type": "currency",
-      "units": "btc"
+      "type": "balance",
+      "name": "total balance",
+      "description": "Total balance",
+      "main": "/feed/total-balance/",
+      "units": "sats"
     },
     {
-      "name": "Bitcoin P/L",
-      "description": "Bitcoin relative balance change",
-      "main": "/feed/bitcoin-p-l/",
-      "type": "delta",
-      "units": "%"
+      "type": "pnl",
+      "name": "total open pnl",
+      "description": "Total open Profit and Loss",
+      "main": "/feed/total-open-pnl/",
+      "units": "sats"
+    },
+    {
+      "type": "pnl_and_balance",
+      "name": "total open pnl and total balance",
+      "description": "Bitcoin open Profit and Loss and Total balance",
+      "main": "/feed/total-open-pnl-and-total-balance/",
+      "units": "sats"
     }
   ]
 }

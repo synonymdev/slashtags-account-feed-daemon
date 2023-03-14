@@ -1,4 +1,4 @@
-<h3 align="center">Account feeds example</h3>
+<h3 align="center">Exchange account feeds example</h3>
 
 
 ## Start account feeds daemon
@@ -45,7 +45,7 @@ $ npm run start
 
 ## Feed generation
 
-Open a separate terminal window and execute `npm run example:account` from the root directory. This will create three hyperdrives. Each hyperdrive feeds the data for a particular customer account. The drive contents are accessible by knowing the discovery key and the encryption key. This information can be shared by [slashfeed URL](https://github.com/synonymdev/slashtags/tree/master/packages/url), which has the following format: `slashfeed:<id>#encryptionKey=<key>`. 
+Open a separate terminal window and execute `npm run example:exchange:account` from the root directory. This will create three hyperdrives. Each hyperdrive feeds the data for a particular customer account. The drive contents are accessible by knowing the discovery key and the encryption key. This information can be shared by [slashfeed URL](https://github.com/synonymdev/slashtags/tree/master/packages/url), which has the following format: `slashfeed:<id>#encryptionKey=<key>`. 
 
 ```sh
 example Starting account feed +0ms
@@ -64,9 +64,21 @@ The data will update periodically.
 
 ```sh
 example Updating account feeds +5s
-example:abcde123 Updated feed: [ 'Bitcoin: "7.40"', 'Bitcoin P/L: "-99.27"' ] +0ms
-example:satoshi9191 Updated feed: [ 'Bitcoin: "9.73"', 'Bitcoin P/L: "-51.02"' ] +0ms
-example:synonymxyz Updated feed: [ 'Bitcoin: "8.52"', 'Bitcoin P/L: "54.86"' ] +0ms
+example:abcde123 Updated feed: [
+  'total balance: "-5443472.07061947"',
+  'total open pnl: {"absolute":"-9039929.42534387","relative":"11.30"}',
+  'total open pnl and total balance: {"value":"8112571.67253644","absolute_pnl":"2471980.91819883","relative_pnl":"-26.32"}'
+] +0ms
+example:satoshi9191 Updated feed: [
+  'total balance: "-719298.06843400"',
+  'total open pnl: {"absolute":"-331530.44059873","relative":"-61.52"}',
+  'total open pnl and total balance: {"value":"-7741750.18537790","absolute_pnl":"-9805918.76897961","relative_pnl":"-17.91"}'
+] +0ms
+example:synonymxyz Updated feed: [
+  'total balance: "9146804.61864919"',
+  'total open pnl: {"absolute":"1281327.62853056","relative":"-70.31"}',
+  'total open pnl and total balance: {"value":"-797822.55459577","absolute_pnl":"6331277.87150443","relative_pnl":"10.34"}'
+] +0ms
 ...
 ```
 

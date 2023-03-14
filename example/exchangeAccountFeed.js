@@ -42,13 +42,26 @@ async function updateAccounts (accountIds) {
   for (const accountId of accountIds) {
     const update = [
       {
-        name: 'Bitcoin',
-        value: faker.finance.amount(5, 10, 2)
+        name: 'total balance',
+        value: faker.finance.amount(-10000000, 10000000, 8),
       },
       {
-        name: 'Bitcoin P/L',
-        value: faker.finance.amount(-100, 100, 2)
-      }
+        name: "total open pnl",
+        value: {
+          absolute: faker.finance.amount(-10000000, 10000000, 8),
+          relative: faker.finance.amount(-100, 100, 2)
+        },
+      },
+      {
+        name: "total open pnl and total balance",
+        value: {
+          value: faker.finance.amount(-10000000, 10000000, 8),
+          absolute_pnl: faker.finance.amount(-10000000, 10000000, 8),
+          relative_pnl: faker.finance.amount(-100, 100, 2)
+        },
+      },
+
+
     ]
     await updateFeed(accountId, update)
     accountLogger(accountId)('Updated feed:', update.map(u => `${u.name}: ${JSON.stringify(u.value)}`))

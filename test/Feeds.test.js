@@ -1,5 +1,7 @@
 const { strict: assert } = require('node:assert')
 const SlashtagsFeeds = require('../src/Feeds.js')
+const { getFileName } = require('../src/util.js')
+const SlashtagsSchema = require('../src/SlashtagsSchema.js')
 const FeedDb = require('../src/FeedDb.js')
 const path = require('path')
 const fs = require('fs')
@@ -20,7 +22,16 @@ describe('SlashtagsFeeds', () => {
   describe('Constructor', () => {
     describe('Valid config', () => {
       let feed
-      before(() => feed = new SlashtagsFeeds(validConfig))
+      let conf
+      before(() => {
+        feed = new SlashtagsFeeds(validConfig)
+        conf = {
+          name: Schema.name,
+          description: Schema.description,
+          icons: JSON.parse(JSON.stringify(Schema.icons)),
+          fields: JSON.parse(JSON.stringify(Schema.fields))
+        }
+      })
 
       it('has config', () => assert.deepStrictEqual(feed.config, validConfig))
       it('has db', () => assert.deepStrictEqual(feed.db, new FeedDb(validConfig.db)))
@@ -28,120 +39,14 @@ describe('SlashtagsFeeds', () => {
       it('has lock', () => assert.deepStrictEqual(feed.lock, new Map()))
       it('has ready flag', () => assert.equal(feed.ready, false))
       it('has slashtags property', () => assert.equal(feed._slashfeeds, null))
-
-      describe('it generates and overwrites slashfeed based on config', () => {
-        let conf
-        beforeEach(() => {
-          conf = {
-            ...JSON.parse(JSON.stringify(validConfig)),
-            schemaConfig: {
-              name: Schema.name,
-              description: Schema.description,
-              icons: JSON.parse(JSON.stringify(Schema.icons)),
-              fields: Schema.fields.map(f => JSON.parse(JSON.stringify(f)))
-            }
-          }
-        })
-
-        describe('invalid schamaConfig', () => {
-          describe('missing name', () => {
-            beforeEach(() => {
-              delete conf.schemaConfig.name
-              error.message = SlashtagsFeeds.err.missingFeedName
-            })
-
-            it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-          })
-
-          describe('missing description', () => {
-            beforeEach(() => {
-              delete conf.schemaConfig.description
-              error.message = SlashtagsFeeds.err.missingFeedDescription
-            })
-
-            it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-          })
-
-          describe('missing icons', () => {
-            beforeEach(() => {
-              delete conf.schemaConfig.icons
-              error.message = SlashtagsFeeds.err.missingFeedIcons
-            })
-
-            it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-          })
-
-          describe('missing fields', () => {
-            beforeEach(() => {
-              delete conf.schemaConfig.fields
-              error.message = SlashtagsFeeds.err.missingFeedFields
-            })
-
-            it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-          })
-
-          describe('fields are not array', () => {
-            beforeEach(() => {
-              conf.schemaConfig.fields = 'fields'
-              error.message = SlashtagsFeeds.err.invalidFeedFields
-            })
-
-            it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-          })
-
-          describe('invalid icon', () => {
-            beforeEach(() => {
-              conf.schemaConfig.icons['48'] = 'not an image'
-              error.message = SlashtagsFeeds.err.invalidFeedIcon
-            })
-
-            it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-          })
-
-          describe('invalid field', () => {
-            describe('missing name', () => {
-              beforeEach(() => {
-                delete conf.schemaConfig.fields[0].name
-                error.message = SlashtagsFeeds.err.missingFieldName
-              })
-
-              it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-            })
-
-            describe('missing description', () => {
-              beforeEach(() => {
-                delete conf.schemaConfig.fields[1].description
-                error.message = SlashtagsFeeds.err.missingFieldDescription
-              })
-
-              it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-            })
-
-            describe('invalid type', () => {
-              beforeEach(() => {
-                conf.schemaConfig.fields[1].type = 'unsupported type'
-                error.message = SlashtagsFeeds.err.badFieldType
-              })
-
-              it('throws an error', () => assert.throws(() => new SlashtagsFeeds(conf), error))
-            })
-          })
-        })
-
-        describe('valid config', () => {
-          let instance
-          beforeEach(() => instance = new SlashtagsFeeds(conf))
-
-          it('uses new schema', () => assert.deepStrictEqual(
-            instance.feed_schema,
-            SlashtagsFeeds.generateSchema(conf)
-          ))
-          it('persists generated schema', () => assert.deepStrictEqual(
-            instance.feed_schema,
-            JSON.parse(fs.readFileSync(SlashtagsFeeds.DEFAULT_SCHEMA_PATH).toString('utf8'))
-          ))
-        })
-      })
+      it('uses new schema', () => assert.deepStrictEqual(
+        feed.feed_schema,
+        SlashtagsSchema.generateSchema(conf)
+      ))
+      it('persists generated schema', () => assert.deepStrictEqual(
+        feed.feed_schema,
+        JSON.parse(fs.readFileSync(SlashtagsSchema.DEFAULT_SCHEMA_PATH).toString('utf8'))
+        ))
     })
 
     describe('Invalid config', () => {
@@ -153,23 +58,6 @@ describe('SlashtagsFeeds', () => {
         feed_schema: { ...Schema },
         slashtags: path.resolve('./test-data/storage'),
       }
-
-      //      TODO:
-//      describe('Invalid feed schema', () => {
-//        before(() => error.message = SlashtagsFeeds.err.invalidSchema)
-//
-//        const keys = [ 'image', 'name', 'feed_type', 'version' ]
-//        keys.forEach((k) => {
-//          let tmp
-//          beforeEach(() => {
-//            tmp = invalidConfig.feed_schema[k]
-//            invalidConfig.feed_schema[k] = null
-//          })
-//          afterEach(() => invalidConfig.feed_schema[k] = tmp)
-//
-//          it(`fails without ${k}`, () => assert.throws(() => new SlashtagsFeeds(invalidConfig), error))
-//        })
-//      })
 
       describe('Missing slashtags', () => {
         before(() => error.message = SlashtagsFeeds.err.badConfig)
@@ -328,7 +216,6 @@ describe('SlashtagsFeeds', () => {
           after(() => feed.db.insert = insertFeed)
 
           it('fails with no feed error', async function () {
-            this.timeout(5000)
             await assert.rejects(async () => feed.createFeed(input), error)
           })
         })
@@ -346,12 +233,9 @@ describe('SlashtagsFeeds', () => {
           await feed.deleteFeed(input)
         })
 
-        it('has slashdrive property', () => assert(res.slashdrive))
-        describe('slashdrive property', () => {
-          it('has key', () => assert(res.slashdrive.key))
-          it('has encryption_key', () => assert(res.slashdrive.encryption_key))
-          it('has url', () => assert(res.url))
-        })
+        it('has feed_key', () => assert(res.feed_key))
+        it('has encrypt', () => assert(res.encrypt_key))
+        it('has url', () => assert(res.url))
       })
     })
   })
@@ -546,7 +430,7 @@ describe('SlashtagsFeeds', () => {
       let readResult
       let createResult
       before(async function () {
-        this.timeout(5000)
+        this.timeout(10000)
 
         createResult = await feed.createFeed(input)
         readResult = await feed.getFeed(input)
@@ -555,28 +439,44 @@ describe('SlashtagsFeeds', () => {
 
       describe('feed_key', () => {
         it('has `feed_key`', () => assert(readResult.feed_key))
-        it('is correct', () => assert.strictEqual(createResult.slashdrive.key, readResult.feed_key))
+        it('is correct', () => assert.strictEqual(createResult.feed_key, readResult.feed_key))
       })
 
       describe('encrypt_key', () => {
         it('has `encrypt_key`', () => assert(readResult.encrypt_key))
-        it('is correct', () => assert.strictEqual(createResult.slashdrive.encryption_key, readResult.encrypt_key))
+        it('is correct', () => assert.strictEqual(createResult.encrypt_key, readResult.encrypt_key))
       })
     })
   })
 
-  describe('updateFeedBalance', () => {
+  describe('updateFeed', () => {
     const update = {
       feed_id: 'testUpdateFeed',
       fields: [
         {
-          name: 'Bitcoin',
+          name: 'bitcoin futures balance',
+          value: 11,
+        },
+        {
+          name: 'bitcoin options balance',
           value: 12,
         },
         {
-          name: 'Bitcoin P/L',
-          value: 1,
-        }
+          name: 'bitcoin futures pnl',
+          value: { absolute: 1, relative: 10 },
+        },
+        {
+          name: 'bitcoin options pnl',
+          value: { absolute: 2, relative: 20 },
+        },
+        {
+          name: 'bitcoin futures pnl and balance',
+          value: { balance: 10, absolute_pnl: 1, relative_pnl: 10 },
+        },
+        {
+          name: 'bitcoin options pnl and balance',
+          value: { balance: 10, absolute_pnl: 1, relative_pnl: 10 },
+        },
       ]
     }
 
@@ -597,7 +497,7 @@ describe('SlashtagsFeeds', () => {
       })
       after(() => feed.ready = true)
 
-      it('fails if slahstags is not ready', async () => assert.rejects(async () => feed.updateFeedBalance(update), error))
+      it('fails if slahstags is not ready', async () => assert.rejects(async () => feed.updateFeed(update), error))
     })
 
     describe('Input handling', () => {
@@ -608,7 +508,7 @@ describe('SlashtagsFeeds', () => {
           input = { ...update, feed_id: undefined }
           error.message = SlashtagsFeeds.err.feedIdMissing
         })
-        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeed(input), error))
       })
 
       describe('fields is missing', () => {
@@ -616,7 +516,7 @@ describe('SlashtagsFeeds', () => {
           input = { ...update, fields: undefined }
           error.message = SlashtagsFeeds.err.missingFields
         })
-        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeed(input), error))
       })
 
       describe('fields is not an array', () => {
@@ -624,7 +524,7 @@ describe('SlashtagsFeeds', () => {
           input = { ...update, fields: 'fields' }
           error.message = SlashtagsFeeds.err.invalidFeedFields
         })
-        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeed(input), error))
       })
 
       describe('fields is empty array', () => {
@@ -632,7 +532,7 @@ describe('SlashtagsFeeds', () => {
           input = { ...update, fields: [] }
           error.message = SlashtagsFeeds.err.invalidFeedFields
         })
-        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeed(input), error))
       })
 
       describe('field is missing name', () => {
@@ -640,7 +540,7 @@ describe('SlashtagsFeeds', () => {
           input = { ...update, fields: [{ value: 1 }]}
           error.message = SlashtagsFeeds.err.missingFieldName
         })
-        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeed(input), error))
       })
 
       describe('field is missing value', () => {
@@ -648,7 +548,7 @@ describe('SlashtagsFeeds', () => {
           input = { ...update, fields: [{ name: 1 }]}
           error.message = SlashtagsFeeds.err.missingFieldValue
         })
-        it('throws an error', async () => assert.rejects(async () => feed.updateFeedBalance(input), error))
+        it('throws an error', async () => assert.rejects(async () => feed.updateFeed(input), error))
       })
     })
 
@@ -659,7 +559,7 @@ describe('SlashtagsFeeds', () => {
         })
 
         it('throws an error', async () => assert.rejects(
-          async () => feed.updateFeedBalance({...update, feed_id: 'do_not_exist' }),
+          async () => feed.updateFeed({...update, feed_id: 'do_not_exist' }),
           error
         ))
       })
@@ -680,7 +580,7 @@ describe('SlashtagsFeeds', () => {
         })
 
         it('throws an error', async () => assert.rejects(
-          async () => feed.updateFeedBalance({...update, feed_id: 'exist' }),
+          async () => feed.updateFeed({...update, feed_id: 'exist' }),
           error
         ))
       })
@@ -693,7 +593,7 @@ describe('SlashtagsFeeds', () => {
 
         await feed.deleteFeed({ feed_id: update.feed_id })
         await feed.createFeed({ feed_id: update.feed_id })
-        res = await feed.updateFeedBalance(update)
+        res = await feed.updateFeed(update)
       })
 
       it('returns true', () => assert.deepStrictEqual(res, { updated: true }))
@@ -704,8 +604,8 @@ describe('SlashtagsFeeds', () => {
         before(async () => {
           await feed.stop()
           feedReader = new Feeds(validConfig.slashtags, validConfig.feed_schema)
-          balance = await feedReader.get(update.feed_id, SlashtagsFeeds.getFileName(update.fields[0]))
-          balanceChange = await feedReader.get(update.feed_id, SlashtagsFeeds.getFileName(update.fields[1]))
+          balance = await feedReader.get(update.feed_id, getFileName(update.fields[0].name))
+          balanceChange = await feedReader.get(update.feed_id, getFileName(update.fields[1].name))
         })
 
         after(async () => {

@@ -100,7 +100,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"method\":\"updateFeed\",\n    \"params\": {\n        \"feed_id\":\"satoshi\",\n        \"fields\": [\n            {\n                \"name\": \"Bitcoin\",\n                \"value\": 1.243\n            }\n        ]\n    }\n}",
+					"raw": "{\n    \"method\":\"updateFeed\",\n    \"params\": {\n        \"feed_id\":\"satoshi\",\n        \"fields\": [\n            {\n              \"name\": \"total balance\",\n              \"value\": 11\n            },\n            {\n              \"name\": \"total open pnl\",\n              \"value\": 12\n            },\n            {\n              \"name\": \"total open pnl and total balance\",\n              \"value\": { \"balance\": 10, \"absolute_pnl\": 1, \"relative_pnl\": 10 }\n            }\n        ]\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"

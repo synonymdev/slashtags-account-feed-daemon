@@ -91,7 +91,7 @@ module.exports = function (config) {
     {
       name: 'updateFeed',
       description: 'Update feed feed',
-      svc: 'feeds.updateFeedBalance'
+      svc: 'feeds.updateFeed'
     },
     {
       name: 'getFeed',
