@@ -19,8 +19,8 @@
     "mocha": "^10.0.0"
   },
   "scripts": {
-    "test": "mocha ./test/",
-    "start": "DEBUG=stfeed* node start.js",
+    "test": "mocha ./test/ --bail",
+    "start": "DEBUG=* node start.js",
     "example:account": "DEBUG=example* node example/accountFeed.js"
   },
   "repository": {
