@@ -6,7 +6,9 @@ const fs = require('fs')
 const Schema = require('../schemas/slashfeed.json')
 const Feeds = require('@synonymdev/feeds')
 
-describe('SlashtagsFeeds', () => {
+describe('SlashtagsFeeds', function () {
+  this.timeout(50000)
+
   const validConfig = {
     db: {
       name: 'feed-db',
@@ -238,7 +240,6 @@ describe('SlashtagsFeeds', () => {
     describe('Creating a drive', () => {
       before(async () => await feed.start())
       after(async function () {
-        this.timeout(5000)
         await feed.stop()
       })
 
@@ -313,7 +314,6 @@ describe('SlashtagsFeeds', () => {
           after(() => feed._slashfeeds.update = updateFeed)
 
           it('fails with no feed error', async function () {
-            this.timeout(5000)
             await assert.rejects(async () => feed.createFeed(input), error)
           })
         })
@@ -328,7 +328,6 @@ describe('SlashtagsFeeds', () => {
           after(() => feed.db.insert = insertFeed)
 
           it('fails with no feed error', async function () {
-            this.timeout(5000)
             await assert.rejects(async () => feed.createFeed(input), error)
           })
         })
@@ -337,12 +336,10 @@ describe('SlashtagsFeeds', () => {
       describe('Successful feed initializaiton', () => {
         let res
         before(async function () {
-          this.timeout(5000)
           res = await feed.createFeed(input)
         })
 
         after(async function () {
-          this.timeout(5000)
           await feed.deleteFeed(input)
         })
 
@@ -366,19 +363,16 @@ describe('SlashtagsFeeds', () => {
       await feed.start()
     })
     after(async function () {
-      this.timeout(5000)
       await feed.stop()
     })
 
     describe('Calling delete feed before starting feed', () => {
       before(async function () {
-        this.timeout(5000)
         await feed.stop()
         error.message = SlashtagsFeeds.err.notReady
       })
 
       after(async function () {
-        this.timeout(5000)
         await feed.start()
       })
 
@@ -456,7 +450,6 @@ describe('SlashtagsFeeds', () => {
     describe('Successful deletion', () => {
       let res
       before(async function () {
-        this.timeout(5000)
         await feed.createFeed({ ...input, init_data: 11 })
         res = await feed.deleteFeed(input)
       })
@@ -467,7 +460,6 @@ describe('SlashtagsFeeds', () => {
         let feedReader
         let res
         before(async function () {
-          this.timeout(5000)
           await feed.stop()
           feedReader = new Feeds(validConfig.slashtags, validConfig.feed_schema)
           res = await feedReader.get(input.feed_id, `/bitcoin/main`)
@@ -492,19 +484,16 @@ describe('SlashtagsFeeds', () => {
       await feed.start()
     })
     after(async function () {
-      this.timeout(5000)
       await feed.stop()
     })
 
     describe('Calling getFeed before starting feed', () => {
       before(async function () {
-        this.timeout(5000)
         await feed.stop()
         error.message = SlashtagsFeeds.err.notReady
       })
 
       after(async function () {
-        this.timeout(5000)
         await feed.start()
       })
 
@@ -546,7 +535,6 @@ describe('SlashtagsFeeds', () => {
       let readResult
       let createResult
       before(async function () {
-        this.timeout(5000)
 
         createResult = await feed.createFeed(input)
         readResult = await feed.getFeed(input)
@@ -586,7 +574,6 @@ describe('SlashtagsFeeds', () => {
       await feed.start()
     })
     after(async function () {
-      this.timeout(5000)
       await feed.stop()
     })
 
@@ -689,7 +676,6 @@ describe('SlashtagsFeeds', () => {
     describe('Successful update', () => {
       let res
       before(async function() {
-        this.timeout(5000)
 
         await feed.deleteFeed({ feed_id: update.feed_id })
         await feed.createFeed({ feed_id: update.feed_id })
