@@ -9,6 +9,7 @@
     "async": "^3.2.4",
     "b4a": "^1.6.1",
     "debug": "^4.3.4",
+    "slashtags-server": "github:slashtags/server",
     "sqlite3": "^5.0.9",
     "z32": "^1.0.0"
   },
