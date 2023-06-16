@@ -4,13 +4,12 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@fastify/formbody": "^7.0.1",
     "@synonymdev/feeds": "^1.0.0-alpha.2",
     "@synonymdev/slashtags-url": "^1.0.0-alpha.2",
     "async": "^3.2.4",
     "b4a": "^1.6.1",
     "debug": "^4.3.4",
-    "fastify": "^4.3.0",
+    "slashtags-server": "github:slashtags/server",
     "sqlite3": "^5.0.9",
     "z32": "^1.0.0"
   },
@@ -20,8 +19,8 @@
     "mocha": "^10.0.0"
   },
   "scripts": {
-    "test": "mocha ./test/",
-    "start": "DEBUG=stfeed* node start.js",
+    "test": "mocha ./test/ --bail",
+    "start": "DEBUG=* node start.js",
     "example:account": "DEBUG=example* node example/accountFeed.js"
   },
   "repository": {

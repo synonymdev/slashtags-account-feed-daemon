@@ -1,5 +1,5 @@
 const { promisify } = require('node:util')
-const RPC = require('./src/RPC.js')
+const { RPC } = require('slashtags-server')
 const path = require('path')
 const Feeds = require('./src/Feeds.js')
 const config = require('./schemas/config.json')
@@ -30,7 +30,29 @@ async function main () {
     }
     return fn.call(feeds, ctx.params)
   }
-  const rpc = new RPC(config.rpc)
+  config.rpc.endpointList = [
+    {
+      name: 'createFeed',
+      description: 'Create a feed drive',
+      svc: 'feeds.createFeed'
+    },
+    {
+      name: 'updateFeed',
+      description: 'Update feed feed',
+      svc: 'feeds.updateFeedBalance'
+    },
+    {
+      name: 'getFeed',
+      description: 'Get a feed key',
+      svc: 'feeds.getFeed'
+    },
+    {
+      name: 'deleteFeed',
+      description: 'Delete a feed',
+      svc: 'feeds.deleteFeed'
+    }
+  ]
+  const rpc = new RPC(config)
   if (!config?.db?.path) {
     throw new Err(_err.badConfig)
   }
@@ -44,7 +66,7 @@ async function main () {
   log.info('Started Feeds')
   await feeds.startFeedBroadcast()
   log.info('Started Broadcasting')
-  await promisify(rpc.start)()
+  await rpc.start()
   log.info('RPC server started')
 }
 
